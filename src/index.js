@@ -26,6 +26,20 @@ const n8nClient = axios.create({
 });
 
 const path = require('path');
+
+// Route racine
+app.get('/', (req, res) => {
+    res.json({ 
+        message: 'Agent Orchestrator API',
+        version: '0.1.0',
+        endpoints: {
+            health: '/health',
+            status: 'operational'
+        },
+        documentation: 'https://github.com/Dan-Gata/agent-skeleton-oss'
+    });
+});
+
 // Route de santé
 app.get('/health', (req, res) => {
     let packageJson = {};
@@ -46,7 +60,7 @@ app.get('/health', (req, res) => {
 });
 
 // Démarrage du serveur
-app.listen(PORT, () => {
+app.listen(PORT, '0.0.0.0', () => {
     console.log(`Agent running on port ${PORT}`);
-    console.log(`Health check available at: http://localhost:${PORT}/health`);
+    console.log(`Health check available at: http://0.0.0.0:${PORT}/health`);
 });
