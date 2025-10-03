@@ -1,0 +1,7 @@
+{
+  "name": "desktop-app",
+  "version": "0.1.0",
+  "scripts": {
+    "dev": "echo 'dev Tauri stub'"
+  }
+}

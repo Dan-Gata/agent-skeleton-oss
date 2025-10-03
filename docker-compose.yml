@@ -1,0 +1,75 @@
+# Agent Skeleton OSS - Configuration Docker Compose pour Coolify
+version: '3.8'
+
+services:
+  agent-skeleton:
+    build: .
+    container_name: agent-skeleton-oss
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      # Configuration de base
+      - NODE_ENV=production
+      - PORT=3000
+      
+      # APIs IA (à configurer dans Coolify)
+      - OPENROUTER_API_KEY=${OPENROUTER_API_KEY}
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
+      - GOOGLE_API_KEY=${GOOGLE_API_KEY}
+      
+      # Intégrations
+      - N8N_API_URL=${N8N_API_URL}
+      - N8N_API_KEY=${N8N_API_KEY}
+      - COOLIFY_API_URL=${COOLIFY_API_URL}
+      - COOLIFY_API_KEY=${COOLIFY_API_KEY}
+      - BASEROW_URL=${BASEROW_URL}
+      - BASEROW_API_TOKEN=${BASEROW_API_TOKEN}
+      
+      # Sécurité
+      - INTERNAL_API_KEY=${INTERNAL_API_KEY}
+      - APP_URL=${APP_URL}
+      
+      # Base de données (optionnel pour Redis)
+      - REDIS_URL=${REDIS_URL}
+      
+    volumes:
+      # Persistence pour les données locales
+      - agent_data:/app/data
+      - agent_logs:/app/logs
+    
+    networks:
+      - agent-network
+    
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # Service Redis optionnel pour cache/sessions
+  redis:
+    image: redis:7-alpine
+    container_name: agent-redis
+    restart: unless-stopped
+    command: redis-server --appendonly yes
+    volumes:
+      - redis_data:/data
+    networks:
+      - agent-network
+    ports:
+      - "6379:6379"
+
+volumes:
+  agent_data:
+    driver: local
+  agent_logs:
+    driver: local
+  redis_data:
+    driver: local
+
+networks:
+  agent-network:
+    driver: bridge

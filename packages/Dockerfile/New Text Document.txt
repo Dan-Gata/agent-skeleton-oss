@@ -1,0 +1,4 @@
+git config --global user.name "Dan-Gata"
+git config --global user.email "angolodglianimali@gmail.com"
+git config --global core.autocrlf true
+

@@ -1,0 +1,10 @@
+stages:
+  - build
+  - test
+
+build_orchestrator:
+  stage: build
+  script:
+    - cd packages/orchestrator
+    - npm install
+    - npm run build

@@ -1,0 +1,143 @@
+{
+  "name": "agent-skeleton-oss",
+  "description": "Assistant IA intelligent avec interface moderne - Intégrations n8n, Coolify, Baserow",
+  "source": {
+    "type": "git",
+    "repository": "https://github.com/Dan-Gata/agent-skeleton-oss",
+    "branch": "main"
+  },
+  "build": {
+    "type": "docker",
+    "dockerfile": "Dockerfile",
+    "context": "."
+  },
+  "deploy": {
+    "port": 3000,
+    "healthcheck": {
+      "path": "/health",
+      "interval": 30,
+      "timeout": 10,
+      "retries": 3
+    }
+  },
+  "environment": {
+    "required": [
+      {
+        "key": "NODE_ENV",
+        "value": "production",
+        "description": "Environment de l'application"
+      },
+      {
+        "key": "PORT", 
+        "value": "3000",
+        "description": "Port d'écoute du serveur"
+      },
+      {
+        "key": "APP_URL",
+        "value": "https://your-domain.com",
+        "description": "URL publique de l'application"
+      },
+      {
+        "key": "INTERNAL_API_KEY",
+        "value": "",
+        "description": "Clé secrète pour APIs internes (générer une clé aléatoire)",
+        "secret": true
+      }
+    ],
+    "optional": [
+      {
+        "key": "OPENROUTER_API_KEY",
+        "value": "",
+        "description": "Clé API OpenRouter (accès multiple modèles IA)",
+        "secret": true
+      },
+      {
+        "key": "OPENAI_API_KEY", 
+        "value": "",
+        "description": "Clé API OpenAI (GPT-4o, GPT-4o Mini)",
+        "secret": true
+      },
+      {
+        "key": "ANTHROPIC_API_KEY",
+        "value": "",
+        "description": "Clé API Anthropic (Claude 3.5 Sonnet)",
+        "secret": true
+      },
+      {
+        "key": "GOOGLE_API_KEY",
+        "value": "",
+        "description": "Clé API Google AI (Gemini 1.5 Pro)",
+        "secret": true
+      },
+      {
+        "key": "COOLIFY_API_URL",
+        "value": "",
+        "description": "URL de l'API Coolify pour intégration"
+      },
+      {
+        "key": "COOLIFY_API_KEY",
+        "value": "",
+        "description": "Clé API Coolify",
+        "secret": true
+      },
+      {
+        "key": "N8N_API_URL",
+        "value": "",
+        "description": "URL de l'API n8n pour workflows"
+      },
+      {
+        "key": "N8N_API_KEY",
+        "value": "",
+        "description": "Clé API n8n",
+        "secret": true
+      },
+      {
+        "key": "BASEROW_URL",
+        "value": "https://api.baserow.io",
+        "description": "URL de l'API Baserow"
+      },
+      {
+        "key": "BASEROW_API_TOKEN",
+        "value": "",
+        "description": "Token API Baserow",
+        "secret": true
+      },
+      {
+        "key": "REDIS_URL",
+        "value": "",
+        "description": "URL Redis pour cache (optionnel)"
+      }
+    ]
+  },
+  "domains": [
+    {
+      "domain": "your-domain.com",
+      "ssl": true,
+      "redirect_www": true
+    }
+  ],
+  "volumes": [
+    {
+      "source": "agent_data",
+      "target": "/app/data",
+      "type": "volume"
+    },
+    {
+      "source": "agent_logs", 
+      "target": "/app/logs",
+      "type": "volume"
+    }
+  ],
+  "networks": [
+    "agent-network"
+  ],
+  "labels": {
+    "project": "agent-skeleton-oss",
+    "environment": "production",
+    "version": "1.0.0",
+    "maintainer": "Agent Skeleton OSS Team"
+  },
+  "restart_policy": "unless-stopped",
+  "auto_deploy": true,
+  "auto_deploy_webhook": true
+}
