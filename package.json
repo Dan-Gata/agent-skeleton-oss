@@ -14,5 +14,16 @@
   },
   "devDependencies": {
     "nodemon": "^3.0.1"
-  }
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Dan-Gata/agent-skeleton-oss.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Dan-Gata/agent-skeleton-oss/issues"
+  },
+  "homepage": "https://github.com/Dan-Gata/agent-skeleton-oss#readme"
 }
