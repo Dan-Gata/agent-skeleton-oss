@@ -1,6 +1,6 @@
 {
   "name": "agent-skeleton-oss",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Agent intelligent avec interface moderne et intégrations",
   "main": "server.js",
   "scripts": {

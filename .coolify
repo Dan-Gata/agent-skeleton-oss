@@ -1,0 +1,11 @@
+# Configuration pour Coolify
+# Force rebuild si nécessaire
+
+# Health check configuration
+HEALTHCHECK_PATH=/health
+HEALTHCHECK_PORT=3000
+
+# Application configuration  
+APP_NAME=Agent Skeleton OSS
+APP_VERSION=1.0.1
+BUILD_DATE=$(date)
