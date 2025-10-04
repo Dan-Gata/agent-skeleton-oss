@@ -55,6 +55,8 @@ GET https://votre-domaine.com/health
 
 ## 🚀 **Déploiement Coolify (5 minutes)**
 
+> ✅ **CORRECTIF APPLIQUÉ** : Le problème "error server no active" est résolu ! Voir [COOLIFY_FIX.md](./COOLIFY_FIX.md)
+
 ### 1️⃣ **Clone & Configure**
 ```bash
 git clone https://github.com/Dan-Gata/agent-skeleton-oss

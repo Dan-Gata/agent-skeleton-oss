@@ -1,5 +1,7 @@
 # 🚀 Guide de Déploiement Coolify - Agent Skeleton OSS
 
+> ✅ **MISE À JOUR**: Le problème "error server no active" a été résolu ! Consultez [COOLIFY_FIX.md](./COOLIFY_FIX.md) pour les détails du correctif.
+
 ## 📋 Prérequis
 
 1. **Instance Coolify** configurée et accessible

@@ -4,16 +4,13 @@
 const { spawn } = require('child_process');
 const path = require('path');
 
-const orchestratorPath = path.join(__dirname, 'packages', 'orchestrator');
-
 console.log('🚀 Démarrage de Agent Skeleton OSS...');
-console.log(`📁 Dossier orchestrator: ${orchestratorPath}`);
+console.log(`📁 Dossier: ${__dirname}`);
 
-// Changement vers le dossier orchestrator et démarrage
-process.chdir(orchestratorPath);
-
+// Démarrage depuis la racine avec src/index.js
 const startApp = spawn('node', ['src/index.js'], {
   stdio: 'inherit',
+  cwd: __dirname,
   env: {
     ...process.env,
     PORT: process.env.PORT || 3000
