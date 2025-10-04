@@ -1,404 +1,824 @@
-const express = require('express');const express = require('express');
+const express = require('express');const express = require('express');const express = require('express');
 
-const axios   = require('axios');const axios   = require('axios');
+const axios   = require('axios');
 
-const path    = require('path');const path    = require('path');
+const path    = require('path');const axios   = require('axios');const axios   = require('axios');
 
-const app     = express();const app     = express();
+const helmet  = require('helmet');
 
-const port    = process.env.PORT || 3000;const port    = process.env.PORT || 3000;
+const cors    = require('cors');const path    = require('path');const path    = require('path');
 
+const rateLimit = require('express-rate-limit');
 
-
-// Configuration du moteur de templates// Configuration du moteur de templates
-
-app.set('view engine', 'ejs');app.set('view engine', 'ejs');
-
-app.set('views', path.join(__dirname, '../views'));app.set('views', path.join(__dirname, '../views'));
+const { body, validationResult } = require('express-validator');const app     = express();const app     = express();
 
 
 
-// Middleware pour servir les fichiers statiques// Middleware pour servir les fichiers statiques
+const app = express();const port    = process.env.PORT || 3000;const port    = process.env.PORT || 3000;
 
-app.use(express.static(path.join(__dirname, '../public')));app.use(express.static(path.join(__dirname, '../public')));
-
-app.use(express.json());app.use(express.json());
+const port = process.env.PORT || 3000;
 
 
 
-// Route principale - Interface moderne// Route principale - Interface moderne
+// 🔒 SÉCURITÉ : Configuration des headers de sécurité
 
-app.get('/', (req, res) => {app.get('/', (req, res) => {
+app.use(helmet({// Configuration du moteur de templates// Configuration du moteur de templates
 
-    res.render('interface', {    res.render('interface', {
+    contentSecurityPolicy: {
 
-        title: 'Agent Skeleton OSS - Interface Intelligente',        title: 'Agent Skeleton OSS - Interface Intelligente',
+        directives: {app.set('view engine', 'ejs');app.set('view engine', 'ejs');
+
+            defaultSrc: ["'self'"],
+
+            styleSrc: ["'self'", "'unsafe-inline'", "https://cdnjs.cloudflare.com"],app.set('views', path.join(__dirname, '../views'));app.set('views', path.join(__dirname, '../views'));
+
+            scriptSrc: ["'self'", "'unsafe-inline'"],
+
+            fontSrc: ["'self'", "https://cdnjs.cloudflare.com"],
+
+            imgSrc: ["'self'", "data:", "https:"],
+
+            connectSrc: ["'self'"]// Middleware pour servir les fichiers statiques// Middleware pour servir les fichiers statiques
+
+        }
+
+    },app.use(express.static(path.join(__dirname, '../public')));app.use(express.static(path.join(__dirname, '../public')));
+
+    hsts: {
+
+        maxAge: 31536000,app.use(express.json());app.use(express.json());
+
+        includeSubDomains: true,
+
+        preload: true
+
+    }
+
+}));// Route principale - Interface moderne// Route principale - Interface moderne
+
+
+
+// 🔒 SÉCURITÉ : Configuration CORS restrictiveapp.get('/', (req, res) => {app.get('/', (req, res) => {
+
+app.use(cors({
+
+    origin: process.env.ALLOWED_ORIGINS ? process.env.ALLOWED_ORIGINS.split(',') : ['http://localhost:3000'],    res.render('interface', {    res.render('interface', {
+
+    credentials: true,
+
+    optionsSuccessStatus: 200        title: 'Agent Skeleton OSS - Interface Intelligente',        title: 'Agent Skeleton OSS - Interface Intelligente',
+
+}));
 
         version: '1.0.0'        version: '1.0.0'
 
-    });    });
+// 🔒 SÉCURITÉ : Limitation du taux de requêtes
 
-});});
+const limiter = rateLimit({    });    });
 
+    windowMs: 15 * 60 * 1000, // 15 minutes
 
+    max: 100, // Limite chaque IP à 100 requêtes par windowMs});});
 
-// Route nouvelle interface APP moderne// Route nouvelle interface APP moderne
+    message: {
 
-app.get('/app', (req, res) => {app.get('/app', (req, res) => {
+        error: 'Trop de requêtes depuis cette IP, réessayez dans 15 minutes.',
+
+        code: 'RATE_LIMIT_EXCEEDED'
+
+    },// Route nouvelle interface APP moderne// Route nouvelle interface APP moderne
+
+    standardHeaders: true,
+
+    legacyHeaders: falseapp.get('/app', (req, res) => {app.get('/app', (req, res) => {
+
+});
 
     res.render('app', {    res.render('app', {
 
-        title: 'Agent Skeleton OSS - Application',        title: 'Agent Skeleton OSS - Application',
+const apiLimiter = rateLimit({
 
-        version: '1.0.0'        version: '1.0.0'
+    windowMs: 15 * 60 * 1000, // 15 minutes        title: 'Agent Skeleton OSS - Application',        title: 'Agent Skeleton OSS - Application',
 
-    });    });
+    max: 50, // Plus restrictif pour l'API
 
-});});
+    message: {        version: '1.0.0'        version: '1.0.0'
+
+        error: 'Trop de requêtes API, réessayez dans 15 minutes.',
+
+        code: 'API_RATE_LIMIT_EXCEEDED'    });    });
+
+    }
+
+});});});
 
 
+
+app.use(limiter);
+
+app.use('/api/', apiLimiter);
 
 // API Chat public pour l'interface// API Chat public pour l'interface
 
-app.post('/api/chat/public', async (req, res) => {app.post('/api/chat/public', async (req, res) => {
+// 🔒 SÉCURITÉ : Configuration du moteur de templates avec sécurité
 
-    try {    try {
+app.set('view engine', 'ejs');app.post('/api/chat/public', async (req, res) => {app.post('/api/chat/public', async (req, res) => {
 
-        const { message, model = 'claude-3.5-sonnet' } = req.body;        const { message, model = 'claude-3.5-sonnet' } = req.body;
+app.set('views', path.join(__dirname, '../views'));
 
-                
-
-        if (!message) {        if (!message) {
-
-            return res.status(400).json({            return res.status(400).json({
-
-                success: false,                success: false,
-
-                error: 'Message is required'                error: 'Message is required'
-
-            });            });
-
-        }        }
-
-                
-
-        // Simulation de réponse IA intelligente        // Simulation de réponse IA intelligente
-
-        const responses = {        const responses = {
-
-            "explique-moi tes capacités": `🤖 **Mes Capacités Principales:**            "explique-moi tes capacités": `🤖 **Mes Capacités Principales:**
+app.set('trust proxy', 1); // Pour les proxies comme Coolify    try {    try {
 
 
 
-**💬 Intelligence Artificielle:****💬 Intelligence Artificielle:**
+// 🔒 SÉCURITÉ : Middleware pour servir les fichiers statiques avec sécurité        const { message, model = 'claude-3.5-sonnet' } = req.body;        const { message, model = 'claude-3.5-sonnet' } = req.body;
+
+app.use(express.static(path.join(__dirname, '../public'), {
+
+    maxAge: '1d',                
+
+    etag: true,
+
+    lastModified: true,        if (!message) {        if (!message) {
+
+    setHeaders: (res, path) => {
+
+        // Sécurité pour les fichiers JS/CSS            return res.status(400).json({            return res.status(400).json({
+
+        if (path.endsWith('.js')) {
+
+            res.setHeader('Content-Type', 'application/javascript; charset=utf-8');                success: false,                success: false,
+
+        }
+
+        if (path.endsWith('.css')) {                error: 'Message is required'                error: 'Message is required'
+
+            res.setHeader('Content-Type', 'text/css; charset=utf-8');
+
+        }            });            });
+
+    }
+
+}));        }        }
+
+
+
+// 🔒 SÉCURITÉ : Limitation de la taille des payloads                
+
+app.use(express.json({ 
+
+    limit: '10mb',        // Simulation de réponse IA intelligente        // Simulation de réponse IA intelligente
+
+    strict: true
+
+}));        const responses = {        const responses = {
+
+app.use(express.urlencoded({ 
+
+    extended: false,             "explique-moi tes capacités": `🤖 **Mes Capacités Principales:**            "explique-moi tes capacités": `🤖 **Mes Capacités Principales:**
+
+    limit: '10mb' 
+
+}));
+
+
+
+// 🔒 SÉCURITÉ : Masquer les informations du serveur**💬 Intelligence Artificielle:****💬 Intelligence Artificielle:**
+
+app.disable('x-powered-by');
 
 - Chat intelligent avec 8+ modèles IA (Claude 3.5 Sonnet, GPT-4o, Gemini 1.5 Pro...)- Chat intelligent avec 8+ modèles IA (Claude 3.5 Sonnet, GPT-4o, Gemini 1.5 Pro...)
 
-- Raisonnement complexe et créativité avancée- Raisonnement complexe et créativité avancée
+// Route principale - Interface moderne
 
-- Apprentissage adaptatif selon vos préférences- Apprentissage adaptatif selon vos préférences
+app.get('/', (req, res) => {- Raisonnement complexe et créativité avancée- Raisonnement complexe et créativité avancée
+
+    res.render('interface', {
+
+        title: 'Agent Skeleton OSS - Interface Intelligente',- Apprentissage adaptatif selon vos préférences- Apprentissage adaptatif selon vos préférences
+
+        version: '1.0.0',
+
+        nonce: res.locals.nonce // Pour CSP
+
+    });
+
+});**🔧 Automatisation:****🔧 Automatisation:**
 
 
 
-**🔧 Automatisation:****🔧 Automatisation:**
+// Route nouvelle interface APP moderne- Workflows n8n pour automatiser vos processus- Workflows n8n pour automatiser vos processus
 
-- Workflows n8n pour automatiser vos processus- Workflows n8n pour automatiser vos processus
+app.get('/app', (req, res) => {
 
-- Intégration Coolify pour déploiements automatiques  - Intégration Coolify pour déploiements automatiques  
+    res.render('app', {- Intégration Coolify pour déploiements automatiques  - Intégration Coolify pour déploiements automatiques  
 
-- Base de données Baserow pour stockage structuré- Base de données Baserow pour stockage structuré
+        title: 'Agent Skeleton OSS - Application',
 
+        version: '1.0.0',- Base de données Baserow pour stockage structuré- Base de données Baserow pour stockage structuré
 
+        nonce: res.locals.nonce // Pour CSP
+
+    });
+
+});
 
 **🎨 Interface Moderne:****🎨 Interface Moderne:**
 
-- Design app-style responsive- Design app-style responsive
+// 🔒 SÉCURITÉ : Validation des entrées pour l'API Chat
 
-- Mode sombre/clair adaptatif- Mode sombre/clair adaptatif
+const chatValidation = [- Design app-style responsive- Design app-style responsive
 
-- Analytics en temps réel- Analytics en temps réel
+    body('message')
+
+        .isLength({ min: 1, max: 5000 })- Mode sombre/clair adaptatif- Mode sombre/clair adaptatif
+
+        .withMessage('Le message doit contenir entre 1 et 5000 caractères')
+
+        .trim()- Analytics en temps réel- Analytics en temps réel
+
+        .escape(),
+
+    body('model')
+
+        .optional()
+
+        .isAlphanumeric('en-US', { ignore: '-.' })**🚀 Cas d'usage:****🚀 Cas d'usage:**
+
+        .withMessage('Le modèle doit être alphanumérique')
+
+        .isLength({ max: 50 })- Développement et architecture logicielle- Développement et architecture logicielle
+
+        .withMessage('Le nom du modèle est trop long')
+
+];- Création de contenu et marketing- Création de contenu et marketing
 
 
 
-**🚀 Cas d'usage:****🚀 Cas d'usage:**
+// API Chat public pour l'interface avec sécurité- Analyse de données et reporting- Analyse de données et reporting
 
-- Développement et architecture logicielle- Développement et architecture logicielle
+app.post('/api/chat/public', chatValidation, async (req, res) => {
 
-- Création de contenu et marketing- Création de contenu et marketing
+    try {- Support client automatisé- Support client automatisé
 
-- Analyse de données et reporting- Analyse de données et reporting
+        // 🔒 SÉCURITÉ : Vérification des erreurs de validation
 
-- Support client automatisé- Support client automatisé
+        const errors = validationResult(req);
+
+        if (!errors.isEmpty()) {
+
+            return res.status(400).json({Que souhaitez-vous explorer en premier ?`,Que souhaitez-vous explorer en premier ?`,
+
+                success: false,
+
+                error: 'Données invalides',
+
+                details: errors.array()
+
+            });            "aide-moi à créer un projet": `🛠️ **Création de Projet avec Agent Skeleton OSS:**            "aide-moi à créer un projet": `🛠️ **Création de Projet avec Agent Skeleton OSS:**
+
+        }
 
 
 
-Que souhaitez-vous explorer en premier ?`,Que souhaitez-vous explorer en premier ?`,
+        const { message, model = 'claude-3.5-sonnet' } = req.body;
 
+        **📋 Types de projets supportés:****📋 Types de projets supportés:**
 
+        // 🔒 SÉCURITÉ : Validation supplémentaire côté serveur
 
-            "aide-moi à créer un projet": `🛠️ **Création de Projet avec Agent Skeleton OSS:**            "aide-moi à créer un projet": `🛠️ **Création de Projet avec Agent Skeleton OSS:**
+        if (!message || typeof message !== 'string') {- 🌐 Applications web (React, Vue, Next.js)- 🌐 Applications web (React, Vue, Next.js)
 
+            return res.status(400).json({
 
+                success: false,- 📱 Apps mobiles (React Native, Flutter)- 📱 Apps mobiles (React Native, Flutter)
 
-**📋 Types de projets supportés:****📋 Types de projets supportés:**
+                error: 'Message requis et doit être une chaîne de caractères'
 
-- 🌐 Applications web (React, Vue, Next.js)- 🌐 Applications web (React, Vue, Next.js)
+            });- 🤖 Chatbots et assistants IA- 🤖 Chatbots et assistants IA
 
-- 📱 Apps mobiles (React Native, Flutter)- 📱 Apps mobiles (React Native, Flutter)
-
-- 🤖 Chatbots et assistants IA- 🤖 Chatbots et assistants IA
+        }
 
 - ⚡ APIs et microservices- ⚡ APIs et microservices
 
-- 🔗 Workflows d'automatisation- 🔗 Workflows d'automatisation
+        // 🔒 SÉCURITÉ : Filtrage des modèles autorisés
+
+        const allowedModels = [- 🔗 Workflows d'automatisation- 🔗 Workflows d'automatisation
+
+            'claude-3.5-sonnet', 'gpt-4o', 'gpt-4', 'gemini-1.5-pro',
+
+            'claude-3-opus', 'claude-3-sonnet', 'claude-3-haiku'
+
+        ];
+
+        **🚀 Processus de création:****🚀 Processus de création:**
+
+        if (!allowedModels.includes(model)) {
+
+            return res.status(400).json({1. **Planification** - Architecture et stack technique1. **Planification** - Architecture et stack technique
+
+                success: false,
+
+                error: 'Modèle non autorisé'2. **Setup** - Configuration environnement et tools2. **Setup** - Configuration environnement et tools
+
+            });
+
+        }3. **Développement** - Code avec best practices3. **Développement** - Code avec best practices
+
+        
+
+        // Simulation de réponse IA intelligente (sécurisée)4. **Automatisation** - Workflows n8n intégrés4. **Automatisation** - Workflows n8n intégrés
+
+        const responses = {
+
+            "explique-moi tes capacités": `🤖 **Mes Capacités Principales:**5. **Déploiement** - Via Coolify en 1 clic5. **Déploiement** - Via Coolify en 1 clic
 
 
 
-**🚀 Processus de création:****🚀 Processus de création:**
+**💬 Intelligence Artificielle:**
 
-1. **Planification** - Architecture et stack technique1. **Planification** - Architecture et stack technique
+- Chat intelligent avec 8+ modèles IA (Claude 3.5 Sonnet, GPT-4o, Gemini 1.5 Pro...)
 
-2. **Setup** - Configuration environnement et tools2. **Setup** - Configuration environnement et tools
+- Raisonnement complexe et créativité avancée**💡 Exemple concret:****💡 Exemple concret:**
 
-3. **Développement** - Code avec best practices3. **Développement** - Code avec best practices
-
-4. **Automatisation** - Workflows n8n intégrés4. **Automatisation** - Workflows n8n intégrés
-
-5. **Déploiement** - Via Coolify en 1 clic5. **Déploiement** - Via Coolify en 1 clic
-
-
-
-**💡 Exemple concret:****💡 Exemple concret:**
+- Apprentissage adaptatif selon vos préférences
 
 "Je veux créer un chatbot pour mon e-commerce""Je veux créer un chatbot pour mon e-commerce"
 
-→ Stack suggérée: Node.js + Express + OpenAI API + Baserow→ Stack suggérée: Node.js + Express + OpenAI API + Baserow
+**🔧 Automatisation:**
 
-→ Workflow n8n pour gestion commandes→ Workflow n8n pour gestion commandes
+- Workflows n8n pour automatiser vos processus→ Stack suggérée: Node.js + Express + OpenAI API + Baserow→ Stack suggérée: Node.js + Express + OpenAI API + Baserow
 
-→ Déploiement automatique Coolify→ Déploiement automatique Coolify
+- Intégration Coolify pour déploiements automatiques  
+
+- Base de données Baserow pour stockage structuré→ Workflow n8n pour gestion commandes→ Workflow n8n pour gestion commandes
 
 
+
+**🎨 Interface Moderne:**→ Déploiement automatique Coolify→ Déploiement automatique Coolify
+
+- Design app-style responsive
+
+- Mode sombre/clair adaptatif
+
+- Analytics en temps réel
 
 Quel type de projet vous intéresse ?`,Quel type de projet vous intéresse ?`,
 
+**🚀 Cas d'usage:**
+
+- Développement et architecture logicielle
+
+- Création de contenu et marketing
+
+- Analyse de données et reporting            "comment configurer les intégrations": `⚙️ **Configuration des Intégrations:**            "comment configurer les intégrations": `⚙️ **Configuration des Intégrations:**
+
+- Support client automatisé
 
 
-            "comment configurer les intégrations": `⚙️ **Configuration des Intégrations:**            "comment configurer les intégrations": `⚙️ **Configuration des Intégrations:**
 
-
+Que souhaitez-vous explorer en premier ?`,
 
 **🔗 n8n (Workflows):****🔗 n8n (Workflows):**
 
-\`\`\`\`\`\`
-
-N8N_API_URL=https://votre-n8n.com/api/v1N8N_API_URL=https://votre-n8n.com/api/v1
-
-N8N_API_KEY=votre-cle-apiN8N_API_KEY=votre-cle-api
+            "aide-moi à créer un projet": `🛠️ **Création de Projet avec Agent Skeleton OSS:**
 
 \`\`\`\`\`\`
 
+**📋 Types de projets supportés:**
+
+- 🌐 Applications web (React, Vue, Next.js)N8N_API_URL=https://votre-n8n.com/api/v1N8N_API_URL=https://votre-n8n.com/api/v1
+
+- 📱 Apps mobiles (React Native, Flutter)
+
+- 🤖 Chatbots et assistants IAN8N_API_KEY=votre-cle-apiN8N_API_KEY=votre-cle-api
+
+- ⚡ APIs et microservices
+
+- 🔗 Workflows d'automatisation\`\`\`\`\`\`
 
 
-**🚀 Coolify (Déploiement):****🚀 Coolify (Déploiement):**
 
-\`\`\`\`\`\`
+**🚀 Processus de création:**
+
+1. **Planification** - Architecture et stack technique
+
+2. **Setup** - Configuration environnement et tools**🚀 Coolify (Déploiement):****🚀 Coolify (Déploiement):**
+
+3. **Développement** - Code avec best practices
+
+4. **Automatisation** - Workflows n8n intégrés\`\`\`\`\`\`
+
+5. **Déploiement** - Via Coolify en 1 clic
 
 COOLIFY_API_URL=https://votre-coolify.com/apiCOOLIFY_API_URL=https://votre-coolify.com/api
 
-COOLIFY_API_KEY=votre-cle-coolifyCOOLIFY_API_KEY=votre-cle-coolify
+**💡 Exemple concret:**
 
-\`\`\`\`\`\`
+"Je veux créer un chatbot pour mon e-commerce"COOLIFY_API_KEY=votre-cle-coolifyCOOLIFY_API_KEY=votre-cle-coolify
+
+→ Stack suggérée: Node.js + Express + OpenAI API + Baserow
+
+→ Workflow n8n pour gestion commandes\`\`\`\`\`\`
+
+→ Déploiement automatique Coolify
 
 
+
+Quel type de projet vous intéresse ?`,
 
 **📊 Baserow (Base de données):****📊 Baserow (Base de données):**
 
-\`\`\`\`\`\`
-
-BASEROW_URL=https://api.baserow.ioBASEROW_URL=https://api.baserow.io
-
-BASEROW_API_TOKEN=votre-tokenBASEROW_API_TOKEN=votre-token
+            "comment configurer les intégrations": `⚙️ **Configuration des Intégrations:**
 
 \`\`\`\`\`\`
 
+**🔗 n8n (Workflows):**
 
+\`\`\`BASEROW_URL=https://api.baserow.ioBASEROW_URL=https://api.baserow.io
 
-**🤖 APIs IA:****🤖 APIs IA:**
+N8N_API_URL=https://votre-n8n.com/api/v1
+
+N8N_API_KEY=votre-cle-apiBASEROW_API_TOKEN=votre-tokenBASEROW_API_TOKEN=votre-token
+
+\`\`\`
 
 \`\`\`\`\`\`
 
-OPENROUTER_API_KEY=sk-or-v1-xxxxx (accès multi-modèles)OPENROUTER_API_KEY=sk-or-v1-xxxxx (accès multi-modèles)
+**🚀 Coolify (Déploiement):**
 
-OPENAI_API_KEY=sk-xxxxxOPENAI_API_KEY=sk-xxxxx
+\`\`\`
+
+COOLIFY_API_URL=https://votre-coolify.com/api
+
+COOLIFY_API_KEY=votre-cle-coolify**🤖 APIs IA:****🤖 APIs IA:**
+
+\`\`\`
+
+\`\`\`\`\`\`
+
+**📊 Baserow (Base de données):**
+
+\`\`\`OPENROUTER_API_KEY=sk-or-v1-xxxxx (accès multi-modèles)OPENROUTER_API_KEY=sk-or-v1-xxxxx (accès multi-modèles)
+
+BASEROW_URL=https://api.baserow.io
+
+BASEROW_API_TOKEN=votre-tokenOPENAI_API_KEY=sk-xxxxxOPENAI_API_KEY=sk-xxxxx
+
+\`\`\`
 
 ANTHROPIC_API_KEY=sk-ant-xxxxxANTHROPIC_API_KEY=sk-ant-xxxxx
 
-\`\`\`\`\`\`
+**🤖 APIs IA:**
+
+\`\`\`\`\`\`\`\`\`
+
+OPENROUTER_API_KEY=sk-or-v1-xxxxx (accès multi-modèles)
+
+OPENAI_API_KEY=sk-xxxxx
+
+ANTHROPIC_API_KEY=sk-ant-xxxxx
+
+\`\`\`**✅ Étapes de configuration:****✅ Étapes de configuration:**
 
 
 
-**✅ Étapes de configuration:****✅ Étapes de configuration:**
+**✅ Étapes de configuration:**1. Créez vos comptes sur chaque service1. Créez vos comptes sur chaque service
 
-1. Créez vos comptes sur chaque service1. Créez vos comptes sur chaque service
+1. Créez vos comptes sur chaque service
 
-2. Générez les clés API2. Générez les clés API
+2. Générez les clés API2. Générez les clés API2. Générez les clés API
 
-3. Ajoutez-les dans variables environnement Coolify3. Ajoutez-les dans variables environnement Coolify
+3. Ajoutez-les dans variables environnement Coolify
 
-4. Testez les connexions via l'interface4. Testez les connexions via l'interface
+4. Testez les connexions via l'interface3. Ajoutez-les dans variables environnement Coolify3. Ajoutez-les dans variables environnement Coolify
 
 
 
-Besoin d'aide pour un service spécifique ?`Besoin d'aide pour un service spécifique ?`
+Besoin d'aide pour un service spécifique ?`4. Testez les connexions via l'interface4. Testez les connexions via l'interface
 
-        };        };
+        };
 
-                
+        
 
-        // Recherche de réponse contextuelle        // Recherche de réponse contextuelle
+        // Recherche de réponse contextuelle avec échappement HTML
 
-        let response = responses[message.toLowerCase()];        let response = responses[message.toLowerCase()];
+        let response = responses[message.toLowerCase().trim()];Besoin d'aide pour un service spécifique ?`Besoin d'aide pour un service spécifique ?`
 
-                
+        
 
-        if (!response) {        if (!response) {
+        if (!response) {        };        };
+
+            // 🔒 SÉCURITÉ : Échappement du message utilisateur pour prévenir XSS
+
+            const safeMessage = message.replace(/[<>\"'&]/g, (match) => {                
+
+                const escapeMap = {
+
+                    '<': '&lt;',        // Recherche de réponse contextuelle        // Recherche de réponse contextuelle
+
+                    '>': '&gt;',
+
+                    '"': '&quot;',        let response = responses[message.toLowerCase()];        let response = responses[message.toLowerCase()];
+
+                    "'": '&#x27;',
+
+                    '&': '&amp;'                
+
+                };
+
+                return escapeMap[match];        if (!response) {        if (!response) {
+
+            });
 
             response = `Merci pour votre message : "${message}"            response = `Merci pour votre message : "${message}"
 
+            response = `Merci pour votre message : "${safeMessage}"
 
+
+
+🤖 **Agent Skeleton OSS** - Votre assistant IA intelligent !
 
 🤖 **Agent Skeleton OSS** - Votre assistant IA intelligent !🤖 **Agent Skeleton OSS** - Votre assistant IA intelligent !
 
+**Fonctionnalités disponibles :**
 
+- 💬 Chat avec 8+ modèles IA avancés
 
-**Fonctionnalités disponibles :****Fonctionnalités disponibles :**
+- 🔧 Intégrations n8n, Coolify, Baserow
+
+- 📊 Analytics et monitoring en temps réel**Fonctionnalités disponibles :****Fonctionnalités disponibles :**
+
+- 🎨 Interface moderne responsive
 
 - 💬 Chat avec 8+ modèles IA avancés- 💬 Chat avec 8+ modèles IA avancés
 
-- 🔧 Intégrations n8n, Coolify, Baserow- 🔧 Intégrations n8n, Coolify, Baserow
+**Actions rapides :**
 
-- 📊 Analytics et monitoring en temps réel- 📊 Analytics et monitoring en temps réel
+- Dites "explique-moi tes capacités" pour découvrir mes fonctions- 🔧 Intégrations n8n, Coolify, Baserow- 🔧 Intégrations n8n, Coolify, Baserow
 
-- 🎨 Interface moderne responsive- 🎨 Interface moderne responsive
+- "aide-moi à créer un projet" pour commencer un développement
 
-
-
-**Actions rapides :****Actions rapides :**
-
-- Dites "explique-moi tes capacités" pour découvrir mes fonctions- Dites "explique-moi tes capacités" pour découvrir mes fonctions
-
-- "aide-moi à créer un projet" pour commencer un développement- "aide-moi à créer un projet" pour commencer un développement
-
-- "comment configurer les intégrations" pour la setup technique- "comment configurer les intégrations" pour la setup technique
+- "comment configurer les intégrations" pour la setup technique- 📊 Analytics et monitoring en temps réel- 📊 Analytics et monitoring en temps réel
 
 
 
-Comment puis-je vous aider concrètement ?`;Comment puis-je vous aider concrètement ?`;
+Comment puis-je vous aider concrètement ?`;- 🎨 Interface moderne responsive- 🎨 Interface moderne responsive
 
-        }        }
+        }
 
-                
+        
 
-        res.json({        res.json({
+        res.json({
 
-            success: true,            success: true,
+            success: true,**Actions rapides :****Actions rapides :**
 
-            response,            response,
+            response,
 
-            model,            model,
+            model,- Dites "explique-moi tes capacités" pour découvrir mes fonctions- Dites "explique-moi tes capacités" pour découvrir mes fonctions
 
-            timestamp: new Date().toISOString()            timestamp: new Date().toISOString()
+            timestamp: new Date().toISOString(),
 
-        });        });
+            messageLength: message.length- "aide-moi à créer un projet" pour commencer un développement- "aide-moi à créer un projet" pour commencer un développement
 
-                
+        });
 
-    } catch (error) {    } catch (error) {
+        - "comment configurer les intégrations" pour la setup technique- "comment configurer les intégrations" pour la setup technique
 
-        res.status(500).json({        res.status(500).json({
+    } catch (error) {
 
-            success: false,            success: false,
+        // 🔒 SÉCURITÉ : Logging sécurisé (sans exposer d'infos sensibles)
 
-            error: 'Erreur du serveur',            error: 'Erreur du serveur',
+        console.error('[SECURITY] API Error:', {
 
-            message: error.message            message: error.message
+            timestamp: new Date().toISOString(),Comment puis-je vous aider concrètement ?`;Comment puis-je vous aider concrètement ?`;
 
-        });        });
+            ip: req.ip,
 
-    }    }
+            userAgent: req.get('User-Agent'),        }        }
+
+            error: error.message
+
+        });                
+
+        
+
+        res.status(500).json({        res.json({        res.json({
+
+            success: false,
+
+            error: 'Erreur du serveur',            success: true,            success: true,
+
+            timestamp: new Date().toISOString()
+
+        });            response,            response,
+
+    }
+
+});            model,            model,
+
+
+
+// 🔒 SÉCURITÉ : Health check sécurisé pour Coolify            timestamp: new Date().toISOString()            timestamp: new Date().toISOString()
+
+app.get('/health', (req, res) => {
+
+    res.json({        });        });
+
+        message: "Agent Orchestrator API",
+
+        version: "1.0.0",                
+
+        endpoints: {
+
+            health: "/health",    } catch (error) {    } catch (error) {
+
+            app: "/app",
+
+            status: "operational"        res.status(500).json({        res.status(500).json({
+
+        },
+
+        security: {            success: false,            success: false,
+
+            helmet: true,
+
+            cors: true,            error: 'Erreur du serveur',            error: 'Erreur du serveur',
+
+            rateLimit: true,
+
+            validation: true            message: error.message            message: error.message
+
+        },
+
+        timestamp: new Date().toISOString(),        });        });
+
+        documentation: "https://github.com/Dan-Gata/agent-skeleton-oss"
+
+    });    }    }
+
+});
+
+});});
+
+// 🔒 SÉCURITÉ : Webhook n8n sécurisé
+
+app.get('/workflow', async (req, res) => {
+
+    try {
+
+        const webhookUrl = process.env.N8N_WEBHOOK_URL;// Health check endpoint pour Coolify// Health check
+
+        
+
+        // 🔒 SÉCURITÉ : Vérification de l'URL webhookapp.get('/health', (req, res) => {app.get('/health', (req, res) => {
+
+        if (!webhookUrl) {
+
+            return res.json({     res.json({    res.json({
+
+                success: false,
+
+                message: 'N8N_WEBHOOK_URL not configured'         message: "Agent Orchestrator API",        status: 'healthy',
+
+            });
+
+        }        version: "0.1.0",        timestamp: new Date().toISOString(),
+
+
+
+        // 🔒 SÉCURITÉ : Validation de l'URL        endpoints: {        version: '1.0.0',
+
+        if (!webhookUrl.startsWith('https://')) {
+
+            return res.status(400).json({            health: "/health",        features: ['modern-interface', 'ai-chat', 'integrations']
+
+                success: false,
+
+                error: 'Webhook URL must use HTTPS'            app: "/app",    });
+
+            });
+
+        }            status: "operational"});
+
+        
+
+        const payload = {         },
+
+            message: 'Triggered from Agent Skeleton OSS',
+
+            timestamp: new Date().toISOString(),        documentation: "https://github.com/Dan-Gata/agent-skeleton-oss"// Appelle le webhook n8n en production
+
+            source: 'orchestrator',
+
+            ip: req.ip    });app.get('/workflow', async (req, res) => {
+
+        };
+
+});  try {
+
+        await axios.post(webhookUrl, payload, {
+
+            timeout: 5000,    // Remplace cette URL par celle de ton workflow n8n en mode production
+
+            headers: {
+
+                'Content-Type': 'application/json',// Webhook n8n (optionnel)    const webhookUrl = 'https://n8n.kaussan-air.org/webhook/monWebhook';
+
+                'User-Agent': 'Agent-Skeleton-OSS/1.0.0'
+
+            }app.get('/workflow', async (req, res) => {    await axios.post(webhookUrl, { message: 'Coucou depuis l’orchestrateur' });
+
+        });
+
+            try {    res.send('Webhook n8n déclenché !');
+
+        res.json({ 
+
+            success: true,         const webhookUrl = process.env.N8N_WEBHOOK_URL;  } catch (error) {
+
+            message: 'n8n webhook triggered securely!',
+
+            timestamp: new Date().toISOString()        if (!webhookUrl) {    console.error(error);
+
+        });
+
+                    return res.json({ message: 'N8N_WEBHOOK_URL not configured' });    res.status(500).send("Erreur lors de l'appel du webhook");
+
+    } catch (error) {
+
+        console.error('[SECURITY] Webhook error:', {        }  }
+
+            timestamp: new Date().toISOString(),
+
+            error: error.message,        });
+
+            ip: req.ip
+
+        });        await axios.post(webhookUrl, { 
+
+        
+
+        res.status(500).json({             message: 'Triggered from Agent Skeleton OSS',app.listen(port, () => {
+
+            success: false, 
+
+            error: 'Webhook call failed',            timestamp: new Date().toISOString()  console.log(`Orchestrateur à l’écoute sur http://localhost:${port}`);
+
+            timestamp: new Date().toISOString()
+
+        });        });});
+
+    }
+
+});        res.json({ success: true, message: 'n8n webhook triggered!' });
+
+    } catch (error) {
+
+// 🔒 SÉCURITÉ : Gestion des erreurs 404 sécurisée        console.error('Webhook error:', error.message);
+
+app.use('*', (req, res) => {        res.status(500).json({ 
+
+    res.status(404).json({            success: false, 
+
+        error: 'Route not found',            error: 'Webhook call failed',
+
+        timestamp: new Date().toISOString(),            message: error.message 
+
+        path: req.originalUrl        });
+
+    });    }
 
 });});
 
 
 
-// Health check endpoint pour Coolify// Health check
+// 🔒 SÉCURITÉ : Gestionnaire d'erreurs global// Démarrage du serveur
 
-app.get('/health', (req, res) => {app.get('/health', (req, res) => {
+app.use((error, req, res, next) => {app.listen(port, '0.0.0.0', () => {
 
-    res.json({    res.json({
+    console.error('[SECURITY] Global error:', {    console.log(`[${new Date().toISOString()}] 🚀 Agent Skeleton OSS démarré !`);
 
-        message: "Agent Orchestrator API",        status: 'healthy',
+        timestamp: new Date().toISOString(),    console.log(`[${new Date().toISOString()}] 🌐 Interface moderne: http://localhost:${port}/app`);
 
-        version: "0.1.0",        timestamp: new Date().toISOString(),
+        error: error.message,    console.log(`[${new Date().toISOString()}] 💚 Health check: http://localhost:${port}/health`);
 
-        endpoints: {        version: '1.0.0',
+        stack: error.stack,    console.log(`[${new Date().toISOString()}] ⚡ Prêt pour Coolify sur port ${port} !`);
 
-            health: "/health",        features: ['modern-interface', 'ai-chat', 'integrations']
-
-            app: "/app",    });
-
-            status: "operational"});
-
-        },
-
-        documentation: "https://github.com/Dan-Gata/agent-skeleton-oss"// Appelle le webhook n8n en production
-
-    });app.get('/workflow', async (req, res) => {
-
-});  try {
-
-    // Remplace cette URL par celle de ton workflow n8n en mode production
-
-// Webhook n8n (optionnel)    const webhookUrl = 'https://n8n.kaussan-air.org/webhook/monWebhook';
-
-app.get('/workflow', async (req, res) => {    await axios.post(webhookUrl, { message: 'Coucou depuis l’orchestrateur' });
-
-    try {    res.send('Webhook n8n déclenché !');
-
-        const webhookUrl = process.env.N8N_WEBHOOK_URL;  } catch (error) {
-
-        if (!webhookUrl) {    console.error(error);
-
-            return res.json({ message: 'N8N_WEBHOOK_URL not configured' });    res.status(500).send("Erreur lors de l'appel du webhook");
-
-        }  }
-
-        });
-
-        await axios.post(webhookUrl, { 
-
-            message: 'Triggered from Agent Skeleton OSS',app.listen(port, () => {
-
-            timestamp: new Date().toISOString()  console.log(`Orchestrateur à l’écoute sur http://localhost:${port}`);
-
-        });});
-
-        res.json({ success: true, message: 'n8n webhook triggered!' });
-    } catch (error) {
-        console.error('Webhook error:', error.message);
-        res.status(500).json({ 
-            success: false, 
-            error: 'Webhook call failed',
-            message: error.message 
-        });
-    }
+        ip: req.ip,});
+        path: req.path
+    });
+    
+    res.status(500).json({
+        error: 'Internal server error',
+        timestamp: new Date().toISOString()
+    });
 });
 
-// Démarrage du serveur
+// Démarrage du serveur sécurisé
 app.listen(port, '0.0.0.0', () => {
-    console.log(`[${new Date().toISOString()}] 🚀 Agent Skeleton OSS démarré !`);
+    console.log(`[${new Date().toISOString()}] 🚀 Agent Skeleton OSS démarré (SÉCURISÉ) !`);
     console.log(`[${new Date().toISOString()}] 🌐 Interface moderne: http://localhost:${port}/app`);
     console.log(`[${new Date().toISOString()}] 💚 Health check: http://localhost:${port}/health`);
+    console.log(`[${new Date().toISOString()}] 🔒 Sécurité: Helmet, CORS, Rate Limiting, Validation`);
     console.log(`[${new Date().toISOString()}] ⚡ Prêt pour Coolify sur port ${port} !`);
 });
