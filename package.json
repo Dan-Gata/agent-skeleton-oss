@@ -4,10 +4,11 @@
   "description": "Agent intelligent avec interface moderne et intégrations",
   "main": "packages/orchestrator/src/index.js",
   "scripts": {
+    "preinstall": "cd packages/orchestrator && npm install",
     "start": "cd packages/orchestrator && npm start",
     "dev": "cd packages/orchestrator && npm run dev",
-    "install:orchestrator": "cd packages/orchestrator && npm install",
-    "build": "echo \"Agent Skeleton OSS ready for deployment\""
+    "build": "cd packages/orchestrator && npm run build",
+    "postinstall": "echo \"Agent Skeleton OSS dependencies installed successfully\""
   },
   "dependencies": {
     "express": "^4.18.2",
