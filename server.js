@@ -2,4 +2,4 @@
 const path = require('path');
 
 // Démarrer l'application directement
-require('./packages/orchestrator/src/index.js');
+require('./src/index.js');
