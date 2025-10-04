@@ -5,10 +5,10 @@
   "main": "packages/orchestrator/src/index.js",
   "scripts": {
     "preinstall": "cd packages/orchestrator && npm install",
-    "start": "cd packages/orchestrator && npm start",
+    "start": "cd packages/orchestrator && node src/index.js",
     "dev": "cd packages/orchestrator && npm run dev",
-    "build": "cd packages/orchestrator && npm run build",
-    "postinstall": "echo \"Agent Skeleton OSS dependencies installed successfully\""
+    "build": "echo \"Agent Skeleton OSS ready\"",
+    "postinstall": "echo \"Installation completed successfully\""
   },
   "dependencies": {
     "express": "^4.18.2",
