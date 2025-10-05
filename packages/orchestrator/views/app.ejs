@@ -715,6 +715,7 @@
         document.querySelectorAll('.nav-item').forEach(item => {
             item.addEventListener('click', () => {
                 const page = item.dataset.page;
+                console.log('🔄 Navigation vers:', page);
                 
                 // Update active nav
                 document.querySelectorAll('.nav-item').forEach(nav => nav.classList.remove('active'));
@@ -723,10 +724,21 @@
                 // Update page title
                 const title = item.querySelector('span').textContent;
                 document.querySelector('.page-title').textContent = title;
+                console.log('📄 Titre mis à jour:', title);
                 
                 // Show page
-                document.querySelectorAll('.content-page').forEach(p => p.classList.remove('active'));
-                document.getElementById(page + '-page').classList.add('active');
+                document.querySelectorAll('.content-page').forEach(p => {
+                    p.classList.remove('active');
+                    console.log('➖ Page cachée:', p.id);
+                });
+                
+                const targetPage = document.getElementById(page + '-page');
+                if (targetPage) {
+                    targetPage.classList.add('active');
+                    console.log('✅ Page affichée:', page + '-page');
+                } else {
+                    console.error('❌ Page introuvable:', page + '-page');
+                }
             });
         });
 
@@ -739,6 +751,23 @@
         const typingIndicator = document.getElementById('typingIndicator');
         
         let conversationId = null;
+
+        // Test initial des éléments DOM
+        window.addEventListener('DOMContentLoaded', () => {
+            console.log('🔍 Test des éléments DOM:');
+            console.log('- messageInput:', !!messageInput);
+            console.log('- sendBtn:', !!sendBtn);
+            console.log('- messagesArea:', !!messagesArea);
+            console.log('- modelSelect:', !!modelSelect);
+            console.log('- typingIndicator:', !!typingIndicator);
+            
+            // Test des pages
+            const pages = ['chat', 'models', 'memory', 'integrations', 'workflows', 'analytics'];
+            pages.forEach(page => {
+                const element = document.getElementById(page + '-page');
+                console.log(`- ${page}-page:`, !!element);
+            });
+        });
 
         async function sendMessage() {
             const message = messageInput.value.trim();
