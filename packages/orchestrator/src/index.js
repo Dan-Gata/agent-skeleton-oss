@@ -101,7 +101,8 @@ app.get('/health', (req, res) => {
 // 💬 API Chat avec validation et rate limiting
 app.post('/api/chat', chatLimiter, [
     body('message').notEmpty().trim().isLength({ min: 1, max: 1000 }).escape(),
-    body('conversationId').optional().isUUID()
+    body('conversationId').optional().isUUID(),
+    body('model').optional().isString()
 ], async (req, res) => {
     try {
         // Validation des entrées
@@ -113,23 +114,60 @@ app.post('/api/chat', chatLimiter, [
             });
         }
 
-        const { message, conversationId } = req.body;
+        const { message, conversationId, model } = req.body;
 
-        // Simulation d'une réponse intelligente
-        const responses = [
-            "🤖 Bonjour ! Comment puis-je vous aider aujourd'hui ?",
-            "💡 C'est une excellente question ! Laissez-moi réfléchir...",
-            "🚀 Agent Skeleton OSS est prêt à vous assister !",
-            "⚡ Traitement de votre demande en cours...",
-            "🎯 Voici ce que je peux vous proposer comme solution."
+        // Responses basées sur le modèle sélectionné
+        const modelResponses = {
+            'claude-3.5-sonnet': [
+                "🧠 Claude 3.5 Sonnet ici ! Je vais analyser votre demande avec attention.",
+                "🔍 Excellente question ! Avec Claude, je peux vous aider à explorer cette idée en profondeur.",
+                "💡 En tant que Claude 3.5 Sonnet, je propose une approche méthodique pour résoudre cela.",
+                "📊 Grâce aux capacités de Claude, voici une analyse détaillée de votre demande.",
+                "🎯 Claude 3.5 Sonnet est conçu pour vous fournir des réponses nuancées et pertinentes."
+            ],
+            'gpt-4': [
+                "� GPT-4 activé ! Je vais traiter votre requête avec ma compréhension avancée.",
+                "⚡ Excellent ! GPT-4 est parfait pour ce type de question complexe.",
+                "🎭 Avec GPT-4, je peux aborder votre demande sous plusieurs angles créatifs.",
+                "� Utilisant les capacités de GPT-4, voici une réponse structurée pour vous.",
+                "🌟 GPT-4 me permet de vous offrir une perspective riche et détaillée."
+            ],
+            'gemini-pro': [
+                "💎 Gemini Pro en action ! Analysons cela ensemble de manière intelligente.",
+                "🌈 Avec Gemini Pro, j'apporte une approche multimodale à votre question.",
+                "🔮 Gemini Pro me donne la flexibilité pour explorer votre demande créativement.",
+                "⭐ Grâce à Gemini Pro, je peux connecter différents concepts pour vous aider.",
+                "� Gemini Pro excelle dans la compréhension nuancée de votre demande."
+            ]
+        };
+
+        // Réponses génériques pour les autres modèles
+        const genericResponses = [
+            `🤖 ${model || 'IA'} : Votre message est bien reçu ! Comment puis-je vous aider davantage ?`,
+            `💭 Avec ${model || 'ce modèle'}, je traite votre demande avec soin.`,
+            `🔧 ${model || 'Le système'} analyse votre question et prépare une réponse adaptée.`,
+            `📝 Utilisant ${model || 'les capacités IA'}, voici ma réflexion sur votre demande.`,
+            `🎯 ${model || 'L\'assistant'} est prêt à vous accompagner dans cette tâche.`
         ];
 
+        const responses = modelResponses[model] || genericResponses;
         const response = responses[Math.floor(Math.random() * responses.length)];
 
+        // Ajouter des informations contextuelles basées sur le message
+        let enhancedResponse = response;
+        if (message.toLowerCase().includes('n8n')) {
+            enhancedResponse += "\n\n🔗 Je vois que vous mentionnez n8n ! C'est un excellent outil d'automatisation. Voulez-vous que je vous aide avec un workflow spécifique ?";
+        } else if (message.toLowerCase().includes('coolify')) {
+            enhancedResponse += "\n\n🚀 Coolify est parfait pour le déploiement ! Avez-vous besoin d'aide avec la configuration ou le déploiement ?";
+        } else if (message.toLowerCase().includes('baserow')) {
+            enhancedResponse += "\n\n📊 Baserow est une excellente base de données ! Souhaitez-vous que je vous aide avec l'intégration ?";
+        }
+
         res.json({
-            response: response,
+            response: enhancedResponse,
             conversationId: conversationId || `conv_${Date.now()}`,
-            timestamp: new Date().toISOString()
+            timestamp: new Date().toISOString(),
+            model: model || 'assistant'
         });
 
     } catch (error) {
