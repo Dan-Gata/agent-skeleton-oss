@@ -8,16 +8,14 @@ ENV PORT=3000
 # Créer le répertoire de travail
 WORKDIR /app
 
-# Copier et installer les dépendances
-COPY package*.json ./
-RUN npm ci --omit=dev
-
-# Copier les dépendances du sous-projet
-COPY packages/orchestrator/package*.json ./packages/orchestrator/
-RUN cd packages/orchestrator && npm ci --omit=dev
-
-# Copier le code source
+# Copier tout le code source d'abord
 COPY . .
+
+# Installer les dépendances du projet principal
+RUN npm install --omit=dev
+
+# Installer les dépendances du sous-projet orchestrator
+RUN cd packages/orchestrator && npm install --omit=dev
 
 # Exposer le port (nécessaire pour Coolify)
 EXPOSE 3000
