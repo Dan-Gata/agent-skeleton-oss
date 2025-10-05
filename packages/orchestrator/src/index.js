@@ -6,6 +6,9 @@ const cors = require('cors');
 const rateLimit = require('express-rate-limit');
 const { body, validationResult } = require('express-validator');
 
+// Import du service IA
+const aiService = require('./services/aiService');
+
 const app = express();
 const port = process.env.PORT || 3000;
 
@@ -150,24 +153,26 @@ app.post('/api/chat', chatLimiter, async (req, res) => {
             `🎯 ${model || 'L\'assistant'} est prêt à vous accompagner dans cette tâche.`
         ];
 
-        const responses = modelResponses[model] || genericResponses;
-        const response = responses[Math.floor(Math.random() * responses.length)];
+        // Appel du service IA réel
+        const aiResponse = await aiService.sendMessage(message, model, conversationId);
+        
+        console.log('🤖 Réponse IA reçue:', aiResponse);
 
-        // Ajouter des informations contextuelles basées sur le message
-        let enhancedResponse = response;
-        if (message.toLowerCase().includes('n8n')) {
-            enhancedResponse += "\n\n🔗 Je vois que vous mentionnez n8n ! C'est un excellent outil d'automatisation. Voulez-vous que je vous aide avec un workflow spécifique ?";
-        } else if (message.toLowerCase().includes('coolify')) {
-            enhancedResponse += "\n\n🚀 Coolify est parfait pour le déploiement ! Avez-vous besoin d'aide avec la configuration ou le déploiement ?";
-        } else if (message.toLowerCase().includes('baserow')) {
-            enhancedResponse += "\n\n📊 Baserow est une excellente base de données ! Souhaitez-vous que je vous aide avec l'intégration ?";
+        // Si c'est une simulation, on ajoute un indicateur
+        let finalResponse = aiResponse.response;
+        if (aiResponse.simulated) {
+            finalResponse = `${aiResponse.response}\n\n💡 *Mode démo - Configurez vos clés API pour activer l'IA complète*`;
+        } else if (aiResponse.error) {
+            finalResponse = aiResponse.response;
         }
 
         res.json({
-            response: enhancedResponse,
+            response: finalResponse,
             conversationId: conversationId || `conv_${Date.now()}`,
             timestamp: new Date().toISOString(),
-            model: model || 'assistant'
+            model: model || 'assistant',
+            usage: aiResponse.usage || null,
+            simulated: aiResponse.simulated || false
         });
 
     } catch (error) {
