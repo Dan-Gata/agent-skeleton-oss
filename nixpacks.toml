@@ -2,13 +2,13 @@
 nixPkgs = ['nodejs_18']
 
 [phases.install]
-cmds = ['npm install --only=production', 'cd packages/orchestrator && npm install --only=production']
+cmds = ['npm install --only=production']
 
 [phases.build] 
-cmds = ['echo "Build completed"']
+cmds = ['echo "Build ready"']
 
 [start]
-cmd = 'cd packages/orchestrator && node src/index.js'
+cmd = 'npm start'
 
 [variables]
 NODE_ENV = 'production'
