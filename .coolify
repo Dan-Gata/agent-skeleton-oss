@@ -1,8 +1,4 @@
-# Configuration pour Coolify
-# Force rebuild si nécessaire
-
-# Health check configuration
-HEALTHCHECK_PATH=/health
+type=dockerfile
 HEALTHCHECK_PORT=3000
 
 # Application configuration  

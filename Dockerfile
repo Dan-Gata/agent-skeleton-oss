@@ -1,4 +1,4 @@
-# Dockerfile optimisé pour Agent Skeleton OSS
+# Dockerfile simple pour Agent Skeleton OSS
 FROM node:18-alpine
 
 # Variables d'environnement
@@ -8,22 +8,19 @@ ENV PORT=3000
 # Créer le répertoire de travail
 WORKDIR /app
 
-# Copier les fichiers package.json
+# Copier et installer les dépendances
 COPY package*.json ./
-COPY packages/orchestrator/package*.json ./packages/orchestrator/
+RUN npm ci --omit=dev
 
-# Installer les dépendances
-RUN npm ci --only=production && \
-    cd packages/orchestrator && \
-    npm ci --only=production && \
-    npm cache clean --force
+# Copier les dépendances du sous-projet
+COPY packages/orchestrator/package*.json ./packages/orchestrator/
+RUN cd packages/orchestrator && npm ci --omit=dev
 
 # Copier le code source
 COPY . .
 
-# Health check
-HEALTHCHECK --interval=30s --timeout=3s --start-period=15s --retries=3 \
-  CMD wget --no-verbose --tries=1 --spider http://localhost:3000/health || exit 1
+# Exposer le port (nécessaire pour Coolify)
+EXPOSE 3000
 
 # Commande de démarrage
 CMD ["npm", "start"]

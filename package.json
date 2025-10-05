@@ -5,9 +5,7 @@
   "main": "packages/orchestrator/src/index.js",
   "scripts": {
     "start": "cd packages/orchestrator && node src/index.js",
-    "dev": "cd packages/orchestrator && npm run dev",
-    "build": "echo \"Agent Skeleton OSS ready\"",
-    "preinstall": "cd packages/orchestrator && npm install"
+    "dev": "cd packages/orchestrator && npm run dev"
   },
   "dependencies": {
     "express": "^4.18.2",
