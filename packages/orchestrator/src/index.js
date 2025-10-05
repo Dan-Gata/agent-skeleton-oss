@@ -99,22 +99,22 @@ app.get('/health', (req, res) => {
 });
 
 // 💬 API Chat avec validation et rate limiting
-app.post('/api/chat', chatLimiter, [
-    body('message').notEmpty().trim().isLength({ min: 1, max: 1000 }).escape(),
-    body('conversationId').optional().isUUID(),
-    body('model').optional().isString()
-], async (req, res) => {
+app.post('/api/chat', chatLimiter, async (req, res) => {
     try {
-        // Validation des entrées
-        const errors = validationResult(req);
-        if (!errors.isEmpty()) {
+        console.log('🔍 Données reçues brutes:', req.body);
+        
+        const { message, conversationId, model } = req.body;
+        
+        // Validation simple manuelle
+        if (!message || typeof message !== 'string' || message.trim().length === 0) {
+            console.log('❌ Message invalide:', message);
             return res.status(400).json({
-                error: 'Données invalides',
-                details: errors.array()
+                error: 'Message requis',
+                details: 'Le message ne peut pas être vide'
             });
         }
 
-        const { message, conversationId, model } = req.body;
+        console.log('✅ Message valide reçu:', { message, conversationId, model });
 
         // Responses basées sur le modèle sélectionné
         const modelResponses = {

@@ -761,20 +761,27 @@
             showTypingIndicator();
             
             try {
+                // Prepare data
+                const requestData = {
+                    message: message,
+                    conversationId: conversationId,
+                    model: modelSelect.value
+                };
+                
+                console.log('📤 Envoi de données:', requestData);
+                
                 // Call real API
                 const response = await fetch('/api/chat', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
                     },
-                    body: JSON.stringify({
-                        message: message,
-                        conversationId: conversationId,
-                        model: modelSelect.value
-                    })
+                    body: JSON.stringify(requestData)
                 });
 
+                console.log('📥 Statut réponse:', response.status);
                 const data = await response.json();
+                console.log('📄 Données reçues:', data);
                 
                 // Hide typing indicator
                 hideTypingIndicator();
