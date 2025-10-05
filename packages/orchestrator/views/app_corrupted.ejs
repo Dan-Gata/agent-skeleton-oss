@@ -1,0 +1,2012 @@
+<!DOCTYPE html><!DOCTYPE html>
+
+<html lang="fr" data-theme="dark"><html lang="fr" data-theme="dark">
+
+<head><head>
+
+    <meta charset="UTF-8">    <meta charset="UTF-8">
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Agent Skeleton OSS</title>    <title>Agent Skeleton OSS</title>
+
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <style>    <style>
+
+        * {        * {
+
+            margin: 0;            margin: 0;
+
+            padding: 0;            padding: 0;
+
+            box-sizing: border-box;            box-sizing: border-box;
+
+        }        }
+
+
+
+        :root {        :root {
+
+            /* Dark Theme - App Style */            /* Dark Theme - App Style */
+
+            --bg-primary: #0a0a0a;            --bg-primary: #0a0a0a;
+
+            --bg-secondary: #1a1a1a;            --bg-secondary: #1a1a1a;
+
+            --bg-tertiary: #262626;            --bg-tertiary: #262626;
+
+            --bg-card: #1e1e1e;            --bg-card: #1e1e1e;
+
+            --bg-hover: #2a2a2a;            --bg-hover: #2a2a2a;
+
+            --accent-primary: #3b82f6;            --accent-primary: #3b82f6;
+
+            --accent-secondary: #8b5cf6;            --accent-secondary: #8b5cf6;
+
+            --accent-success: #10b981;            --accent-success: #10b981;
+
+            --accent-warning: #f59e0b;            --accent-warning: #f59e0b;
+
+            --accent-danger: #ef4444;            --accent-danger: #ef4444;
+
+            --text-primary: #ffffff;            --text-primary: #ffffff;
+
+            --text-secondary: #a3a3a3;            --text-secondary: #a3a3a3;
+
+            --text-muted: #737373;            --text-muted: #737373;
+
+            --border-color: #404040;            --border-color: #404040;
+
+            --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.3);            --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.3);
+
+            --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.4);            --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.4);
+
+            --shadow-lg: 0 8px 25px rgba(0, 0, 0, 0.5);            --shadow-lg: 0 8px 25px rgba(0, 0, 0, 0.5);
+
+            --gradient-primary: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);            --gradient-primary: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
+
+            --gradient-secondary: linear-gradient(135deg, #10b981 0%, #3b82f6 100%);            --gradient-secondary: linear-gradient(135deg, #10b981 0%, #3b82f6 100%);
+
+        }        }
+
+
+
+        [data-theme="light"] {        [data-theme="light"] {
+
+            --bg-primary: #ffffff;            --bg-primary: #ffffff;
+
+            --bg-secondary: #f8fafc;            --bg-secondary: #f8fafc;
+
+            --bg-tertiary: #f1f5f9;            --bg-tertiary: #f1f5f9;
+
+            --bg-card: #ffffff;            --bg-card: #ffffff;
+
+            --bg-hover: #f1f5f9;            --bg-hover: #f1f5f9;
+
+            --text-primary: #1e293b;            --text-primary: #1e293b;
+
+            --text-secondary: #64748b;            --text-secondary: #64748b;
+
+            --text-muted: #94a3b8;            --text-muted: #94a3b8;
+
+            --border-color: #e2e8f0;            --border-color: #e2e8f0;
+
+            --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.1);            --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.1);
+
+            --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.15);            --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.15);
+
+            --shadow-lg: 0 8px 25px rgba(0, 0, 0, 0.2);            --shadow-lg: 0 8px 25px rgba(0, 0, 0, 0.2);
+
+        }        }
+
+
+
+        body {        body {
+
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+
+            background: var(--bg-primary);            background: var(--bg-primary);
+
+            color: var(--text-primary);            color: var(--text-primary);
+
+            height: 100vh;            height: 100vh;
+
+            overflow: hidden;            overflow: hidden;
+
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+
+        }        }
+
+
+
+        /* App Container - Style macOS/Windows */        /* App Container - Style macOS/Windows */
+
+        .app-container {        .app-container {
+
+            display: flex;            display: flex;
+
+            height: 100vh;            height: 100vh;
+
+            background: var(--bg-primary);            background: var(--bg-primary);
+
+        }        }
+
+
+
+        /* Sidebar - Style moderne */        /* Sidebar - Style moderne */
+
+        .sidebar {        .sidebar {
+
+            width: 280px;            width: 280px;
+
+            background: var(--bg-secondary);            background: var(--bg-secondary);
+
+            border-right: 1px solid var(--border-color);            border-right: 1px solid var(--border-color);
+
+            display: flex;            display: flex;
+
+            flex-direction: column;            flex-direction: column;
+
+            transition: all 0.3s ease;            transition: all 0.3s ease;
+
+        }        }
+
+
+
+        .sidebar-header {        .sidebar-header {
+
+            padding: 20px;            padding: 20px;
+
+            border-bottom: 1px solid var(--border-color);            border-bottom: 1px solid var(--border-color);
+
+            background: var(--bg-tertiary);            background: var(--bg-tertiary);
+
+        }        }
+
+
+
+        .app-logo {        .app-logo {
+
+            display: flex;            display: flex;
+
+            align-items: center;            align-items: center;
+
+            gap: 12px;            gap: 12px;
+
+            font-size: 18px;            font-size: 18px;
+
+            font-weight: 600;            font-weight: 600;
+
+            color: var(--text-primary);            color: var(--text-primary);
+
+        }        }
+
+
+
+        .logo-icon {        .logo-icon {
+
+            width: 32px;            width: 32px;
+
+            height: 32px;            height: 32px;
+
+            background: var(--gradient-primary);            background: var(--gradient-primary);
+
+            border-radius: 8px;            border-radius: 8px;
+
+            display: flex;            display: flex;
+
+            align-items: center;            align-items: center;
+
+            justify-content: center;            justify-content: center;
+
+            color: white;            color: white;
+
+            font-size: 16px;            font-size: 16px;
+
+        }        }
+
+
+
+        .status-bar {        .status-bar {
+
+            display: flex;            display: flex;
+
+            align-items: center;            align-items: center;
+
+            gap: 8px;            gap: 8px;
+
+            margin-top: 8px;            margin-top: 8px;
+
+            font-size: 12px;            font-size: 12px;
+
+            color: var(--text-secondary);            color: var(--text-secondary);
+
+        }        }
+
+
+
+        .status-dot {        .status-dot {
+
+            width: 6px;            width: 6px;
+
+            height: 6px;            height: 6px;
+
+            border-radius: 50%;            border-radius: 50%;
+
+            background: var(--accent-success);            background: var(--accent-success);
+
+            animation: pulse 2s infinite;            animation: pulse 2s infinite;
+
+        }        }
+
+
+
+        @keyframes pulse {        @keyframes pulse {
+
+            0%, 100% { opacity: 1; }            0%, 100% { opacity: 1; }
+
+            50% { opacity: 0.5; }            50% { opacity: 0.5; }
+
+        }        }
+
+
+
+        /* Navigation */        /* Navigation */
+
+        .nav-menu {        .nav-menu {
+
+            flex: 1;            flex: 1;
+
+            padding: 20px 0;            padding: 20px 0;
+
+            overflow-y: auto;            overflow-y: auto;
+
+        }        }
+
+
+
+        .nav-section {        .nav-section {
+
+            margin-bottom: 24px;            margin-bottom: 24px;
+
+        }        }
+
+
+
+        .nav-section-title {        .nav-section-title {
+
+            padding: 0 20px 8px;            padding: 0 20px 8px;
+
+            font-size: 11px;            font-size: 11px;
+
+            font-weight: 600;            font-weight: 600;
+
+            text-transform: uppercase;            text-transform: uppercase;
+
+            letter-spacing: 0.5px;            letter-spacing: 0.5px;
+
+            color: var(--text-muted);            color: var(--text-muted);
+
+        }        }
+
+
+
+        .nav-item {        .nav-item {
+
+            display: flex;            display: flex;
+
+            align-items: center;            align-items: center;
+
+            padding: 12px 20px;            padding: 12px 20px;
+
+            margin: 0 12px;            margin: 0 12px;
+
+            border-radius: 8px;            border-radius: 8px;
+
+            cursor: pointer;            cursor: pointer;
+
+            transition: all 0.2s ease;            transition: all 0.2s ease;
+
+            text-decoration: none;            text-decoration: none;
+
+            color: var(--text-secondary);            color: var(--text-secondary);
+
+            position: relative;            position: relative;
+
+        }        }
+
+
+
+        .nav-item:hover {        .nav-item:hover {
+
+            background: var(--bg-hover);            background: var(--bg-hover);
+
+            color: var(--text-primary);            color: var(--text-primary);
+
+            transform: translateX(2px);            transform: translateX(2px);
+
+        }        }
+
+
+
+        .nav-item.active {        .nav-item.active {
+
+            background: var(--accent-primary);            background: var(--accent-primary);
+
+            color: white;            color: white;
+
+            box-shadow: var(--shadow-sm);            box-shadow: var(--shadow-sm);
+
+        }        }
+
+
+
+        .nav-icon {        .nav-item.active::before {
+
+            width: 20px;            content: '';
+
+            margin-right: 12px;            position: absolute;
+
+            font-size: 16px;            left: -12px;
+
+        }            top: 50%;
+
+            transform: translateY(-50%);
+
+        .nav-badge {            width: 3px;
+
+            margin-left: auto;            height: 16px;
+
+            background: var(--accent-danger);            background: var(--accent-primary);
+
+            color: white;            border-radius: 2px;
+
+            font-size: 10px;        }
+
+            padding: 2px 6px;
+
+            border-radius: 10px;        .nav-icon {
+
+            font-weight: 500;            width: 20px;
+
+        }            margin-right: 12px;
+
+            font-size: 16px;
+
+        .nav-item.active .nav-badge {        }
+
+            background: rgba(255, 255, 255, 0.2);
+
+        }        .nav-badge {
+
+            margin-left: auto;
+
+        /* Main Content */            background: var(--accent-danger);
+
+        .main-content {            color: white;
+
+            flex: 1;            font-size: 10px;
+
+            display: flex;            padding: 2px 6px;
+
+            flex-direction: column;            border-radius: 10px;
+
+            background: var(--bg-primary);            font-weight: 500;
+
+        }        }
+
+
+
+        /* Top Bar */        .nav-item.active .nav-badge {
+
+        .top-bar {            background: rgba(255, 255, 255, 0.2);
+
+            height: 60px;        }
+
+            background: var(--bg-secondary);
+
+            border-bottom: 1px solid var(--border-color);        /* Sidebar Footer */
+
+            display: flex;        .sidebar-footer {
+
+            align-items: center;            padding: 20px;
+
+            justify-content: space-between;            border-top: 1px solid var(--border-color);
+
+            padding: 0 24px;            background: var(--bg-tertiary);
+
+        }        }
+
+
+
+        .page-title {        .user-profile {
+
+            font-size: 20px;            display: flex;
+
+            font-weight: 600;            align-items: center;
+
+            color: var(--text-primary);            gap: 12px;
+
+        }            padding: 12px;
+
+            border-radius: 8px;
+
+        .top-bar-actions {            background: var(--bg-card);
+
+            display: flex;            cursor: pointer;
+
+            align-items: center;            transition: all 0.2s ease;
+
+            gap: 12px;        }
+
+        }
+
+        .user-profile:hover {
+
+        .action-btn {            background: var(--bg-hover);
+
+            width: 36px;        }
+
+            height: 36px;
+
+            border: none;        .user-avatar {
+
+            border-radius: 8px;            width: 32px;
+
+            background: var(--bg-tertiary);            height: 32px;
+
+            color: var(--text-secondary);            border-radius: 50%;
+
+            cursor: pointer;            background: var(--gradient-primary);
+
+            transition: all 0.2s ease;            display: flex;
+
+            display: flex;            align-items: center;
+
+            align-items: center;            justify-content: center;
+
+            justify-content: center;            color: white;
+
+        }            font-weight: 600;
+
+        }
+
+        .action-btn:hover {
+
+            background: var(--bg-hover);        .user-info {
+
+            color: var(--text-primary);            flex: 1;
+
+            transform: scale(1.05);        }
+
+        }
+
+        .user-name {
+
+        /* Content Area */            font-size: 14px;
+
+        .content-area {            font-weight: 500;
+
+            flex: 1;            color: var(--text-primary);
+
+            overflow: hidden;        }
+
+            position: relative;
+
+        }        .user-status {
+
+            font-size: 12px;
+
+        .content-page {            color: var(--text-secondary);
+
+            display: none;        }
+
+            height: 100%;
+
+            animation: fadeIn 0.3s ease;        /* Main Content Area */
+
+        }        .main-content {
+
+            flex: 1;
+
+        .content-page.active {            display: flex;
+
+            display: flex;            flex-direction: column;
+
+            flex-direction: column;            background: var(--bg-primary);
+
+        }        }
+
+
+
+        @keyframes fadeIn {        /* Top Bar */
+
+            from { opacity: 0; transform: translateY(10px); }        .top-bar {
+
+            to { opacity: 1; transform: translateY(0); }            height: 60px;
+
+        }            background: var(--bg-secondary);
+
+            border-bottom: 1px solid var(--border-color);
+
+        /* Chat Interface */            display: flex;
+
+        .chat-container {            align-items: center;
+
+            display: flex;            justify-content: space-between;
+
+            flex-direction: column;            padding: 0 24px;
+
+            height: 100%;            backdrop-filter: blur(10px);
+
+        }        }
+
+
+
+        .messages-container {        .page-title {
+
+            flex: 1;            font-size: 20px;
+
+            overflow-y: auto;            font-weight: 600;
+
+            padding: 24px;            color: var(--text-primary);
+
+        }        }
+
+
+
+        .welcome-screen {        .top-bar-actions {
+
+            display: flex;            display: flex;
+
+            flex-direction: column;            align-items: center;
+
+            justify-content: center;            gap: 12px;
+
+            align-items: center;        }
+
+            height: 100%;
+
+            text-align: center;        .action-btn {
+
+        }            width: 36px;
+
+            height: 36px;
+
+        .welcome-icon {            border: none;
+
+            width: 80px;            border-radius: 8px;
+
+            height: 80px;            background: var(--bg-tertiary);
+
+            border-radius: 20px;            color: var(--text-secondary);
+
+            background: var(--gradient-primary);            cursor: pointer;
+
+            display: flex;            transition: all 0.2s ease;
+
+            align-items: center;            display: flex;
+
+            justify-content: center;            align-items: center;
+
+            color: white;            justify-content: center;
+
+            font-size: 32px;        }
+
+            margin-bottom: 24px;
+
+        }        .action-btn:hover {
+
+            background: var(--bg-hover);
+
+        .welcome-title {            color: var(--text-primary);
+
+            font-size: 28px;            transform: scale(1.05);
+
+            font-weight: 700;        }
+
+            margin-bottom: 12px;
+
+            background: var(--gradient-primary);        .action-btn.active {
+
+            -webkit-background-clip: text;            background: var(--accent-primary);
+
+            -webkit-text-fill-color: transparent;            color: white;
+
+            background-clip: text;        }
+
+        }
+
+        /* Content Area */
+
+        .welcome-subtitle {        .content-area {
+
+            font-size: 16px;            flex: 1;
+
+            color: var(--text-secondary);            overflow: hidden;
+
+            margin-bottom: 32px;            position: relative;
+
+            max-width: 480px;        }
+
+        }
+
+        .content-page {
+
+        .quick-actions {            display: none;
+
+            display: grid;            height: 100%;
+
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));            animation: fadeIn 0.3s ease;
+
+            gap: 16px;        }
+
+            max-width: 600px;
+
+            width: 100%;        .content-page.active {
+
+        }            display: flex;
+
+            flex-direction: column;
+
+        .quick-action {        }
+
+            padding: 20px;
+
+            border-radius: 12px;        @keyframes fadeIn {
+
+            background: var(--bg-card);            from { opacity: 0; transform: translateY(10px); }
+
+            border: 1px solid var(--border-color);            to { opacity: 1; transform: translateY(0); }
+
+            cursor: pointer;        }
+
+            transition: all 0.2s ease;
+
+            text-align: left;        /* Chat Interface */
+
+        }        .chat-container {
+
+            display: flex;
+
+        .quick-action:hover {            flex-direction: column;
+
+            transform: translateY(-2px);            height: 100%;
+
+            box-shadow: var(--shadow-md);        }
+
+            border-color: var(--accent-primary);
+
+        }        .chat-header {
+
+            padding: 20px 24px;
+
+        .quick-action-icon {            background: var(--bg-secondary);
+
+            width: 40px;            border-bottom: 1px solid var(--border-color);
+
+            height: 40px;        }
+
+            border-radius: 8px;
+
+            background: var(--gradient-primary);        .chat-info {
+
+            display: flex;            display: flex;
+
+            align-items: center;            align-items: center;
+
+            justify-content: center;            gap: 12px;
+
+            color: white;        }
+
+            margin-bottom: 12px;
+
+            font-size: 18px;        .chat-avatar {
+
+        }            width: 40px;
+
+            height: 40px;
+
+        .quick-action-title {            border-radius: 50%;
+
+            font-size: 16px;            background: var(--gradient-primary);
+
+            font-weight: 600;            display: flex;
+
+            margin-bottom: 6px;            align-items: center;
+
+            color: var(--text-primary);            justify-content: center;
+
+        }            color: white;
+
+            font-size: 18px;
+
+        .quick-action-desc {        }
+
+            font-size: 13px;
+
+            color: var(--text-secondary);        .chat-details h3 {
+
+            line-height: 1.4;            font-size: 16px;
+
+        }            font-weight: 600;
+
+            margin-bottom: 4px;
+
+        /* Input Area */        }
+
+        .input-area {
+
+            padding: 20px 24px;        .chat-status {
+
+            background: var(--bg-secondary);            font-size: 13px;
+
+            border-top: 1px solid var(--border-color);            color: var(--text-secondary);
+
+        }            display: flex;
+
+            align-items: center;
+
+        .input-container {            gap: 6px;
+
+            position: relative;        }
+
+            display: flex;
+
+            align-items: flex-end;        .model-tag {
+
+            gap: 12px;            background: var(--accent-primary);
+
+        }            color: white;
+
+            padding: 2px 8px;
+
+        .message-input {            border-radius: 12px;
+
+            flex: 1;            font-size: 11px;
+
+            resize: none;            font-weight: 500;
+
+            border: 1px solid var(--border-color);        }
+
+            border-radius: 20px;
+
+            padding: 14px 50px 14px 20px;        /* Messages Area */
+
+            background: var(--bg-card);        .messages-container {
+
+            color: var(--text-primary);            flex: 1;
+
+            font-size: 14px;            overflow-y: auto;
+
+            font-family: inherit;            padding: 24px;
+
+            outline: none;            scroll-behavior: smooth;
+
+            transition: all 0.2s ease;        }
+
+            min-height: 48px;
+
+            max-height: 120px;        .message {
+
+        }            display: flex;
+
+            margin-bottom: 24px;
+
+        .message-input:focus {            animation: slideUp 0.3s ease;
+
+            border-color: var(--accent-primary);        }
+
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+
+        }        @keyframes slideUp {
+
+            from { opacity: 0; transform: translateY(20px); }
+
+        .send-btn {            to { opacity: 1; transform: translateY(0); }
+
+            position: absolute;        }
+
+            right: 8px;
+
+            bottom: 8px;        .message.user {
+
+            width: 32px;            justify-content: flex-end;
+
+            height: 32px;        }
+
+            border: none;
+
+            border-radius: 50%;        .message-content {
+
+            background: var(--accent-primary);            max-width: 70%;
+
+            color: white;            padding: 16px 20px;
+
+            cursor: pointer;            border-radius: 18px;
+
+            transition: all 0.2s ease;            position: relative;
+
+            display: flex;            word-wrap: break-word;
+
+            align-items: center;        }
+
+            justify-content: center;
+
+        }        .message.assistant .message-content {
+
+            background: var(--bg-card);
+
+        .send-btn:hover {            border: 1px solid var(--border-color);
+
+            background: var(--accent-secondary);            border-bottom-left-radius: 6px;
+
+            transform: scale(1.1);        }
+
+        }
+
+        .message.user .message-content {
+
+        /* Message styles */            background: var(--gradient-primary);
+
+        .message {            color: white;
+
+            display: flex;            border-bottom-right-radius: 6px;
+
+            margin-bottom: 20px;        }
+
+            animation: slideUp 0.3s ease;
+
+        }        .message-time {
+
+            font-size: 11px;
+
+        @keyframes slideUp {            color: var(--text-muted);
+
+            from { opacity: 0; transform: translateY(20px); }            margin-top: 8px;
+
+            to { opacity: 1; transform: translateY(0); }            text-align: right;
+
+        }        }
+
+
+
+        .message.user {        .message.assistant .message-time {
+
+            justify-content: flex-end;            text-align: left;
+
+        }        }
+
+
+
+        .message-content {        /* Typing Indicator */
+
+            max-width: 70%;        .typing-indicator {
+
+            padding: 16px 20px;            display: flex;
+
+            border-radius: 18px;            align-items: center;
+
+            word-wrap: break-word;            gap: 12px;
+
+        }            padding: 16px 24px;
+
+            color: var(--text-secondary);
+
+        .message.assistant .message-content {            font-size: 14px;
+
+            background: var(--bg-card);        }
+
+            border: 1px solid var(--border-color);
+
+            border-bottom-left-radius: 6px;        .typing-dots {
+
+        }            display: flex;
+
+            gap: 4px;
+
+        .message.user .message-content {        }
+
+            background: var(--gradient-primary);
+
+            color: white;        .typing-dot {
+
+            border-bottom-right-radius: 6px;            width: 6px;
+
+        }            height: 6px;
+
+            border-radius: 50%;
+
+        /* Responsive */            background: var(--text-secondary);
+
+        @media (max-width: 768px) {            animation: typingDot 1.4s infinite;
+
+            .sidebar {        }
+
+                width: 260px;
+
+                transform: translateX(-100%);        .typing-dot:nth-child(2) { animation-delay: 0.2s; }
+
+                position: fixed;        .typing-dot:nth-child(3) { animation-delay: 0.4s; }
+
+                height: 100vh;
+
+                z-index: 1000;        @keyframes typingDot {
+
+            }            0%, 60%, 100% { transform: scale(1); opacity: 0.5; }
+
+            30% { transform: scale(1.2); opacity: 1; }
+
+            .sidebar.mobile-open {        }
+
+                transform: translateX(0);
+
+            }        /* Input Area */
+
+        .input-area {
+
+            .main-content {            padding: 20px 24px;
+
+                width: 100%;            background: var(--bg-secondary);
+
+            }            border-top: 1px solid var(--border-color);
+
+        }
+
+            .quick-actions {
+
+                grid-template-columns: 1fr;        .input-container {
+
+            }            position: relative;
+
+        }            display: flex;
+
+            align-items: flex-end;
+
+        /* Scrollbar */            gap: 12px;
+
+        ::-webkit-scrollbar {        }
+
+            width: 6px;
+
+        }        .message-input {
+
+            flex: 1;
+
+        ::-webkit-scrollbar-track {            resize: none;
+
+            background: var(--bg-tertiary);            border: 1px solid var(--border-color);
+
+        }            border-radius: 20px;
+
+            padding: 14px 50px 14px 20px;
+
+        ::-webkit-scrollbar-thumb {            background: var(--bg-card);
+
+            background: var(--border-color);            color: var(--text-primary);
+
+            border-radius: 3px;            font-size: 14px;
+
+        }            font-family: inherit;
+
+            outline: none;
+
+        .d-none {            transition: all 0.2s ease;
+
+            display: none !important;            min-height: 48px;
+
+        }            max-height: 120px;
+
+    </style>        }
+
+</head>
+
+<body>        .message-input:focus {
+
+    <div class="app-container">            border-color: var(--accent-primary);
+
+        <!-- Sidebar -->            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+
+        <div class="sidebar" id="sidebar">        }
+
+            <!-- Header -->
+
+            <div class="sidebar-header">        .message-input::placeholder {
+
+                <div class="app-logo">            color: var(--text-muted);
+
+                    <div class="logo-icon">        }
+
+                        <i class="fas fa-robot"></i>
+
+                    </div>        .send-btn {
+
+                    <div>            position: absolute;
+
+                        <div>Agent Skeleton</div>            right: 8px;
+
+                        <div class="status-bar">            bottom: 8px;
+
+                            <div class="status-dot"></div>            width: 32px;
+
+                            <span>En ligne</span>            height: 32px;
+
+                        </div>            border: none;
+
+                    </div>            border-radius: 50%;
+
+                </div>            background: var(--accent-primary);
+
+            </div>            color: white;
+
+            cursor: pointer;
+
+            <!-- Navigation -->            transition: all 0.2s ease;
+
+            <div class="nav-menu">            display: flex;
+
+                <div class="nav-section">            align-items: center;
+
+                    <div class="nav-section-title">Principal</div>            justify-content: center;
+
+                    <a href="#" class="nav-item active" onclick="showPage('chat')" data-page="chat">        }
+
+                        <i class="nav-icon fas fa-comments"></i>
+
+                        <span>Chat</span>        .send-btn:hover:not(:disabled) {
+
+                        <span class="nav-badge" id="chatBadge">0</span>            background: var(--accent-secondary);
+
+                    </a>            transform: scale(1.1);
+
+                    <a href="#" class="nav-item" onclick="showPage('models')" data-page="models">        }
+
+                        <i class="nav-icon fas fa-microchip"></i>
+
+                        <span>Modèles IA</span>        .send-btn:disabled {
+
+                        <span class="nav-badge" id="modelsBadge">8</span>            opacity: 0.5;
+
+                    </a>            cursor: not-allowed;
+
+                    <a href="#" class="nav-item" onclick="showPage('memory')" data-page="memory">        }
+
+                        <i class="nav-icon fas fa-database"></i>
+
+                        <span>Mémoire</span>        .input-actions {
+
+                        <span class="nav-badge" id="memoryBadge">2.1MB</span>            display: flex;
+
+                    </a>            gap: 8px;
+
+                </div>        }
+
+
+
+                <div class="nav-section">        .input-action-btn {
+
+                    <div class="nav-section-title">Intégrations</div>            width: 40px;
+
+                    <a href="#" class="nav-item" onclick="showPage('workflows')" data-page="workflows">            height: 40px;
+
+                        <i class="nav-icon fas fa-project-diagram"></i>            border: none;
+
+                        <span>Workflows n8n</span>            border-radius: 10px;
+
+                        <span class="nav-badge" id="workflowsBadge">3</span>            background: var(--bg-tertiary);
+
+                    </a>            color: var(--text-secondary);
+
+                    <a href="#" class="nav-item" onclick="showPage('analytics')" data-page="analytics">            cursor: pointer;
+
+                        <i class="nav-icon fas fa-chart-line"></i>            transition: all 0.2s ease;
+
+                        <span>Analytics</span>            display: flex;
+
+                    </a>            align-items: center;
+
+                </div>            justify-content: center;
+
+            </div>        }
+
+        </div>
+
+        .input-action-btn:hover {
+
+        <!-- Main Content -->            background: var(--bg-hover);
+
+        <div class="main-content">            color: var(--text-primary);
+
+            <!-- Top Bar -->        }
+
+            <div class="top-bar">
+
+                <div class="page-title" id="pageTitle">Chat Assistant</div>        /* Welcome Screen */
+
+                <div class="top-bar-actions">        .welcome-screen {
+
+                    <button class="action-btn" onclick="toggleTheme()" title="Changer de thème">            display: flex;
+
+                        <i class="fas fa-moon"></i>            flex-direction: column;
+
+                    </button>            justify-content: center;
+
+                    <button class="action-btn" onclick="toggleSidebar()" title="Menu">            align-items: center;
+
+                        <i class="fas fa-bars"></i>            height: 100%;
+
+                    </button>            text-align: center;
+
+                </div>            padding: 40px;
+
+            </div>        }
+
+
+
+            <!-- Content Area -->        .welcome-icon {
+
+            <div class="content-area">            width: 80px;
+
+                <!-- Chat Page -->            height: 80px;
+
+                <div class="content-page active" id="page-chat">            border-radius: 20px;
+
+                    <div class="chat-container">            background: var(--gradient-primary);
+
+                        <!-- Messages -->            display: flex;
+
+                        <div class="messages-container" id="messagesContainer">            align-items: center;
+
+                            <!-- Welcome Screen -->            justify-content: center;
+
+                            <div class="welcome-screen" id="welcomeScreen">            color: white;
+
+                                <div class="welcome-icon">            font-size: 32px;
+
+                                    <i class="fas fa-robot"></i>            margin-bottom: 24px;
+
+                                </div>        }
+
+                                <h1 class="welcome-title">Bonjour ! 👋</h1>
+
+                                <p class="welcome-subtitle">        .welcome-title {
+
+                                    Je suis votre assistant IA intelligent. Je peux vous aider avec une grande variété de tâches.             font-size: 28px;
+
+                                    Que souhaitez-vous faire aujourd'hui ?            font-weight: 700;
+
+                                </p>            margin-bottom: 12px;
+
+                                <div class="quick-actions">            background: var(--gradient-primary);
+
+                                    <div class="quick-action" onclick="quickMessage('Explique-moi tes capacités')">            -webkit-background-clip: text;
+
+                                        <div class="quick-action-icon">            -webkit-text-fill-color: transparent;
+
+                                            <i class="fas fa-lightbulb"></i>            background-clip: text;
+
+                                        </div>        }
+
+                                        <div class="quick-action-title">Mes capacités</div>
+
+                                        <div class="quick-action-desc">Découvrez tout ce que je peux faire</div>        .welcome-subtitle {
+
+                                    </div>            font-size: 16px;
+
+                                    <div class="quick-action" onclick="quickMessage('Aide-moi à créer un projet')">            color: var(--text-secondary);
+
+                                        <div class="quick-action-icon">            margin-bottom: 32px;
+
+                                            <i class="fas fa-code"></i>            max-width: 480px;
+
+                                        </div>        }
+
+                                        <div class="quick-action-title">Créer un projet</div>
+
+                                        <div class="quick-action-desc">Développement et automatisation</div>        .quick-actions {
+
+                                    </div>            display: grid;
+
+                                    <div class="quick-action" onclick="quickMessage('Comment configurer les intégrations ?')">            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+
+                                        <div class="quick-action-icon">            gap: 16px;
+
+                                            <i class="fas fa-cog"></i>            max-width: 600px;
+
+                                        </div>            width: 100%;
+
+                                        <div class="quick-action-title">Configuration</div>        }
+
+                                        <div class="quick-action-desc">Paramétrer n8n, Coolify, Baserow</div>
+
+                                    </div>        .quick-action {
+
+                                </div>            padding: 20px;
+
+                            </div>            border-radius: 12px;
+
+                        </div>            background: var(--bg-card);
+
+            border: 1px solid var(--border-color);
+
+                        <!-- Input Area -->            cursor: pointer;
+
+                        <div class="input-area">            transition: all 0.2s ease;
+
+                            <div class="input-container">            text-align: left;
+
+                                <textarea         }
+
+                                    class="message-input" 
+
+                                    id="messageInput"         .quick-action:hover {
+
+                                    placeholder="Tapez votre message..."            transform: translateY(-2px);
+
+                                    rows="1"            box-shadow: var(--shadow-md);
+
+                                    onkeydown="handleKeyDown(event)"            border-color: var(--accent-primary);
+
+                                ></textarea>        }
+
+                                <button class="send-btn" id="sendBtn" onclick="sendMessage()">
+
+                                    <i class="fas fa-paper-plane"></i>        .quick-action-icon {
+
+                                </button>            width: 40px;
+
+                            </div>            height: 40px;
+
+                        </div>            border-radius: 8px;
+
+                    </div>            background: var(--gradient-primary);
+
+                </div>            display: flex;
+
+            align-items: center;
+
+                <!-- Other Pages (placeholders) -->            justify-content: center;
+
+                <div class="content-page" id="page-models">            color: white;
+
+                    <div style="padding: 40px; text-align: center;">            margin-bottom: 12px;
+
+                        <h2>Modèles IA</h2>            font-size: 18px;
+
+                        <p>8 modèles disponibles : Claude, GPT-4, Gemini, Qwen, Llama...</p>        }
+
+                    </div>
+
+                </div>        .quick-action-title {
+
+            font-size: 16px;
+
+                <div class="content-page" id="page-memory">            font-weight: 600;
+
+                    <div style="padding: 40px; text-align: center;">            margin-bottom: 6px;
+
+                        <h2>Mémoire Agent</h2>            color: var(--text-primary);
+
+                        <p>2.1MB de données en mémoire</p>        }
+
+                    </div>
+
+                </div>        .quick-action-desc {
+
+            font-size: 13px;
+
+                <div class="content-page" id="page-workflows">            color: var(--text-secondary);
+
+                    <div style="padding: 40px; text-align: center;">            line-height: 1.4;
+
+                        <h2>Workflows n8n</h2>        }
+
+                        <p>3 workflows automatisés actifs</p>
+
+                    </div>        /* Responsive */
+
+                </div>        @media (max-width: 768px) {
+
+            .sidebar {
+
+                <div class="content-page" id="page-analytics">                width: 260px;
+
+                    <div style="padding: 40px; text-align: center;">                transform: translateX(-100%);
+
+                        <h2>Analytics</h2>                position: fixed;
+
+                        <p>Statistiques d'utilisation et performance</p>                height: 100vh;
+
+                    </div>                z-index: 1000;
+
+                </div>            }
+
+            </div>
+
+        </div>            .sidebar.mobile-open {
+
+    </div>                transform: translateX(0);
+
+            }
+
+    <script>
+
+        let currentTheme = 'dark';            .main-content {
+
+        let messageCount = 0;                width: 100%;
+
+            }
+
+        function showPage(pageId) {
+
+            document.querySelectorAll('.content-page').forEach(page => {            .quick-actions {
+
+                page.classList.remove('active');                grid-template-columns: 1fr;
+
+            });            }
+
+        }
+
+            document.querySelectorAll('.nav-item').forEach(item => {
+
+                item.classList.remove('active');        /* Scrollbar */
+
+            });        ::-webkit-scrollbar {
+
+            width: 6px;
+
+            document.getElementById('page-' + pageId).classList.add('active');        }
+
+            document.querySelector(`[data-page="${pageId}"]`).classList.add('active');
+
+        ::-webkit-scrollbar-track {
+
+            const titles = {            background: var(--bg-tertiary);
+
+                'chat': 'Chat Assistant',        }
+
+                'models': 'Modèles IA',
+
+                'memory': 'Mémoire Agent',        ::-webkit-scrollbar-thumb {
+
+                'workflows': 'Workflows n8n',            background: var(--border-color);
+
+                'analytics': 'Analytics'            border-radius: 3px;
+
+            };        }
+
+            document.getElementById('pageTitle').textContent = titles[pageId] || 'Agent Skeleton';
+
+        }        ::-webkit-scrollbar-thumb:hover {
+
+            background: var(--text-muted);
+
+        function toggleTheme() {        }
+
+            currentTheme = currentTheme === 'dark' ? 'light' : 'dark';    </style>
+
+            document.documentElement.setAttribute('data-theme', currentTheme);</head>
+
+            <body>
+
+            const themeBtn = document.querySelector('.top-bar-actions .action-btn');    <div class="app-container">
+
+            themeBtn.innerHTML = currentTheme === 'dark' ? '<i class="fas fa-sun"></i>' : '<i class="fas fa-moon"></i>';        <!-- Sidebar -->
+
+        }        <div class="sidebar" id="sidebar">
+
+            <!-- Header -->
+
+        function toggleSidebar() {            <div class="sidebar-header">
+
+            const sidebar = document.getElementById('sidebar');                <div class="app-logo">
+
+            sidebar.classList.toggle('mobile-open');                    <div class="logo-icon">
+
+        }                        <i class="fas fa-robot"></i>
+
+                    </div>
+
+        function handleKeyDown(event) {                    <div>
+
+            if (event.key === 'Enter' && !event.shiftKey) {                        <div>Agent Skeleton</div>
+
+                event.preventDefault();                        <div class="status-bar">
+
+                sendMessage();                            <div class="status-dot"></div>
+
+            }                            <span>En ligne</span>
+
+        }                        </div>
+
+                    </div>
+
+        async function sendMessage() {                </div>
+
+            const input = document.getElementById('messageInput');            </div>
+
+            const message = input.value.trim();
+
+                        <!-- Navigation -->
+
+            if (!message) return;            <div class="nav-menu">
+
+                <div class="nav-section">
+
+            const welcomeScreen = document.getElementById('welcomeScreen');                    <div class="nav-section-title">Principal</div>
+
+            if (welcomeScreen) {                    <a href="#" class="nav-item active" onclick="showPage('chat')" data-page="chat">
+
+                welcomeScreen.style.display = 'none';                        <i class="nav-icon fas fa-comments"></i>
+
+            }                        <span>Chat</span>
+
+                        <span class="nav-badge" id="chatBadge">2</span>
+
+            addMessage('user', message);                    </a>
+
+            input.value = '';                    <a href="#" class="nav-item" onclick="showPage('instructions')" data-page="instructions">
+
+                        <i class="nav-icon fas fa-brain"></i>
+
+            try {                        <span>Instructions</span>
+
+                const response = await fetch('/api/chat/public', {                    </a>
+
+                    method: 'POST',                    <a href="#" class="nav-item" onclick="showPage('models')" data-page="models">
+
+                    headers: {                        <i class="nav-icon fas fa-microchip"></i>
+
+                        'Content-Type': 'application/json'                        <span>Modèles IA</span>
+
+                    },                        <span class="nav-badge" id="modelsBadge">8</span>
+
+                    body: JSON.stringify({                    </a>
+
+                        message: message,                </div>
+
+                        model: 'claude-3.5-sonnet',
+
+                        useMemory: true                <div class="nav-section">
+
+                    })                    <div class="nav-section-title">Configuration</div>
+
+                });                    <a href="#" class="nav-item" onclick="showPage('apis')" data-page="apis">
+
+                        <i class="nav-icon fas fa-key"></i>
+
+                const data = await response.json();                        <span>APIs</span>
+
+                    </a>
+
+                if (data.success) {                    <a href="#" class="nav-item" onclick="showPage('memory')" data-page="memory">
+
+                    addMessage('assistant', data.response);                        <i class="nav-icon fas fa-database"></i>
+
+                    messageCount++;                        <span>Mémoire</span>
+
+                    updateBadge('chatBadge', messageCount);                        <span class="nav-badge" id="memoryBadge">2.1MB</span>
+
+                } else {                    </a>
+
+                    addMessage('assistant', `❌ Erreur: ${data.error}`);                    <a href="#" class="nav-item" onclick="showPage('workflows')" data-page="workflows">
+
+                }                        <i class="nav-icon fas fa-project-diagram"></i>
+
+                        <span>Workflows</span>
+
+            } catch (error) {                    </a>
+
+                addMessage('assistant', '❌ Erreur de connexion. Veuillez réessayer.');                </div>
+
+                console.error('Erreur:', error);
+
+            }                <div class="nav-section">
+
+        }                    <div class="nav-section-title">Analytics</div>
+
+                    <a href="#" class="nav-item" onclick="showPage('analytics')" data-page="analytics">
+
+        function addMessage(type, content) {                        <i class="nav-icon fas fa-chart-line"></i>
+
+            const container = document.getElementById('messagesContainer');                        <span>Statistiques</span>
+
+            const messageDiv = document.createElement('div');                    </a>
+
+            messageDiv.className = `message ${type}`;                    <a href="#" class="nav-item" onclick="showPage('history')" data-page="history">
+
+                        <i class="nav-icon fas fa-history"></i>
+
+            const contentDiv = document.createElement('div');                        <span>Historique</span>
+
+            contentDiv.className = 'message-content';                        <span class="nav-badge" id="historyBadge">15</span>
+
+            contentDiv.innerHTML = formatText(content);                    </a>
+
+                </div>
+
+            messageDiv.appendChild(contentDiv);            </div>
+
+            container.appendChild(messageDiv);
+
+            <!-- Footer -->
+
+            container.scrollTop = container.scrollHeight;            <div class="sidebar-footer">
+
+        }                <div class="user-profile">
+
+                    <div class="user-avatar">U</div>
+
+        function formatText(text) {                    <div class="user-info">
+
+            return text                        <div class="user-name">Utilisateur</div>
+
+                .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')                        <div class="user-status">En ligne</div>
+
+                .replace(/\*(.*?)\*/g, '<em>$1</em>')                    </div>
+
+                .replace(/\n/g, '<br>');                    <i class="fas fa-cog"></i>
+
+        }                </div>
+
+            </div>
+
+        function quickMessage(message) {        </div>
+
+            document.getElementById('messageInput').value = message;
+
+            sendMessage();        <!-- Main Content -->
+
+        }        <div class="main-content">
+
+            <!-- Top Bar -->
+
+        function updateBadge(badgeId, value) {            <div class="top-bar">
+
+            const badge = document.getElementById(badgeId);                <div class="page-title" id="pageTitle">Chat Assistant</div>
+
+            if (badge) {                <div class="top-bar-actions">
+
+                badge.textContent = value;                    <button class="action-btn" onclick="toggleTheme()" title="Changer de thème">
+
+            }                        <i class="fas fa-moon"></i>
+
+        }                    </button>
+
+                    <button class="action-btn" onclick="toggleSidebar()" title="Menu" id="sidebarToggle">
+
+        // Initialisation                        <i class="fas fa-bars"></i>
+
+        document.addEventListener('DOMContentLoaded', function() {                    </button>
+
+            document.documentElement.setAttribute('data-theme', currentTheme);                    <button class="action-btn" onclick="showNotifications()" title="Notifications">
+
+        });                        <i class="fas fa-bell"></i>
+
+    </script>                    </button>
+
+</body>                    <button class="action-btn" onclick="showSettings()" title="Paramètres">
+
+</html>                        <i class="fas fa-cog"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Content Area -->
+            <div class="content-area">
+                <!-- Chat Page -->
+                <div class="content-page active" id="page-chat">
+                    <div class="chat-container">
+                        <!-- Chat Header -->
+                        <div class="chat-header">
+                            <div class="chat-info">
+                                <div class="chat-avatar">
+                                    <i class="fas fa-robot"></i>
+                                </div>
+                                <div class="chat-details">
+                                    <h3>Assistant Intelligent</h3>
+                                    <div class="chat-status">
+                                        <span class="model-tag" id="currentModel">Claude 3.5 Sonnet</span>
+                                        <span>•</span>
+                                        <span>Prêt à vous aider</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Messages -->
+                        <div class="messages-container" id="messagesContainer">
+                            <!-- Welcome Screen -->
+                            <div class="welcome-screen" id="welcomeScreen">
+                                <div class="welcome-icon">
+                                    <i class="fas fa-robot"></i>
+                                </div>
+                                <h1 class="welcome-title">Bonjour ! 👋</h1>
+                                <p class="welcome-subtitle">
+                                    Je suis votre assistant IA intelligent. Je peux vous aider avec une grande variété de tâches, 
+                                    de la programmation à la création de contenu. Que souhaitez-vous faire aujourd'hui ?
+                                </p>
+                                <div class="quick-actions">
+                                    <div class="quick-action" onclick="quickMessage('Explique-moi tes capacités en détail')">
+                                        <div class="quick-action-icon">
+                                            <i class="fas fa-lightbulb"></i>
+                                        </div>
+                                        <div class="quick-action-title">Découvrir mes capacités</div>
+                                        <div class="quick-action-desc">Explorez tout ce que je peux faire pour vous</div>
+                                    </div>
+                                    <div class="quick-action" onclick="quickMessage('Aide-moi à créer un projet web moderne')">
+                                        <div class="quick-action-icon">
+                                            <i class="fas fa-code"></i>
+                                        </div>
+                                        <div class="quick-action-title">Créer un projet</div>
+                                        <div class="quick-action-desc">Développement web, mobile, ou autre</div>
+                                    </div>
+                                    <div class="quick-action" onclick="quickMessage('Comment configurer les modèles IA ?')">
+                                        <div class="quick-action-icon">
+                                            <i class="fas fa-cog"></i>
+                                        </div>
+                                        <div class="quick-action-title">Configuration</div>
+                                        <div class="quick-action-desc">Paramétrer l'interface et les modèles</div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Typing Indicator -->
+                            <div class="typing-indicator d-none" id="typingIndicator">
+                                <div class="typing-dots">
+                                    <div class="typing-dot"></div>
+                                    <div class="typing-dot"></div>
+                                    <div class="typing-dot"></div>
+                                </div>
+                                <span>L'assistant réfléchit...</span>
+                            </div>
+                        </div>
+
+                        <!-- Input Area -->
+                        <div class="input-area">
+                            <div class="input-container">
+                                <textarea 
+                                    class="message-input" 
+                                    id="messageInput" 
+                                    placeholder="Tapez votre message... (Shift+Enter pour nouvelle ligne)"
+                                    rows="1"
+                                    onkeydown="handleKeyDown(event)"
+                                    oninput="autoResize(this)"
+                                ></textarea>
+                                <button class="send-btn" id="sendBtn" onclick="sendMessage()">
+                                    <i class="fas fa-paper-plane"></i>
+                                </button>
+                                <div class="input-actions">
+                                    <button class="input-action-btn" onclick="attachFile()" title="Joindre fichier">
+                                        <i class="fas fa-paperclip"></i>
+                                    </button>
+                                    <button class="input-action-btn" onclick="voiceInput()" title="Dictée vocale">
+                                        <i class="fas fa-microphone"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Instructions Page -->
+                <div class="content-page" id="page-instructions">
+                    <div style="padding: 40px; text-align: center;">
+                        <h2>Instructions Agent</h2>
+                        <p>Configuration des instructions personnalisées</p>
+                        <div style="margin-top: 20px; padding: 20px; background: var(--bg-card); border-radius: 12px;">
+                            <p>Fonctionnalité en développement...</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Models Page -->
+                <div class="content-page" id="page-models">
+                    <div style="padding: 40px; text-align: center;">
+                        <h2>Modèles IA</h2>
+                        <p>Gestion des modèles d'intelligence artificielle</p>
+                        <div style="margin-top: 20px; padding: 20px; background: var(--bg-card); border-radius: 12px;">
+                            <p>8 modèles disponibles : Claude, GPT-4, Gemini, Qwen, Llama...</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- APIs Page -->
+                <div class="content-page" id="page-apis">
+                    <div style="padding: 40px; text-align: center;">
+                        <h2>Configuration APIs</h2>
+                        <p>Gestion des clés API et intégrations</p>
+                        <div style="margin-top: 20px; padding: 20px; background: var(--bg-card); border-radius: 12px;">
+                            <p>OpenRouter, OpenAI, Anthropic, Google...</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Memory Page -->
+                <div class="content-page" id="page-memory">
+                    <div style="padding: 40px; text-align: center;">
+                        <h2>Mémoire Agent</h2>
+                        <p>Données stockées et contexte</p>
+                        <div style="margin-top: 20px; padding: 20px; background: var(--bg-card); border-radius: 12px;">
+                            <p>2.1MB de données en mémoire</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Workflows Page -->
+                <div class="content-page" id="page-workflows">
+                    <div style="padding: 40px; text-align: center;">
+                        <h2>Workflows</h2>
+                        <p>Automatisations n8n et intégrations</p>
+                        <div style="margin-top: 20px; padding: 20px; background: var(--bg-card); border-radius: 12px;">
+                            <p>Créez des workflows automatisés</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Analytics Page -->
+                <div class="content-page" id="page-analytics">
+                    <div style="padding: 40px; text-align: center;">
+                        <h2>Analytics</h2>
+                        <p>Statistiques d'utilisation</p>
+                        <div style="margin-top: 20px; padding: 20px; background: var(--bg-card); border-radius: 12px;">
+                            <p>Graphiques et métriques</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- History Page -->
+                <div class="content-page" id="page-history">
+                    <div style="padding: 40px; text-align: center;">
+                        <h2>Historique</h2>
+                        <p>Conversations précédentes</p>
+                        <div style="margin-top: 20px; padding: 20px; background: var(--bg-card); border-radius: 12px;">
+                            <p>15 conversations sauvegardées</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Variables globales
+        let currentTheme = 'dark';
+        let messageCount = 0;
+
+        // Initialisation
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeApp();
+        });
+
+        function initializeApp() {
+            // Définir le thème par défaut
+            document.documentElement.setAttribute('data-theme', currentTheme);
+            
+            // Simuler des données en temps réel
+            updateStats();
+            setInterval(updateStats, 5000);
+
+            // Focus sur l'input au chargement
+            document.getElementById('messageInput').focus();
+        }
+
+        // Navigation
+        function showPage(pageId) {
+            // Masquer toutes les pages
+            document.querySelectorAll('.content-page').forEach(page => {
+                page.classList.remove('active');
+            });
+
+            // Retirer la classe active de tous les nav-items
+            document.querySelectorAll('.nav-item').forEach(item => {
+                item.classList.remove('active');
+            });
+
+            // Afficher la page sélectionnée
+            document.getElementById('page-' + pageId).classList.add('active');
+
+            // Activer le nav-item correspondant
+            document.querySelector(`[data-page="${pageId}"]`).classList.add('active');
+
+            // Mettre à jour le titre
+            const titles = {
+                'chat': 'Chat Assistant',
+                'instructions': 'Instructions Agent',
+                'models': 'Modèles IA',
+                'apis': 'Configuration APIs',
+                'memory': 'Mémoire Agent',
+                'workflows': 'Workflows',
+                'analytics': 'Analytics',
+                'history': 'Historique'
+            };
+            document.getElementById('pageTitle').textContent = titles[pageId] || 'Agent Skeleton';
+        }
+
+        // Thème
+        function toggleTheme() {
+            currentTheme = currentTheme === 'dark' ? 'light' : 'dark';
+            document.documentElement.setAttribute('data-theme', currentTheme);
+            
+            const themeBtn = document.querySelector('.top-bar-actions .action-btn');
+            themeBtn.innerHTML = currentTheme === 'dark' ? '<i class="fas fa-sun"></i>' : '<i class="fas fa-moon"></i>';
+        }
+
+        // Sidebar mobile
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            sidebar.classList.toggle('mobile-open');
+        }
+
+        // Chat functions
+        function handleKeyDown(event) {
+            if (event.key === 'Enter' && !event.shiftKey) {
+                event.preventDefault();
+                sendMessage();
+            }
+        }
+
+        function autoResize(textarea) {
+            textarea.style.height = 'auto';
+            textarea.style.height = Math.min(textarea.scrollHeight, 120) + 'px';
+        }
+
+        async function sendMessage() {
+            const input = document.getElementById('messageInput');
+            const message = input.value.trim();
+            
+            if (!message) return;
+
+            // Cacher l'écran de bienvenue
+            const welcomeScreen = document.getElementById('welcomeScreen');
+            if (welcomeScreen) {
+                welcomeScreen.style.display = 'none';
+            }
+
+            // Ajouter le message utilisateur
+            addMessage('user', message);
+            input.value = '';
+            autoResize(input);
+
+            // Afficher l'indicateur de frappe
+            showTypingIndicator();
+
+            try {
+                const response = await fetch('/api/chat/public', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        message: message,
+                        model: 'claude-3.5-sonnet',
+                        useMemory: true
+                    })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    hideTypingIndicator();
+                    addMessage('assistant', data.response);
+                    messageCount++;
+                    updateBadge('chatBadge', messageCount);
+                } else {
+                    hideTypingIndicator();
+                    addMessage('assistant', `❌ Erreur: ${data.error}`);
+                }
+
+            } catch (error) {
+                hideTypingIndicator();
+                addMessage('assistant', '❌ Erreur de connexion. Veuillez réessayer.');
+                console.error('Erreur:', error);
+            }
+        }
+
+        function addMessage(type, content) {
+            const container = document.getElementById('messagesContainer');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${type}`;
+
+            const contentDiv = document.createElement('div');
+            contentDiv.className = 'message-content';
+            
+            if (type === 'assistant') {
+                contentDiv.innerHTML = formatMarkdown(content);
+            } else {
+                contentDiv.textContent = content;
+            }
+
+            const timeDiv = document.createElement('div');
+            timeDiv.className = 'message-time';
+            timeDiv.textContent = new Date().toLocaleTimeString('fr-FR', { 
+                hour: '2-digit', 
+                minute: '2-digit' 
+            });
+
+            messageDiv.appendChild(contentDiv);
+            messageDiv.appendChild(timeDiv);
+            container.appendChild(messageDiv);
+
+            // Scroll automatique
+            setTimeout(() => {
+                container.scrollTop = container.scrollHeight;
+            }, 100);
+        }
+
+        function formatMarkdown(text) {
+            return text
+                .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                .replace(/\*(.*?)\*/g, '<em>$1</em>')
+                .replace(/`(.*?)`/g, '<code style="background: var(--bg-tertiary); padding: 2px 6px; border-radius: 4px; font-size: 13px;">$1</code>')
+                .replace(/\n\n/g, '<br><br>')
+                .replace(/\n/g, '<br>')
+                .replace(/^- (.*$)/gm, '<li style="margin-left: 20px;">$1</li>')
+                .replace(/^(\d+)\. (.*$)/gm, '<li style="margin-left: 20px; list-style-type: decimal;">$2</li>');
+        }
+
+        function showTypingIndicator() {
+            const indicator = document.getElementById('typingIndicator');
+            indicator.classList.remove('d-none');
+            
+            const container = document.getElementById('messagesContainer');
+            container.scrollTop = container.scrollHeight;
+        }
+
+        function hideTypingIndicator() {
+            const indicator = document.getElementById('typingIndicator');
+            indicator.classList.add('d-none');
+        }
+
+        function quickMessage(message) {
+            document.getElementById('messageInput').value = message;
+            sendMessage();
+        }
+
+        // Stats updates
+        function updateStats() {
+            const stats = {
+                memory: (Math.random() * 2 + 1).toFixed(1) + 'MB',
+                models: 8,
+                history: Math.floor(Math.random() * 10) + 10
+            };
+
+            updateBadge('memoryBadge', stats.memory);
+            updateBadge('modelsBadge', stats.models);
+            updateBadge('historyBadge', stats.history);
+        }
+
+        function updateBadge(badgeId, value) {
+            const badge = document.getElementById(badgeId);
+            if (badge) {
+                badge.textContent = value;
+            }
+        }
+
+        // Placeholder functions
+        function showNotifications() {
+            alert('Notifications - Fonctionnalité en développement');
+        }
+
+        function showSettings() {
+            alert('Paramètres - Fonctionnalité en développement');
+        }
+
+        function attachFile() {
+            alert('Joindre fichier - Fonctionnalité en développement');
+        }
+
+        function voiceInput() {
+            alert('Dictée vocale - Fonctionnalité en développement');
+        }
+
+        // Classes pour masquer les éléments
+        const style = document.createElement('style');
+        style.textContent = '.d-none { display: none !important; }';
+        document.head.appendChild(style);
+    </script>
+</body>
+</html>
