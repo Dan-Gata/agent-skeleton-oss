@@ -184,6 +184,55 @@ app.post('/api/chat', chatLimiter, async (req, res) => {
     }
 });
 
+// 📝 API Instructions personnalisées
+app.get('/api/instructions', (req, res) => {
+    res.json({
+        instructions: aiService.customInstructions
+    });
+});
+
+app.post('/api/instructions', [
+    body('brand').optional().isString().trim(),
+    body('tone').optional().isString().trim(),
+    body('expertise').optional().isString().trim(),
+    body('language').optional().isString().trim(),
+    body('personality').optional().isString().trim()
+], (req, res) => {
+    try {
+        const errors = validationResult(req);
+        if (!errors.isEmpty()) {
+            return res.status(400).json({
+                error: 'Données invalides',
+                details: errors.array()
+            });
+        }
+
+        // Filtrer les champs non-null
+        const newInstructions = {};
+        ['brand', 'tone', 'expertise', 'language', 'personality'].forEach(field => {
+            if (req.body[field] !== undefined && req.body[field] !== '') {
+                newInstructions[field] = req.body[field];
+            }
+        });
+
+        // Mettre à jour les instructions
+        aiService.updateInstructions(newInstructions);
+
+        res.json({
+            success: true,
+            instructions: aiService.customInstructions,
+            message: 'Instructions mises à jour avec succès'
+        });
+
+    } catch (error) {
+        console.error('Erreur API Instructions:', error);
+        res.status(500).json({
+            error: 'Erreur interne du serveur',
+            message: 'Une erreur est survenue lors de la mise à jour'
+        });
+    }
+});
+
 // 📊 API Status
 app.get('/api/status', (req, res) => {
     res.json({

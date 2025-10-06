@@ -502,6 +502,12 @@
                     <span class="nav-badge">8</span>
                 </button>
                 
+                <button class="nav-item" data-page="instructions">
+                    <i class="nav-icon fas fa-edit"></i>
+                    <span>Instructions</span>
+                    <span class="nav-badge">Brand</span>
+                </button>
+                
                 <button class="nav-item" data-page="memory">
                     <i class="nav-icon fas fa-database"></i>
                     <span>Mémoire</span>
@@ -678,6 +684,76 @@
                             Chaque modèle a ses propres forces : Claude pour l'analyse, GPT-4 pour la polyvalence, 
                             Gemini pour le multimodal, etc.
                         </p>
+                    </div>
+                </div>
+            </div>
+
+            <div id="instructions-page" class="content-page">
+                <div style="padding: 20px;">
+                    <h2 style="margin-bottom: 20px;">📝 Instructions Agent</h2>
+                    
+                    <div style="background: var(--bg-card); padding: 20px; border-radius: 12px; border: 1px solid var(--border-color); margin-bottom: 20px;">
+                        <h3 style="margin-bottom: 15px;">🎯 Personnalisez votre Assistant IA</h3>
+                        <p style="color: var(--text-secondary); margin-bottom: 20px;">
+                            Configurez la personnalité, le tone et l'expertise de votre agent pour qu'il corresponde parfaitement à votre marque et vos besoins.
+                        </p>
+                        
+                        <form id="instructionsForm" style="display: grid; gap: 20px;">
+                            <div style="display: grid; grid-template-columns: 1fr 2fr; gap: 15px; align-items: center;">
+                                <label style="font-weight: 500;">🏢 Nom de marque :</label>
+                                <input type="text" id="brandName" placeholder="Agent Skeleton OSS" 
+                                       style="padding: 10px; border: 1px solid var(--border-color); border-radius: 6px; background: var(--bg-tertiary); color: var(--text-primary);">
+                            </div>
+                            
+                            <div style="display: grid; grid-template-columns: 1fr 2fr; gap: 15px; align-items: center;">
+                                <label style="font-weight: 500;">🎭 Tone de communication :</label>
+                                <select id="brandTone" style="padding: 10px; border: 1px solid var(--border-color); border-radius: 6px; background: var(--bg-tertiary); color: var(--text-primary);">
+                                    <option value="professionnel et bienveillant">Professionnel et bienveillant</option>
+                                    <option value="décontracté et amical">Décontracté et amical</option>
+                                    <option value="technique et précis">Technique et précis</option>
+                                    <option value="créatif et inspirant">Créatif et inspirant</option>
+                                    <option value="formel et respectueux">Formel et respectueux</option>
+                                </select>
+                            </div>
+                            
+                            <div style="display: grid; grid-template-columns: 1fr 2fr; gap: 15px; align-items: center;">
+                                <label style="font-weight: 500;">🎯 Domaines d'expertise :</label>
+                                <input type="text" id="expertise" placeholder="développement, automatisation, intégrations" 
+                                       style="padding: 10px; border: 1px solid var(--border-color); border-radius: 6px; background: var(--bg-tertiary); color: var(--text-primary);">
+                            </div>
+                            
+                            <div style="display: grid; grid-template-columns: 1fr 2fr; gap: 15px; align-items: center;">
+                                <label style="font-weight: 500;">🌍 Langue de réponse :</label>
+                                <select id="language" style="padding: 10px; border: 1px solid var(--border-color); border-radius: 6px; background: var(--bg-tertiary); color: var(--text-primary);">
+                                    <option value="français">Français</option>
+                                    <option value="anglais">English</option>
+                                    <option value="espagnol">Español</option>
+                                    <option value="allemand">Deutsch</option>
+                                </select>
+                            </div>
+                            
+                            <div style="display: grid; grid-template-columns: 1fr 2fr; gap: 15px; align-items: start;">
+                                <label style="font-weight: 500;">🤖 Personnalité :</label>
+                                <textarea id="personality" rows="3" placeholder="assistant IA intelligent et serviable" 
+                                          style="padding: 10px; border: 1px solid var(--border-color); border-radius: 6px; background: var(--bg-tertiary); color: var(--text-primary); resize: vertical;"></textarea>
+                            </div>
+                            
+                            <div style="display: flex; gap: 10px; justify-content: end;">
+                                <button type="button" id="loadInstructions" style="background: var(--bg-tertiary); color: var(--text-primary); border: 1px solid var(--border-color); padding: 10px 20px; border-radius: 6px; cursor: pointer;">
+                                    📥 Charger
+                                </button>
+                                <button type="submit" style="background: var(--accent-primary); color: white; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer;">
+                                    💾 Sauvegarder
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                    
+                    <div style="background: var(--bg-card); padding: 20px; border-radius: 12px; border: 1px solid var(--border-color);">
+                        <h3 style="margin-bottom: 15px;">🔍 Aperçu du prompt système</h3>
+                        <div id="systemPromptPreview" style="background: var(--bg-tertiary); padding: 15px; border-radius: 8px; font-family: monospace; font-size: 14px; line-height: 1.6; color: var(--text-secondary);">
+                            Chargement de l'aperçu...
+                        </div>
                     </div>
                 </div>
             </div>
@@ -1190,6 +1266,99 @@
             this.style.height = '50px';
             this.style.height = Math.min(this.scrollHeight, 120) + 'px';
         });
+
+        // Instructions functionality
+        const instructionsForm = document.getElementById('instructionsForm');
+        const loadInstructionsBtn = document.getElementById('loadInstructions');
+        const systemPromptPreview = document.getElementById('systemPromptPreview');
+
+        async function loadInstructions() {
+            try {
+                const response = await fetch('/api/instructions');
+                const data = await response.json();
+                
+                if (data.instructions) {
+                    document.getElementById('brandName').value = data.instructions.brand || '';
+                    document.getElementById('brandTone').value = data.instructions.tone || '';
+                    document.getElementById('expertise').value = data.instructions.expertise || '';
+                    document.getElementById('language').value = data.instructions.language || '';
+                    document.getElementById('personality').value = data.instructions.personality || '';
+                    
+                    updatePromptPreview(data.instructions);
+                }
+            } catch (error) {
+                console.error('Erreur chargement instructions:', error);
+            }
+        }
+
+        async function saveInstructions(event) {
+            event.preventDefault();
+            
+            const instructions = {
+                brand: document.getElementById('brandName').value,
+                tone: document.getElementById('brandTone').value,
+                expertise: document.getElementById('expertise').value,
+                language: document.getElementById('language').value,
+                personality: document.getElementById('personality').value
+            };
+
+            try {
+                const response = await fetch('/api/instructions', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(instructions)
+                });
+
+                const data = await response.json();
+                
+                if (data.success) {
+                    alert('✅ Instructions sauvegardées avec succès !');
+                    updatePromptPreview(data.instructions);
+                } else {
+                    alert('❌ Erreur: ' + (data.error || 'Erreur inconnue'));
+                }
+            } catch (error) {
+                console.error('Erreur sauvegarde instructions:', error);
+                alert('❌ Erreur de connexion');
+            }
+        }
+
+        function updatePromptPreview(instructions) {
+            const preview = `Tu es ${instructions.personality || 'assistant IA intelligent'} pour ${instructions.brand || 'Agent Skeleton OSS'}.
+
+TONE ET STYLE:
+- Adopte un ton ${instructions.tone || 'professionnel et bienveillant'}
+- Réponds en ${instructions.language || 'français'}
+- Reste cohérent avec l'identité de marque de ${instructions.brand || 'Agent Skeleton OSS'}
+
+EXPERTISE:
+- Tu es spécialisé en ${instructions.expertise || 'développement, automatisation, intégrations'}
+- Tu aides particulièrement avec les outils : n8n, Coolify, Baserow
+- Tu fournis des solutions concrètes et pratiques
+
+COMPORTEMENT:
+- Sois précis et utile dans tes réponses
+- Adapte ta réponse au niveau technique de l'utilisateur
+- Suggère des améliorations quand c'est pertinent
+- Reste dans le cadre de ${instructions.brand || 'Agent Skeleton OSS'}`;
+
+            systemPromptPreview.textContent = preview;
+        }
+
+        // Event listeners for instructions
+        if (instructionsForm) {
+            instructionsForm.addEventListener('submit', saveInstructions);
+        }
+        if (loadInstructionsBtn) {
+            loadInstructionsBtn.addEventListener('click', loadInstructions);
+        }
+
+        // Auto-load instructions when visiting the page
+        if (window.location.hash === '#instructions') {
+            loadInstructions();
+        }
     </script>
 </body>
 </html>

@@ -22,6 +22,42 @@ class AIService {
                 baseURL: 'https://openrouter.ai/api/v1'
             }
         };
+
+        // Instructions personnalisées par défaut
+        this.customInstructions = {
+            brand: process.env.BRAND_NAME || "Agent Skeleton OSS",
+            tone: process.env.BRAND_TONE || "professionnel et bienveillant",
+            expertise: process.env.EXPERTISE_AREAS || "développement, automatisation, intégrations",
+            language: process.env.RESPONSE_LANGUAGE || "français",
+            personality: process.env.AI_PERSONALITY || "assistant IA intelligent et serviable"
+        };
+    }
+
+    // Méthode pour mettre à jour les instructions
+    updateInstructions(newInstructions) {
+        this.customInstructions = { ...this.customInstructions, ...newInstructions };
+        console.log('📝 Instructions mises à jour:', this.customInstructions);
+    }
+
+    // Génération du prompt système personnalisé
+    generateSystemPrompt() {
+        return `Tu es ${this.customInstructions.personality} pour ${this.customInstructions.brand}.
+
+TONE ET STYLE:
+- Adopte un ton ${this.customInstructions.tone}
+- Réponds en ${this.customInstructions.language}
+- Reste cohérent avec l'identité de marque de ${this.customInstructions.brand}
+
+EXPERTISE:
+- Tu es spécialisé en ${this.customInstructions.expertise}
+- Tu aides particulièrement avec les outils : n8n, Coolify, Baserow
+- Tu fournis des solutions concrètes et pratiques
+
+COMPORTEMENT:
+- Sois précis et utile dans tes réponses
+- Adapte ta réponse au niveau technique de l'utilisateur
+- Suggère des améliorations quand c'est pertinent
+- Reste dans le cadre de ${this.customInstructions.brand}`;
     }
 
     async sendMessage(message, model = 'gpt-4o-mini', conversationId = null) {
@@ -53,8 +89,11 @@ class AIService {
 
     async callOpenAI(message, model) {
         if (!this.config.openai.apiKey) {
-            throw new Error('Clé API OpenAI manquante');
+            console.log('⚠️ Clé API OpenAI manquante, utilisation du mode simulation');
+            return await this.simulateResponse(message, model);
         }
+
+        console.log('🔑 Utilisation API OpenAI avec clé:', this.config.openai.apiKey.substring(0, 10) + '...');
 
         const response = await axios.post(
             `${this.config.openai.baseURL}/chat/completions`,
@@ -63,7 +102,7 @@ class AIService {
                 messages: [
                     {
                         role: 'system',
-                        content: 'Tu es un assistant IA intelligent intégré dans Agent Skeleton OSS. Tu aides avec le développement, l\'automatisation, et les intégrations. Réponds de manière utile et concise.'
+                        content: this.generateSystemPrompt()
                     },
                     {
                         role: 'user',
@@ -77,7 +116,8 @@ class AIService {
                 headers: {
                     'Authorization': `Bearer ${this.config.openai.apiKey}`,
                     'Content-Type': 'application/json'
-                }
+                },
+                timeout: 30000
             }
         );
 
@@ -90,7 +130,8 @@ class AIService {
 
     async callAnthropic(message, model) {
         if (!this.config.anthropic.apiKey) {
-            throw new Error('Clé API Anthropic manquante');
+            console.log('⚠️ Clé API Anthropic manquante, utilisation du mode simulation');
+            return await this.simulateResponse(message, model);
         }
 
         const response = await axios.post(
@@ -124,7 +165,8 @@ class AIService {
 
     async callGoogle(message, model) {
         if (!this.config.google.apiKey) {
-            throw new Error('Clé API Google manquante');
+            console.log('⚠️ Clé API Google manquante, utilisation du mode simulation');
+            return await this.simulateResponse(message, model);
         }
 
         const response = await axios.post(
@@ -156,7 +198,8 @@ class AIService {
 
     async callOpenRouter(message, model) {
         if (!this.config.openrouter.apiKey) {
-            throw new Error('Clé API OpenRouter manquante');
+            console.log('⚠️ Clé API OpenRouter manquante, utilisation du mode simulation');
+            return await this.simulateResponse(message, model);
         }
 
         // Mapping des modèles vers OpenRouter
@@ -177,7 +220,7 @@ class AIService {
                 messages: [
                     {
                         role: 'system',
-                        content: 'Tu es un assistant IA intelligent intégré dans Agent Skeleton OSS. Tu aides avec le développement, l\'automatisation, et les intégrations. Réponds de manière utile et concise.'
+                        content: this.generateSystemPrompt()
                     },
                     {
                         role: 'user',
