@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html lang="fr" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Agent Skeleton OSS</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            /* Dark Theme */
+            --bg-primary: #0a0a0a;
+            --bg-secondary: #1a1a1a;
+            --bg-tertiary: #262626;
+            --bg-card: #1e1e1e;
+            --bg-hover: #2a2a2a;
+            --accent-primary: #3b82f6;
+            --accent-secondary: #8b5cf6;
+            --accent-success: #10b981;
+            --accent-warning: #f59e0b;
+            --accent-danger: #ef4444;
+            --text-primary: #ffffff;
+            --text-secondary: #a1a1aa;
+            --text-muted: #71717a;
+            --border-color: #404040;
+            --gradient-primary: linear-gradient(135deg, #3b82f6, #8b5cf6);
+            --gradient-secondary: linear-gradient(135deg, #10b981, #3b82f6);
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        .app-container {
+            display: flex;
+            height: 100vh;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: 280px;
+            background: var(--bg-secondary);
+            border-right: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .sidebar-header {
+            padding: 20px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+
+        .logo-icon {
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            background: var(--gradient-primary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+        }
+
+        .status-indicator {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-top: 8px;
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--accent-success);
+        }
+
+        /* Navigation */
+        .nav-menu {
+            flex: 1;
+            padding: 20px 0;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 20px;
+            color: var(--text-secondary);
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border: none;
+            background: none;
+            width: 100%;
+            text-align: left;
+            font-size: 14px;
+        }
+
+        .nav-item:hover {
+            background: var(--bg-hover);
+            color: var(--text-primary);
+        }
+
+        .nav-item.active {
+            background: var(--bg-hover);
+            color: var(--accent-primary);
+        }
+
+        .nav-icon {
+            width: 18px;
+            text-align: center;
+        }
+
+        .nav-badge {
+            margin-left: auto;
+            background: var(--accent-primary);
+            color: white;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 500;
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            background: var(--bg-primary);
+        }
+
+        .top-bar {
+            height: 60px;
+            background: var(--bg-secondary);
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 20px;
+        }
+
+        .page-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        /* Content Pages */
+        .content-page {
+            display: none;
+            padding: 20px;
+            height: calc(100vh - 60px);
+            overflow-y: auto;
+        }
+
+        .content-page.active {
+            display: block;
+        }
+
+        .feature-placeholder {
+            text-align: center;
+            padding: 60px 20px;
+            color: var(--text-secondary);
+        }
+
+        .test-button {
+            background: var(--accent-primary);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            margin: 10px;
+        }
+
+        .test-button:hover {
+            background: var(--accent-secondary);
+        }
+    </style>
+</head>
+
+<body>
+    <div class="app-container">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <div class="logo">
+                    <div class="logo-icon">
+                        <i class="fas fa-robot"></i>
+                    </div>
+                    <span>Agent Skeleton</span>
+                </div>
+                <div class="status-indicator">
+                    <div class="status-dot"></div>
+                    <span>En ligne</span>
+                </div>
+            </div>
+
+            <nav class="nav-menu">
+                <button class="nav-item active" data-page="chat">
+                    <i class="nav-icon fas fa-comments"></i>
+                    <span>Chat</span>
+                    <span class="nav-badge">Principal</span>
+                </button>
+                
+                <button class="nav-item" data-page="models">
+                    <i class="nav-icon fas fa-brain"></i>
+                    <span>Modèles IA</span>
+                    <span class="nav-badge">8</span>
+                </button>
+                
+                <button class="nav-item" data-page="integrations">
+                    <i class="nav-icon fas fa-plug"></i>
+                    <span>Intégrations</span>
+                </button>
+                
+                <button class="nav-item" data-page="workflows">
+                    <i class="nav-icon fas fa-project-diagram"></i>
+                    <span>Workflows n8n</span>
+                    <span class="nav-badge">3</span>
+                </button>
+                
+                <button class="nav-item" data-page="analytics">
+                    <i class="nav-icon fas fa-chart-line"></i>
+                    <span>Analytics</span>
+                </button>
+            </nav>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <div class="top-bar">
+                <h1 class="page-title">Chat Assistant</h1>
+            </div>
+
+            <!-- Chat Page -->
+            <div id="chat-page" class="content-page active">
+                <div class="feature-placeholder">
+                    <h2>💬 Chat Principal</h2>
+                    <p>Interface de chat avec l'IA</p>
+                    <button class="test-button" onclick="testFunction('chat')">Test Chat</button>
+                </div>
+            </div>
+
+            <!-- Models Page -->
+            <div id="models-page" class="content-page">
+                <div class="feature-placeholder">
+                    <h2>🧠 Modèles IA</h2>
+                    <p>Gestion des modèles d'intelligence artificielle</p>
+                    <button class="test-button" onclick="testFunction('models')">Test Modèles</button>
+                </div>
+            </div>
+
+            <!-- Integrations Page -->
+            <div id="integrations-page" class="content-page">
+                <div class="feature-placeholder">
+                    <h2>🔌 Intégrations API</h2>
+                    <p>Configuration des APIs et services externes</p>
+                    <button class="test-button" onclick="testFunction('integrations')">Test Intégrations</button>
+                </div>
+            </div>
+
+            <!-- Workflows Page -->
+            <div id="workflows-page" class="content-page">
+                <div class="feature-placeholder">
+                    <h2>🔄 Workflows n8n</h2>
+                    <p>Automatisations et workflows</p>
+                    <button class="test-button" onclick="testFunction('workflows')">Test Workflows</button>
+                </div>
+            </div>
+
+            <!-- Analytics Page -->
+            <div id="analytics-page" class="content-page">
+                <div class="feature-placeholder">
+                    <h2>📊 Analytics</h2>
+                    <p>Statistiques et métriques</p>
+                    <button class="test-button" onclick="testFunction('analytics')">Test Analytics</button>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        console.log('🚀 Chargement du script...');
+
+        // Variables globales
+        let currentPage = 'chat';
+
+        // Fonction de test
+        function testFunction(page) {
+            console.log('🧪 Test fonction appelée pour:', page);
+            alert(`✅ Fonction ${page} fonctionne !`);
+        }
+
+        // Fonction de navigation
+        function navigateToPage(targetPage) {
+            console.log(`🎯 Navigation vers: ${targetPage}`);
+            
+            // Cacher toutes les pages
+            document.querySelectorAll('.content-page').forEach(page => {
+                page.classList.remove('active');
+                console.log(`➖ Page cachée: ${page.id}`);
+            });
+            
+            // Afficher la page cible
+            const pageElement = document.getElementById(targetPage + '-page');
+            if (pageElement) {
+                pageElement.classList.add('active');
+                console.log(`✅ Page affichée: ${targetPage}-page`);
+                currentPage = targetPage;
+            } else {
+                console.error(`❌ Page introuvable: ${targetPage}-page`);
+                return false;
+            }
+            
+            // Mettre à jour les boutons de navigation
+            document.querySelectorAll('.nav-item').forEach(item => {
+                item.classList.remove('active');
+                if (item.dataset.page === targetPage) {
+                    item.classList.add('active');
+                    
+                    // Mettre à jour le titre
+                    const titleSpan = item.querySelector('span');
+                    if (titleSpan) {
+                        document.querySelector('.page-title').textContent = titleSpan.textContent;
+                        console.log(`📄 Titre mis à jour: ${titleSpan.textContent}`);
+                    }
+                }
+            });
+            
+            return true;
+        }
+
+        // Initialisation quand le DOM est chargé
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('🎉 DOM chargé, initialisation...');
+            
+            // Configurer les boutons de navigation
+            const navItems = document.querySelectorAll('.nav-item');
+            console.log(`🔍 ${navItems.length} boutons de navigation trouvés`);
+            
+            navItems.forEach((item, index) => {
+                const page = item.dataset.page;
+                console.log(`Bouton ${index}: ${page}`);
+                
+                // Ajouter les event listeners
+                item.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    console.log(`🖱️ Clic détecté sur: ${page}`);
+                    navigateToPage(page);
+                });
+            });
+            
+            // Tester la navigation programmatiquement
+            console.log('🧪 Test de navigation...');
+            setTimeout(() => {
+                console.log('Test navigation vers models...');
+                navigateToPage('models');
+                
+                setTimeout(() => {
+                    console.log('Retour vers chat...');
+                    navigateToPage('chat');
+                }, 2000);
+            }, 1000);
+            
+            console.log('✅ Initialisation terminée');
+        });
+
+        // Exposer les fonctions globalement pour debug
+        window.navigateToPage = navigateToPage;
+        window.testFunction = testFunction;
+        
+        console.log('📝 Script chargé complètement');
+    </script>
+</body>
+</html>

@@ -1123,18 +1123,20 @@
     </div>
 
     <script>
-        // Chat functionality
-        const messageInput = document.getElementById('messageInput');
-        const sendBtn = document.getElementById('sendBtn');
-        const messagesArea = document.getElementById('messages');
-        const welcomeScreen = document.getElementById('welcome');
-        const modelSelect = document.getElementById('modelSelect');
-        const typingIndicator = document.getElementById('typingIndicator');
-        
-        let conversationId = null;
+        // Toutes les variables et fonctions dans DOMContentLoaded
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('🚀 DOM chargé, initialisation de l\'application...');
 
-        // Test initial des éléments DOM
-        window.addEventListener('DOMContentLoaded', () => {
+            // Variables globales
+            const messageInput = document.getElementById('messageInput');
+            const sendBtn = document.getElementById('sendBtn');
+            const messagesArea = document.getElementById('messages');
+            const welcomeScreen = document.getElementById('welcome');
+            const modelSelect = document.getElementById('modelSelect');
+            const typingIndicator = document.getElementById('typingIndicator');
+            let conversationId = null;
+
+            // Test des éléments DOM
             console.log('🔍 Test des éléments DOM:');
             console.log('- messageInput:', !!messageInput);
             console.log('- sendBtn:', !!sendBtn);
@@ -1149,7 +1151,8 @@
                 console.log(`- ${page}-page:`, !!element);
             });
             
-            // Configuration de la navigation
+            // ====== NAVIGATION SETUP ======
+            console.log('🔧 Configuration de la navigation...');
             const navItems = document.querySelectorAll('.nav-item');
             console.log('🔍 Boutons navigation trouvés:', navItems.length);
             
@@ -1157,7 +1160,64 @@
                 const page = item.dataset.page;
                 console.log(`Bouton ${index}: data-page="${page}"`);
                 
-                // Ajouter l'event listener
+                // Ajouter l'event listener avec une fonction nommée pour debug
+                item.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    
+                    console.log('🎯 CLIC DÉTECTÉ sur:', page);
+                    
+                    // Vérifier que la page existe
+                    const targetPage = document.getElementById(page + '-page');
+                    if (!targetPage) {
+                        console.error('❌ Page introuvable:', page + '-page');
+                        return;
+                    }
+                    
+                    // Update active nav
+                    document.querySelectorAll('.nav-item').forEach(nav => {
+                        nav.classList.remove('active');
+                        console.log('➖ Removed active from:', nav.dataset.page);
+                    });
+                    item.classList.add('active');
+                    console.log('✅ Added active to:', page);
+                    
+                    // Update page title
+                    const titleSpan = item.querySelector('span');
+                    if (titleSpan) {
+                        const title = titleSpan.textContent;
+                        const pageTitleElement = document.querySelector('.page-title');
+                        if (pageTitleElement) {
+                            pageTitleElement.textContent = title;
+                            console.log('📄 Titre mis à jour:', title);
+                        }
+                    }
+                    
+                    // Hide all pages
+                    document.querySelectorAll('.content-page').forEach(p => {
+                        p.classList.remove('active');
+                        console.log('➖ Page cachée:', p.id);
+                    });
+                    
+                    // Show target page
+                    targetPage.classList.add('active');
+                    console.log('✅ Page affichée:', page + '-page');
+                    
+                    // Special handling for instructions page
+                    if (page === 'instructions') {
+                        setTimeout(() => {
+                            if (typeof loadInstructions === 'function') {
+                                console.log('📝 Loading instructions...');
+                                loadInstructions();
+                            }
+                        }, 100);
+                    }
+                });
+                
+                console.log(`✅ Event listener ajouté pour: ${page}`);
+            });
+            
+            console.log('🎉 Navigation configurée avec succès!');
                 item.addEventListener('click', (e) => {
                     e.preventDefault();
                     e.stopPropagation();

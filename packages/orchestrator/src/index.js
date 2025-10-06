@@ -91,6 +91,14 @@ app.get('/app', (req, res) => {
     });
 });
 
+// 🔧 Route de debug pour tester la navigation
+app.get('/debug', (req, res) => {
+    res.render('app_debug', {
+        title: 'Agent Skeleton OSS - Debug Interface',
+        version: '1.0.0'
+    });
+});
+
 // 🔍 Health Check
 app.get('/health', (req, res) => {
     res.status(200).json({
