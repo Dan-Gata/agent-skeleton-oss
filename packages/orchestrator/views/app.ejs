@@ -447,7 +447,35 @@
             to { opacity: 1; transform: translateY(0); }
         }
 
-        /* Responsive */
+        /* Notifications */
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 16px 20px;
+            border-radius: 8px;
+            color: white;
+            font-weight: 500;
+            z-index: 1000;
+            transform: translateX(400px);
+            transition: transform 0.3s ease;
+        }
+
+        .notification.show {
+            transform: translateX(0);
+        }
+
+        .notification.success {
+            background: var(--accent-success);
+        }
+
+        .notification.error {
+            background: var(--accent-danger);
+        }
+
+        .notification.info {
+            background: var(--accent-primary);
+        }
         @media (max-width: 768px) {
             .sidebar {
                 width: 260px;
@@ -1095,37 +1123,6 @@
     </div>
 
     <script>
-        // Navigation
-        document.querySelectorAll('.nav-item').forEach(item => {
-            item.addEventListener('click', () => {
-                const page = item.dataset.page;
-                console.log('🔄 Navigation vers:', page);
-                
-                // Update active nav
-                document.querySelectorAll('.nav-item').forEach(nav => nav.classList.remove('active'));
-                item.classList.add('active');
-                
-                // Update page title
-                const title = item.querySelector('span').textContent;
-                document.querySelector('.page-title').textContent = title;
-                console.log('📄 Titre mis à jour:', title);
-                
-                // Show page
-                document.querySelectorAll('.content-page').forEach(p => {
-                    p.classList.remove('active');
-                    console.log('➖ Page cachée:', p.id);
-                });
-                
-                const targetPage = document.getElementById(page + '-page');
-                if (targetPage) {
-                    targetPage.classList.add('active');
-                    console.log('✅ Page affichée:', page + '-page');
-                } else {
-                    console.error('❌ Page introuvable:', page + '-page');
-                }
-            });
-        });
-
         // Chat functionality
         const messageInput = document.getElementById('messageInput');
         const sendBtn = document.getElementById('sendBtn');
@@ -1146,10 +1143,65 @@
             console.log('- typingIndicator:', !!typingIndicator);
             
             // Test des pages
-            const pages = ['chat', 'models', 'memory', 'integrations', 'workflows', 'analytics'];
+            const pages = ['chat', 'models', 'instructions', 'memory', 'integrations', 'workflows', 'analytics'];
             pages.forEach(page => {
                 const element = document.getElementById(page + '-page');
                 console.log(`- ${page}-page:`, !!element);
+            });
+            
+            // Configuration de la navigation
+            const navItems = document.querySelectorAll('.nav-item');
+            console.log('🔍 Boutons navigation trouvés:', navItems.length);
+            
+            navItems.forEach((item, index) => {
+                const page = item.dataset.page;
+                console.log(`Bouton ${index}: data-page="${page}"`);
+                
+                // Ajouter l'event listener
+                item.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    
+                    console.log('🔄 Clic sur navigation:', page);
+                    
+                    // Update active nav
+                    document.querySelectorAll('.nav-item').forEach(nav => nav.classList.remove('active'));
+                    item.classList.add('active');
+                    
+                    // Update page title
+                    const titleSpan = item.querySelector('span');
+                    if (titleSpan) {
+                        const title = titleSpan.textContent;
+                        const pageTitleElement = document.querySelector('.page-title');
+                        if (pageTitleElement) {
+                            pageTitleElement.textContent = title;
+                            console.log('📄 Titre mis à jour:', title);
+                        }
+                    }
+                    
+                    // Show page
+                    document.querySelectorAll('.content-page').forEach(p => {
+                        p.classList.remove('active');
+                        console.log('➖ Page cachée:', p.id);
+                    });
+                    
+                    const targetPage = document.getElementById(page + '-page');
+                    if (targetPage) {
+                        targetPage.classList.add('active');
+                        console.log('✅ Page affichée:', page + '-page');
+                        
+                        // Load instructions if needed
+                        if (page === 'instructions') {
+                            setTimeout(() => {
+                                if (typeof loadInstructions === 'function') {
+                                    loadInstructions();
+                                }
+                            }, 100);
+                        }
+                    } else {
+                        console.error('❌ Page introuvable:', page + '-page');
+                    }
+                });
             });
         });
 
@@ -1205,13 +1257,20 @@
                     
                     // Add AI response
                     addMessage(data.response, 'assistant');
+                    
+                    // Show info if simulated
+                    if (data.simulated) {
+                        showNotification('💡 Mode simulation actif - Configurez vos clés API pour l\'IA complète', 'info');
+                    }
                 } else {
                     addMessage('❌ Erreur: ' + (data.error || 'Une erreur est survenue'), 'assistant', true);
+                    showNotification('❌ Erreur API: ' + (data.error || 'Problème de connexion'), 'error');
                 }
             } catch (error) {
                 hideTypingIndicator();
                 console.error('Erreur de communication:', error);
-                addMessage('❌ Erreur de connexion. Vérifiez votre connexion et réessayez.', 'assistant', true);
+                addMessage('❌ Erreur de connexion. Mode simulation activé.', 'assistant', true);
+                showNotification('🔄 Connexion API échouée - Mode simulation activé', 'info');
             }
 
             // Re-enable input
@@ -1314,14 +1373,14 @@
                 const data = await response.json();
                 
                 if (data.success) {
-                    alert('✅ Instructions sauvegardées avec succès !');
+                    showNotification('✅ Instructions sauvegardées avec succès !', 'success');
                     updatePromptPreview(data.instructions);
                 } else {
-                    alert('❌ Erreur: ' + (data.error || 'Erreur inconnue'));
+                    showNotification('❌ Erreur: ' + (data.error || 'Erreur inconnue'), 'error');
                 }
             } catch (error) {
                 console.error('Erreur sauvegarde instructions:', error);
-                alert('❌ Erreur de connexion');
+                showNotification('❌ Erreur de connexion', 'error');
             }
         }
 
@@ -1358,6 +1417,37 @@ COMPORTEMENT:
         // Auto-load instructions when visiting the page
         if (window.location.hash === '#instructions') {
             loadInstructions();
+        }
+
+        // Système de notifications
+        function showNotification(message, type = 'info') {
+            // Supprimer les notifications existantes
+            const existingNotif = document.querySelector('.notification');
+            if (existingNotif) {
+                existingNotif.remove();
+            }
+
+            // Créer la nouvelle notification
+            const notification = document.createElement('div');
+            notification.className = `notification ${type}`;
+            notification.textContent = message;
+            
+            document.body.appendChild(notification);
+            
+            // Animer l'apparition
+            setTimeout(() => {
+                notification.classList.add('show');
+            }, 100);
+            
+            // Auto-supprimer après 4 secondes
+            setTimeout(() => {
+                notification.classList.remove('show');
+                setTimeout(() => {
+                    if (document.body.contains(notification)) {
+                        notification.remove();
+                    }
+                }, 300);
+            }, 4000);
         }
     </script>
 </body>

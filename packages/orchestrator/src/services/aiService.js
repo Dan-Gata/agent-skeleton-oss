@@ -78,11 +78,19 @@ COMPORTEMENT:
                 return await this.simulateResponse(message, model);
             }
         } catch (error) {
-            console.error('❌ Erreur service IA:', error);
+            console.error('❌ Erreur service IA:', error.response?.data || error.message);
+            
+            // Si c'est une erreur d'API (400, 401, etc.), utiliser la simulation
+            if (error.response?.status >= 400) {
+                console.log('🔄 Fallback vers simulation à cause de l\'erreur API');
+                return await this.simulateResponse(message, model);
+            }
+            
             return {
-                response: `❌ Erreur de connexion avec ${model}. ${error.message}`,
+                response: `❌ Erreur temporaire avec ${model}. Utilisation du mode simulation...`,
                 model: model,
-                error: true
+                error: true,
+                simulated: true
             };
         }
     }
@@ -169,31 +177,81 @@ COMPORTEMENT:
             return await this.simulateResponse(message, model);
         }
 
-        const response = await axios.post(
-            `${this.config.google.baseURL}/models/gemini-1.5-flash:generateContent?key=${this.config.google.apiKey}`,
-            {
-                contents: [
-                    {
-                        parts: [
-                            {
-                                text: `Tu es un assistant IA intelligent intégré dans Agent Skeleton OSS. Tu aides avec le développement, l'automatisation, et les intégrations. Voici la question de l'utilisateur: ${message}`
-                            }
-                        ]
-                    }
-                ]
-            },
-            {
-                headers: {
-                    'Content-Type': 'application/json'
-                }
-            }
-        );
+        // Sélectionner le bon modèle Gemini
+        let geminiModel = 'gemini-1.5-flash';
+        if (model.includes('2.0-flash') || model === 'gemini-2.0-flash') {
+            geminiModel = 'gemini-2.0-flash-exp';
+        } else if (model.includes('1.5-pro')) {
+            geminiModel = 'gemini-1.5-pro-latest';
+        }
 
-        return {
-            response: response.data.candidates[0].content.parts[0].text,
-            model: model,
-            usage: response.data.usageMetadata
-        };
+        console.log('🔑 Utilisation API Google avec modèle:', geminiModel);
+
+        try {
+            // Générer le prompt système complet
+            const systemPrompt = this.generateSystemPrompt();
+            const fullPrompt = `${systemPrompt}\n\nUtilisateur: ${message}\n\nAssistant:`;
+
+            const response = await axios.post(
+                `${this.config.google.baseURL}/models/${geminiModel}:generateContent?key=${this.config.google.apiKey}`,
+                {
+                    contents: [
+                        {
+                            parts: [
+                                {
+                                    text: fullPrompt
+                                }
+                            ]
+                        }
+                    ],
+                    generationConfig: {
+                        maxOutputTokens: 1000,
+                        temperature: 0.7,
+                        topP: 0.8,
+                        topK: 40
+                    },
+                    safetySettings: [
+                        {
+                            category: "HARM_CATEGORY_HARASSMENT",
+                            threshold: "BLOCK_MEDIUM_AND_ABOVE"
+                        },
+                        {
+                            category: "HARM_CATEGORY_HATE_SPEECH",
+                            threshold: "BLOCK_MEDIUM_AND_ABOVE"
+                        },
+                        {
+                            category: "HARM_CATEGORY_SEXUALLY_EXPLICIT",
+                            threshold: "BLOCK_MEDIUM_AND_ABOVE"
+                        },
+                        {
+                            category: "HARM_CATEGORY_DANGEROUS_CONTENT",
+                            threshold: "BLOCK_MEDIUM_AND_ABOVE"
+                        }
+                    ]
+                },
+                {
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    timeout: 30000
+                }
+            );
+
+            if (!response.data.candidates || !response.data.candidates[0] || !response.data.candidates[0].content) {
+                throw new Error('Réponse Gemini invalide');
+            }
+
+            return {
+                response: response.data.candidates[0].content.parts[0].text,
+                model: model,
+                usage: response.data.usageMetadata
+            };
+        } catch (error) {
+            console.error('❌ Erreur API Google:', error.response?.data || error.message);
+            
+            // Fallback en cas d'erreur
+            return await this.simulateResponse(message, model);
+        }
     }
 
     async callOpenRouter(message, model) {
