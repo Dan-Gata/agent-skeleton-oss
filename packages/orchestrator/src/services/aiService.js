@@ -309,39 +309,46 @@ COMPORTEMENT:
         // Réponses simulées améliorées en attendant les clés API
         const responses = {
             'gpt-4o-mini': [
-                `🚀 GPT-4o Mini : Excellente question ! Pour ${message.toLowerCase().includes('n8n') ? 'n8n' : message.toLowerCase().includes('coolify') ? 'Coolify' : 'cela'}, je recommande une approche structurée...`,
-                `⚡ GPT-4o Mini : Basé sur votre demande concernant "${message.substring(0, 50)}...", voici mon analyse détaillée...`,
-                `🎯 GPT-4o Mini : Je comprends votre besoin. Pour optimiser cette solution, nous pourrions...`
+                `Excellente question ! Concernant ${message.toLowerCase().includes('n8n') ? 'n8n' : message.toLowerCase().includes('coolify') ? 'Coolify' : 'votre demande'}, je recommande une approche structurée. Voici comment procéder étape par étape...`,
+                `Basé sur votre demande, voici mon analyse détaillée. La meilleure pratique serait de commencer par identifier les composants clés et leurs interactions...`,
+                `Je comprends votre besoin. Pour optimiser cette solution, nous pourrions envisager plusieurs approches. La plus efficace serait probablement...`
             ],
             'grok-beta': [
-                `🤖 Grok : Ah, une question intéressante ! Laissez-moi vous donner ma perspective unique sur "${message.substring(0, 30)}..."`,
-                `⚡ Grok Fast : Traitement rapide de votre demande ! Voici une approche efficace pour résoudre cela...`,
-                `🔥 Grok : D'après mon analyse, la meilleure stratégie serait...`
+                `Ah, une question intéressante ! Laissez-moi vous donner ma perspective unique sur ce défi. D'après mon analyse, la stratégie optimale serait...`,
+                `Traitement rapide de votre demande ! Voici une approche efficace et moderne pour résoudre ce problème de manière élégante...`,
+                `Excellent ! Cette question mérite une réponse technique précise. Basé sur les meilleures pratiques actuelles, je recommande...`
             ],
             'claude-3.5-sonnet': [
-                `🧠 Claude 3.5 Sonnet : Je vais analyser votre demande avec attention. Concernant "${message.substring(0, 40)}...", voici ma réflexion structurée...`,
-                `💡 Claude 3.5 : Excellente question qui mérite une réponse nuancée. Permettez-moi de décomposer cela...`,
-                `📊 Claude 3.5 Sonnet : Après analyse de votre demande, je propose cette approche méthodique...`
+                `Je vais analyser votre demande avec attention. Cette question soulève plusieurs points intéressants que nous pouvons aborder méthodiquement...`,
+                `Excellente question qui mérite une réponse nuancée. Permettez-moi de décomposer les différents aspects et de proposer une solution structurée...`,
+                `Après analyse de votre demande, je propose cette approche méthodique qui prend en compte les contraintes techniques et les bonnes pratiques...`
             ],
             'gemini-2.0-flash': [
-                `💎 Gemini 2.0 Flash : Traitement ultra-rapide ! Pour votre question sur "${message.substring(0, 35)}...", voici ma réponse optimisée...`,
-                `🌟 Gemini Flash : Analyse multimodale en cours... Voici une solution complète pour votre demande...`,
-                `⚡ Gemini 2.0 : Réponse instantanée ! Basé sur les dernières données, je recommande...`
+                `Traitement ultra-rapide de votre question ! Voici une solution optimisée basée sur les dernières technologies et méthodologies...`,
+                `Analyse multimodale complétée. Cette demande nécessite une approche holistique que je vais détailler point par point...`,
+                `Réponse instantanée ! Basé sur les données les plus récentes, je recommande cette stratégie progressive et scalable...`
             ]
         };
 
         const modelResponses = responses[model] || responses['gpt-4o-mini'];
         const response = modelResponses[Math.floor(Math.random() * modelResponses.length)];
 
-        // Ajouter du contexte spécifique
+        // Ajouter du contexte spécifique basé sur les mots-clés
         let contextualResponse = response;
+        
         if (message.toLowerCase().includes('n8n')) {
-            contextualResponse += `\n\n🔗 Pour n8n spécifiquement : créez un webhook trigger, ajoutez une condition de filtrage, puis connectez à votre API de destination. N'oubliez pas de tester en mode debug !`;
+            contextualResponse += `\n\n🔗 **Pour n8n spécifiquement :**\n• Créez un webhook trigger pour déclencher le workflow\n• Ajoutez une condition de filtrage pour valider les données\n• Connectez à votre API de destination avec gestion d'erreurs\n• Testez en mode debug pour vérifier le flux de données`;
         } else if (message.toLowerCase().includes('coolify')) {
-            contextualResponse += `\n\n🚀 Pour Coolify : vérifiez vos variables d'environnement, assurez-vous que le Dockerfile est optimisé, et surveillez les logs de déploiement.`;
+            contextualResponse += `\n\n🚀 **Pour Coolify :**\n• Vérifiez vos variables d'environnement dans l'interface\n• Assurez-vous que le Dockerfile est optimisé\n• Surveillez les logs de déploiement en temps réel\n• Configurez les health checks pour la stabilité`;
         } else if (message.toLowerCase().includes('baserow')) {
-            contextualResponse += `\n\n📊 Pour Baserow : utilisez l'API REST, configurez les webhooks pour les mises à jour en temps réel, et pensez à la structure de vos tables.`;
+            contextualResponse += `\n\n📊 **Pour Baserow :**\n• Utilisez l'API REST pour les opérations CRUD\n• Configurez les webhooks pour les mises à jour automatiques\n• Structurez vos tables avec les bons types de champs\n• Implémentez la pagination pour les grandes datasets`;
+        } else {
+            // Réponse générique plus utile
+            contextualResponse += `\n\n💡 **Prochaines étapes recommandées :**\n• Définir clairement les objectifs et contraintes\n• Choisir les outils appropriés pour votre stack\n• Implémenter une solution MVP pour validation\n• Itérer basé sur les retours utilisateurs`;
         }
+
+        // Ajouter l'indication de mode démo de manière subtile
+        contextualResponse += `\n\n---\n💡 *Mode démo - Configurez vos clés API pour des réponses IA personnalisées*`;
 
         return {
             response: contextualResponse,
