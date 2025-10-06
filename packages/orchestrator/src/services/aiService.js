@@ -347,9 +347,6 @@ COMPORTEMENT:
             contextualResponse += `\n\n💡 **Prochaines étapes recommandées :**\n• Définir clairement les objectifs et contraintes\n• Choisir les outils appropriés pour votre stack\n• Implémenter une solution MVP pour validation\n• Itérer basé sur les retours utilisateurs`;
         }
 
-        // Ajouter l'indication de mode démo de manière subtile
-        contextualResponse += `\n\n---\n💡 *Mode démo - Configurez vos clés API pour des réponses IA personnalisées*`;
-
         return {
             response: contextualResponse,
             model: model,

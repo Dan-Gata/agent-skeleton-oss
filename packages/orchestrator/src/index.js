@@ -109,6 +109,30 @@ app.get('/health', (req, res) => {
     });
 });
 
+// 🔑 API Keys Status Check (pour debug)
+app.get('/api/status', (req, res) => {
+    const status = {
+        openai: !!process.env.OPENAI_API_KEY,
+        anthropic: !!process.env.ANTHROPIC_API_KEY,
+        google: !!process.env.GOOGLE_API_KEY,
+        openrouter: !!process.env.OPENROUTER_API_KEY,
+        keys_count: [
+            process.env.OPENAI_API_KEY,
+            process.env.ANTHROPIC_API_KEY, 
+            process.env.GOOGLE_API_KEY,
+            process.env.OPENROUTER_API_KEY
+        ].filter(Boolean).length,
+        demo_mode: ![
+            process.env.OPENAI_API_KEY,
+            process.env.ANTHROPIC_API_KEY, 
+            process.env.GOOGLE_API_KEY,
+            process.env.OPENROUTER_API_KEY
+        ].some(Boolean)
+    };
+    
+    res.json(status);
+});
+
 // 💬 API Chat avec validation et rate limiting
 app.post('/api/chat', chatLimiter, async (req, res) => {
     try {
