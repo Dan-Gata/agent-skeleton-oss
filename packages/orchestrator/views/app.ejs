@@ -228,6 +228,29 @@
             margin: 0 auto;
         }
 
+        .model-selector {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 12px;
+        }
+
+        .model-label {
+            font-size: 14px;
+            color: var(--text-secondary);
+            font-weight: 500;
+        }
+
+        .model-select {
+            padding: 8px 12px;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            background: var(--bg-tertiary);
+            color: var(--text-primary);
+            font-size: 14px;
+            outline: none;
+        }
+
         .message-input {
             width: 100%;
             min-height: 50px;
@@ -274,30 +297,6 @@
         .send-btn:disabled {
             opacity: 0.5;
             cursor: not-allowed;
-        }
-
-        /* Model Selector */
-        .model-selector {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            margin-bottom: 12px;
-        }
-
-        .model-select {
-            padding: 8px 12px;
-            border: 1px solid var(--border-color);
-            border-radius: 8px;
-            background: var(--bg-tertiary);
-            color: var(--text-primary);
-            font-size: 14px;
-            outline: none;
-        }
-
-        .model-label {
-            font-size: 14px;
-            color: var(--text-secondary);
-            font-weight: 500;
         }
 
         /* Typing indicator */
@@ -447,35 +446,7 @@
             to { opacity: 1; transform: translateY(0); }
         }
 
-        /* Notifications */
-        .notification {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            padding: 16px 20px;
-            border-radius: 8px;
-            color: white;
-            font-weight: 500;
-            z-index: 1000;
-            transform: translateX(400px);
-            transition: transform 0.3s ease;
-        }
-
-        .notification.show {
-            transform: translateX(0);
-        }
-
-        .notification.success {
-            background: var(--accent-success);
-        }
-
-        .notification.error {
-            background: var(--accent-danger);
-        }
-
-        .notification.info {
-            background: var(--accent-primary);
-        }
+        /* Responsive */
         @media (max-width: 768px) {
             .sidebar {
                 width: 260px;
@@ -528,18 +499,6 @@
                     <i class="nav-icon fas fa-brain"></i>
                     <span>Modèles IA</span>
                     <span class="nav-badge">8</span>
-                </button>
-                
-                <button class="nav-item" data-page="instructions">
-                    <i class="nav-icon fas fa-edit"></i>
-                    <span>Instructions</span>
-                    <span class="nav-badge">Brand</span>
-                </button>
-                
-                <button class="nav-item" data-page="memory">
-                    <i class="nav-icon fas fa-database"></i>
-                    <span>Mémoire</span>
-                    <span class="nav-badge">1.0MB</span>
                 </button>
                 
                 <button class="nav-item" data-page="integrations">
@@ -610,15 +569,11 @@
                         <div class="input-container">
                             <div class="model-selector">
                                 <span class="model-label">Modèle :</span>
-                                <select id="modelSelect" class="model-select">
+                                <select id="modelSelect" class="model-select" title="Sélectionnez un modèle IA">
                                     <option value="gpt-4o-mini">GPT-4o Mini (OpenAI)</option>
                                     <option value="grok-beta">Grok Beta (xAI)</option>
-                                    <option value="grok-2">Grok-2 (xAI)</option>
                                     <option value="claude-3.5-sonnet">Claude 3.5 Sonnet (Anthropic)</option>
-                                    <option value="claude-3-haiku">Claude 3 Haiku (Anthropic)</option>
                                     <option value="gemini-2.0-flash">Gemini 2.0 Flash (Google)</option>
-                                    <option value="gemini-1.5-pro">Gemini 1.5 Pro (Google)</option>
-                                    <option value="gpt-4">GPT-4 (OpenAI)</option>
                                 </select>
                             </div>
                             <textarea 
@@ -626,8 +581,9 @@
                                 class="message-input" 
                                 placeholder="Tapez votre message..."
                                 rows="1"
+                                title="Zone de saisie de message"
                             ></textarea>
-                            <button id="sendBtn" class="send-btn">
+                            <button id="sendBtn" class="send-btn" title="Envoyer le message">
                                 <i class="fas fa-paper-plane"></i>
                             </button>
                             
@@ -644,478 +600,58 @@
                 </div>
             </div>
 
-            <!-- Other Pages -->
+            <!-- Models Page -->
             <div id="models-page" class="content-page">
-                <div style="padding: 20px;">
-                    <h2 style="margin-bottom: 20px;">🧠 Modèles IA Disponibles</h2>
-                    
-                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px;">
-                        <div class="quick-action" style="cursor: default;">
-                            <div class="quick-action-icon" style="background: linear-gradient(135deg, #ff6b6b, #ff8e53);">
-                                <i class="fas fa-brain"></i>
-                            </div>
-                            <div class="quick-action-title">Claude 3.5 Sonnet</div>
-                            <div class="quick-action-desc">Modèle avancé d'Anthropic. Excellent pour le raisonnement complexe, l'analyse et la créativité.</div>
-                            <div style="margin-top: 10px; font-size: 12px; color: var(--accent-success);">✅ Recommandé</div>
-                        </div>
-                        
-                        <div class="quick-action" style="cursor: default;">
-                            <div class="quick-action-icon" style="background: linear-gradient(135deg, #10b981, #059669);">
-                                <i class="fas fa-robot"></i>
-                            </div>
-                            <div class="quick-action-title">GPT-4</div>
-                            <div class="quick-action-desc">Modèle puissant d'OpenAI. Polyvalent pour tous types de tâches et conversations.</div>
-                            <div style="margin-top: 10px; font-size: 12px; color: var(--accent-primary);">⚡ Rapide</div>
-                        </div>
-                        
-                        <div class="quick-action" style="cursor: default;">
-                            <div class="quick-action-icon" style="background: linear-gradient(135deg, #3b82f6, #1d4ed8);">
-                                <i class="fas fa-lightning-bolt"></i>
-                            </div>
-                            <div class="quick-action-title">GPT-3.5 Turbo</div>
-                            <div class="quick-action-desc">Version optimisée et rapide de GPT-3.5. Idéal pour les réponses rapides.</div>
-                            <div style="margin-top: 10px; font-size: 12px; color: var(--accent-warning);">⚡ Ultra-rapide</div>
-                        </div>
-                        
-                        <div class="quick-action" style="cursor: default;">
-                            <div class="quick-action-icon" style="background: linear-gradient(135deg, #8b5cf6, #7c3aed);">
-                                <i class="fas fa-gem"></i>
-                            </div>
-                            <div class="quick-action-title">Gemini Pro</div>
-                            <div class="quick-action-desc">Modèle multimodal de Google. Excellente compréhension contextuelle.</div>
-                            <div style="margin-top: 10px; font-size: 12px; color: var(--text-muted);">🔄 Multimodal</div>
-                        </div>
-                        
-                        <div class="quick-action" style="cursor: default;">
-                            <div class="quick-action-icon" style="background: linear-gradient(135deg, #f59e0b, #d97706);">
-                                <i class="fas fa-fire"></i>
-                            </div>
-                            <div class="quick-action-title">Llama 2</div>
-                            <div class="quick-action-desc">Modèle open-source de Meta. Performant et transparent.</div>
-                            <div style="margin-top: 10px; font-size: 12px; color: var(--text-muted);">🔓 Open Source</div>
-                        </div>
-                        
-                        <div class="quick-action" style="cursor: default;">
-                            <div class="quick-action-icon" style="background: linear-gradient(135deg, #ef4444, #dc2626);">
-                                <i class="fas fa-star"></i>
-                            </div>
-                            <div class="quick-action-title">Qwen</div>
-                            <div class="quick-action-desc">Modèle avancé avec excellentes capacités multilingues et de raisonnement.</div>
-                            <div style="margin-top: 10px; font-size: 12px; color: var(--text-muted);">🌍 Multilingue</div>
-                        </div>
-                    </div>
-                    
-                    <div style="margin-top: 30px; padding: 20px; background: var(--bg-card); border-radius: 12px; border: 1px solid var(--border-color);">
-                        <h3 style="margin-bottom: 15px;">ℹ️ Comment changer de modèle</h3>
-                        <p style="color: var(--text-secondary); line-height: 1.6;">
-                            Pour changer de modèle IA, utilisez le sélecteur dans l'interface de chat. 
-                            Chaque modèle a ses propres forces : Claude pour l'analyse, GPT-4 pour la polyvalence, 
-                            Gemini pour le multimodal, etc.
-                        </p>
+                <div class="feature-placeholder">
+                    <h2>🧠 Modèles IA</h2>
+                    <p>Gestion des modèles d'intelligence artificielle</p>
+                    <div style="margin-top: 20px;">
+                        <p><strong>GPT-4o Mini :</strong> Rapide et efficace pour la plupart des tâches</p>
+                        <p><strong>Grok Beta :</strong> Spécialisé dans le code et l'analyse technique</p>
+                        <p><strong>Claude 3.5 Sonnet :</strong> Excellent pour l'analyse et la créativité</p>
+                        <p><strong>Gemini 2.0 Flash :</strong> Très rapide, bon pour les réponses courtes</p>
                     </div>
                 </div>
             </div>
 
-            <div id="instructions-page" class="content-page">
-                <div style="padding: 20px;">
-                    <h2 style="margin-bottom: 20px;">📝 Instructions Agent</h2>
-                    
-                    <div style="background: var(--bg-card); padding: 20px; border-radius: 12px; border: 1px solid var(--border-color); margin-bottom: 20px;">
-                        <h3 style="margin-bottom: 15px;">🎯 Personnalisez votre Assistant IA</h3>
-                        <p style="color: var(--text-secondary); margin-bottom: 20px;">
-                            Configurez la personnalité, le tone et l'expertise de votre agent pour qu'il corresponde parfaitement à votre marque et vos besoins.
-                        </p>
-                        
-                        <form id="instructionsForm" style="display: grid; gap: 20px;">
-                            <div style="display: grid; grid-template-columns: 1fr 2fr; gap: 15px; align-items: center;">
-                                <label style="font-weight: 500;">🏢 Nom de marque :</label>
-                                <input type="text" id="brandName" placeholder="Agent Skeleton OSS" 
-                                       style="padding: 10px; border: 1px solid var(--border-color); border-radius: 6px; background: var(--bg-tertiary); color: var(--text-primary);">
-                            </div>
-                            
-                            <div style="display: grid; grid-template-columns: 1fr 2fr; gap: 15px; align-items: center;">
-                                <label style="font-weight: 500;">🎭 Tone de communication :</label>
-                                <select id="brandTone" style="padding: 10px; border: 1px solid var(--border-color); border-radius: 6px; background: var(--bg-tertiary); color: var(--text-primary);">
-                                    <option value="professionnel et bienveillant">Professionnel et bienveillant</option>
-                                    <option value="décontracté et amical">Décontracté et amical</option>
-                                    <option value="technique et précis">Technique et précis</option>
-                                    <option value="créatif et inspirant">Créatif et inspirant</option>
-                                    <option value="formel et respectueux">Formel et respectueux</option>
-                                </select>
-                            </div>
-                            
-                            <div style="display: grid; grid-template-columns: 1fr 2fr; gap: 15px; align-items: center;">
-                                <label style="font-weight: 500;">🎯 Domaines d'expertise :</label>
-                                <input type="text" id="expertise" placeholder="développement, automatisation, intégrations" 
-                                       style="padding: 10px; border: 1px solid var(--border-color); border-radius: 6px; background: var(--bg-tertiary); color: var(--text-primary);">
-                            </div>
-                            
-                            <div style="display: grid; grid-template-columns: 1fr 2fr; gap: 15px; align-items: center;">
-                                <label style="font-weight: 500;">🌍 Langue de réponse :</label>
-                                <select id="language" style="padding: 10px; border: 1px solid var(--border-color); border-radius: 6px; background: var(--bg-tertiary); color: var(--text-primary);">
-                                    <option value="français">Français</option>
-                                    <option value="anglais">English</option>
-                                    <option value="espagnol">Español</option>
-                                    <option value="allemand">Deutsch</option>
-                                </select>
-                            </div>
-                            
-                            <div style="display: grid; grid-template-columns: 1fr 2fr; gap: 15px; align-items: start;">
-                                <label style="font-weight: 500;">🤖 Personnalité :</label>
-                                <textarea id="personality" rows="3" placeholder="assistant IA intelligent et serviable" 
-                                          style="padding: 10px; border: 1px solid var(--border-color); border-radius: 6px; background: var(--bg-tertiary); color: var(--text-primary); resize: vertical;"></textarea>
-                            </div>
-                            
-                            <div style="display: flex; gap: 10px; justify-content: end;">
-                                <button type="button" id="loadInstructions" style="background: var(--bg-tertiary); color: var(--text-primary); border: 1px solid var(--border-color); padding: 10px 20px; border-radius: 6px; cursor: pointer;">
-                                    📥 Charger
-                                </button>
-                                <button type="submit" style="background: var(--accent-primary); color: white; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer;">
-                                    💾 Sauvegarder
-                                </button>
-                            </div>
-                        </form>
-                    </div>
-                    
-                    <div style="background: var(--bg-card); padding: 20px; border-radius: 12px; border: 1px solid var(--border-color);">
-                        <h3 style="margin-bottom: 15px;">🔍 Aperçu du prompt système</h3>
-                        <div id="systemPromptPreview" style="background: var(--bg-tertiary); padding: 15px; border-radius: 8px; font-family: monospace; font-size: 14px; line-height: 1.6; color: var(--text-secondary);">
-                            Chargement de l'aperçu...
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div id="memory-page" class="content-page">
-                <div style="padding: 20px;">
-                    <h2 style="margin-bottom: 20px;">🧠 Mémoire Agent</h2>
-                    
-                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; margin-bottom: 30px;">
-                        <div style="background: var(--bg-card); padding: 20px; border-radius: 12px; border: 1px solid var(--border-color);">
-                            <h3 style="color: var(--accent-primary); margin-bottom: 10px;">📊 Utilisation Mémoire</h3>
-                            <div style="font-size: 24px; font-weight: bold; margin-bottom: 5px;">2.1 MB</div>
-                            <div style="color: var(--text-secondary);">Données stockées en contexte</div>
-                        </div>
-                        
-                        <div style="background: var(--bg-card); padding: 20px; border-radius: 12px; border: 1px solid var(--border-color);">
-                            <h3 style="color: var(--accent-success); margin-bottom: 10px;">💬 Conversations</h3>
-                            <div style="font-size: 24px; font-weight: bold; margin-bottom: 5px;">15</div>
-                            <div style="color: var(--text-secondary);">Conversations sauvegardées</div>
-                        </div>
-                        
-                        <div style="background: var(--bg-card); padding: 20px; border-radius: 12px; border: 1px solid var(--border-color);">
-                            <h3 style="color: var(--accent-warning); margin-bottom: 10px;">🎯 Contexte</h3>
-                            <div style="font-size: 24px; font-weight: bold; margin-bottom: 5px;">85%</div>
-                            <div style="color: var(--text-secondary);">Pertinence contextuelle</div>
-                        </div>
-                    </div>
-                    
-                    <div style="background: var(--bg-card); padding: 20px; border-radius: 12px; border: 1px solid var(--border-color);">
-                        <h3 style="margin-bottom: 15px;">📋 Historique Récent</h3>
-                        <div style="display: flex; flex-direction: column; gap: 10px;">
-                            <div style="padding: 10px; background: var(--bg-tertiary); border-radius: 8px; margin-bottom: 10px;">
-                                <div style="font-weight: 500;">Conversation avec Claude 3.5</div>
-                                <div style="color: var(--text-secondary); font-size: 14px;">Développement d'application - il y a 2h</div>
-                            </div>
-                            <div style="padding: 10px; background: var(--bg-tertiary); border-radius: 8px; margin-bottom: 10px;">
-                                <div style="font-weight: 500;">Configuration n8n</div>
-                                <div style="color: var(--text-secondary); font-size: 14px;">Workflow automation - il y a 5h</div>
-                            </div>
-                            <div style="padding: 10px; background: var(--bg-tertiary); border-radius: 8px;">
-                                <div style="font-weight: 500;">Déploiement Coolify</div>
-                                <div style="color: var(--text-secondary); font-size: 14px;">DevOps et deployment - il y a 1j</div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
+            <!-- Integrations Page -->
             <div id="integrations-page" class="content-page">
-                <div style="padding: 20px;">
-                    <h2 style="margin-bottom: 20px;">🔌 Intégrations API</h2>
-                    
-                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px;">
-                        <div style="background: var(--bg-card); padding: 20px; border-radius: 12px; border: 1px solid var(--border-color);">
-                            <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 15px;">
-                                <div style="width: 40px; height: 40px; border-radius: 8px; background: var(--accent-primary); display: flex; align-items: center; justify-content: center;">
-                                    <i class="fas fa-robot" style="color: white;"></i>
-                                </div>
-                                <div>
-                                    <h3>OpenRouter</h3>
-                                    <div style="color: var(--accent-success); font-size: 14px;">✅ Connecté</div>
-                                </div>
-                            </div>
-                            <p style="color: var(--text-secondary); margin-bottom: 15px;">Accès aux modèles Claude, GPT-4, Gemini et plus</p>
-                            <button style="background: var(--accent-primary); color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer;">Configurer</button>
-                        </div>
-                        
-                        <div style="background: var(--bg-card); padding: 20px; border-radius: 12px; border: 1px solid var(--border-color);">
-                            <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 15px;">
-                                <div style="width: 40px; height: 40px; border-radius: 8px; background: var(--accent-success); display: flex; align-items: center; justify-content: center;">
-                                    <i class="fas fa-database" style="color: white;"></i>
-                                </div>
-                                <div>
-                                    <h3>Baserow</h3>
-                                    <div style="color: var(--accent-success); font-size: 14px;">✅ Connecté</div>
-                                </div>
-                            </div>
-                            <p style="color: var(--text-secondary); margin-bottom: 15px;">Base de données no-code pour stockage</p>
-                            <button style="background: var(--accent-success); color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer;">Gérer</button>
-                        </div>
-                        
-                        <div style="background: var(--bg-card); padding: 20px; border-radius: 12px; border: 1px solid var(--border-color);">
-                            <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 15px;">
-                                <div style="width: 40px; height: 40px; border-radius: 8px; background: var(--accent-warning); display: flex; align-items: center; justify-content: center;">
-                                    <i class="fas fa-cloud" style="color: white;"></i>
-                                </div>
-                                <div>
-                                    <h3>Coolify</h3>
-                                    <div style="color: var(--accent-success); font-size: 14px;">✅ Connecté</div>
-                                </div>
-                            </div>
-                            <p style="color: var(--text-secondary); margin-bottom: 15px;">Plateforme de déploiement automatisé</p>
-                            <button style="background: var(--accent-warning); color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer;">Déployer</button>
-                        </div>
-                        
-                        <div style="background: var(--bg-card); padding: 20px; border-radius: 12px; border: 1px solid var(--border-color);">
-                            <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 15px;">
-                                <div style="width: 40px; height: 40px; border-radius: 8px; background: var(--accent-secondary); display: flex; align-items: center; justify-content: center;">
-                                    <i class="fas fa-key" style="color: white;"></i>
-                                </div>
-                                <div>
-                                    <h3>OpenAI</h3>
-                                    <div style="color: var(--text-muted); font-size: 14px;">⚠️ Configuration requise</div>
-                                </div>
-                            </div>
-                            <p style="color: var(--text-secondary); margin-bottom: 15px;">API directe pour GPT-4 et GPT-3.5</p>
-                            <button style="background: var(--bg-tertiary); color: var(--text-primary); border: 1px solid var(--border-color); padding: 8px 16px; border-radius: 6px; cursor: pointer;">Ajouter Clé</button>
-                        </div>
-                        
-                        <div style="background: var(--bg-card); padding: 20px; border-radius: 12px; border: 1px solid var(--border-color);">
-                            <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 15px;">
-                                <div style="width: 40px; height: 40px; border-radius: 8px; background: var(--accent-danger); display: flex; align-items: center; justify-content: center;">
-                                    <i class="fas fa-brain" style="color: white;"></i>
-                                </div>
-                                <div>
-                                    <h3>Anthropic</h3>
-                                    <div style="color: var(--text-muted); font-size: 14px;">⚠️ Configuration requise</div>
-                                </div>
-                            </div>
-                            <p style="color: var(--text-secondary); margin-bottom: 15px;">API directe pour Claude</p>
-                            <button style="background: var(--bg-tertiary); color: var(--text-primary); border: 1px solid var(--border-color); padding: 8px 16px; border-radius: 6px; cursor: pointer;">Ajouter Clé</button>
-                        </div>
-                        
-                        <div style="background: var(--bg-card); padding: 20px; border-radius: 12px; border: 1px solid var(--border-color);">
-                            <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 15px;">
-                                <div style="width: 40px; height: 40px; border-radius: 8px; background: linear-gradient(135deg, #4285f4, #34a853); display: flex; align-items: center; justify-content: center;">
-                                    <i class="fas fa-google" style="color: white;"></i>
-                                </div>
-                                <div>
-                                    <h3>Google AI</h3>
-                                    <div style="color: var(--text-muted); font-size: 14px;">⚠️ Configuration requise</div>
-                                </div>
-                            </div>
-                            <p style="color: var(--text-secondary); margin-bottom: 15px;">Gemini Pro et Bard</p>
-                            <button style="background: var(--bg-tertiary); color: var(--text-primary); border: 1px solid var(--border-color); padding: 8px 16px; border-radius: 6px; cursor: pointer;">Ajouter Clé</button>
-                        </div>
+                <div class="feature-placeholder">
+                    <h2>🔌 Intégrations API</h2>
+                    <p>Configuration des APIs et services externes</p>
+                    <div style="margin-top: 20px;">
+                        <p><strong>OpenAI :</strong> Pour GPT-4o Mini et autres modèles OpenAI</p>
+                        <p><strong>Anthropic :</strong> Pour Claude 3.5 Sonnet</p>
+                        <p><strong>Google AI :</strong> Pour Gemini 2.0 Flash</p>
+                        <p><strong>xAI :</strong> Pour Grok via OpenRouter</p>
                     </div>
                 </div>
             </div>
 
+            <!-- Workflows Page -->
             <div id="workflows-page" class="content-page">
-                <div style="padding: 20px;">
-                    <h2 style="margin-bottom: 20px;">🔄 Workflows n8n</h2>
-                    
-                    <div style="margin-bottom: 30px;">
-                        <button style="background: var(--accent-primary); color: white; border: none; padding: 12px 24px; border-radius: 8px; cursor: pointer; margin-right: 10px;">
-                            <i class="fas fa-plus" style="margin-right: 8px;"></i>Nouveau Workflow
-                        </button>
-                        <button style="background: var(--bg-tertiary); color: var(--text-primary); border: 1px solid var(--border-color); padding: 12px 24px; border-radius: 8px; cursor: pointer;">
-                            <i class="fas fa-sync" style="margin-right: 8px;"></i>Synchroniser
-                        </button>
-                    </div>
-                    
-                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); gap: 20px;">
-                        <div style="background: var(--bg-card); padding: 20px; border-radius: 12px; border: 1px solid var(--border-color);">
-                            <div style="display: flex; align-items: center; justify-content: between; margin-bottom: 15px;">
-                                <div style="display: flex; align-items: center; gap: 12px;">
-                                    <div style="width: 40px; height: 40px; border-radius: 8px; background: var(--accent-success); display: flex; align-items: center; justify-content: center;">
-                                        <i class="fas fa-robot" style="color: white;"></i>
-                                    </div>
-                                    <div>
-                                        <h3>Agent Chat Automation</h3>
-                                        <div style="color: var(--accent-success); font-size: 14px;">✅ Actif</div>
-                                    </div>
-                                </div>
-                            </div>
-                            <p style="color: var(--text-secondary); margin-bottom: 15px;">Automatise les réponses et sauvegarde les conversations importantes.</p>
-                            <div style="display: flex; gap: 10px;">
-                                <button style="background: var(--accent-primary); color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-size: 12px;">Modifier</button>
-                                <button style="background: var(--accent-warning); color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-size: 12px;">Pause</button>
-                            </div>
-                        </div>
-                        
-                        <div style="background: var(--bg-card); padding: 20px; border-radius: 12px; border: 1px solid var(--border-color);">
-                            <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 15px;">
-                                <div style="width: 40px; height: 40px; border-radius: 8px; background: var(--accent-primary); display: flex; align-items: center; justify-content: center;">
-                                    <i class="fas fa-database" style="color: white;"></i>
-                                </div>
-                                <div>
-                                    <h3>Baserow Sync</h3>
-                                    <div style="color: var(--accent-success); font-size: 14px;">✅ Actif</div>
-                                </div>
-                            </div>
-                            <p style="color: var(--text-secondary); margin-bottom: 15px;">Synchronise automatiquement les données entre l'agent et Baserow.</p>
-                            <div style="display: flex; gap: 10px;">
-                                <button style="background: var(--accent-primary); color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-size: 12px;">Modifier</button>
-                                <button style="background: var(--accent-warning); color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-size: 12px;">Pause</button>
-                            </div>
-                        </div>
-                        
-                        <div style="background: var(--bg-card); padding: 20px; border-radius: 12px; border: 1px solid var(--border-color);">
-                            <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 15px;">
-                                <div style="width: 40px; height: 40px; border-radius: 8px; background: var(--accent-secondary); display: flex; align-items: center; justify-content: center;">
-                                    <i class="fas fa-cloud" style="color: white;"></i>
-                                </div>
-                                <div>
-                                    <h3>Deploy Monitor</h3>
-                                    <div style="color: var(--accent-success); font-size: 14px;">✅ Actif</div>
-                                </div>
-                            </div>
-                            <p style="color: var(--text-secondary); margin-bottom: 15px;">Surveille les déploiements Coolify et notifie les changements.</p>
-                            <div style="display: flex; gap: 10px;">
-                                <button style="background: var(--accent-primary); color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-size: 12px;">Modifier</button>
-                                <button style="background: var(--accent-warning); color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-size: 12px;">Pause</button>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div style="margin-top: 30px; background: var(--bg-card); padding: 20px; border-radius: 12px; border: 1px solid var(--border-color);">
-                        <h3 style="margin-bottom: 15px;">📊 Statistiques des Workflows</h3>
-                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px;">
-                            <div style="text-align: center;">
-                                <div style="font-size: 24px; font-weight: bold; color: var(--accent-success);">3</div>
-                                <div style="color: var(--text-secondary);">Workflows actifs</div>
-                            </div>
-                            <div style="text-align: center;">
-                                <div style="font-size: 24px; font-weight: bold; color: var(--accent-primary);">127</div>
-                                <div style="color: var(--text-secondary);">Exécutions aujourd'hui</div>
-                            </div>
-                            <div style="text-align: center;">
-                                <div style="font-size: 24px; font-weight: bold; color: var(--accent-warning);">98.5%</div>
-                                <div style="color: var(--text-secondary);">Taux de succès</div>
-                            </div>
-                        </div>
+                <div class="feature-placeholder">
+                    <h2>🔄 Workflows n8n</h2>
+                    <p>Automatisations et workflows</p>
+                    <div style="margin-top: 20px;">
+                        <p><strong>3 workflows actifs :</strong></p>
+                        <p>• Agent Chat Automation</p>
+                        <p>• Baserow Sync</p>
+                        <p>• Deploy Monitor</p>
                     </div>
                 </div>
             </div>
 
+            <!-- Analytics Page -->
             <div id="analytics-page" class="content-page">
-                <div style="padding: 20px;">
-                    <h2 style="margin-bottom: 20px;">📊 Analytics</h2>
-                    
-                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; margin-bottom: 30px;">
-                        <div style="background: var(--bg-card); padding: 20px; border-radius: 12px; border: 1px solid var(--border-color);">
-                            <h3 style="color: var(--accent-primary); margin-bottom: 10px;">💬 Messages Aujourd'hui</h3>
-                            <div style="font-size: 32px; font-weight: bold; margin-bottom: 5px;">42</div>
-                            <div style="color: var(--accent-success); font-size: 14px;">↗️ +15% vs hier</div>
-                        </div>
-                        
-                        <div style="background: var(--bg-card); padding: 20px; border-radius: 12px; border: 1px solid var(--border-color);">
-                            <h3 style="color: var(--accent-success); margin-bottom: 10px;">⚡ Temps de Réponse</h3>
-                            <div style="font-size: 32px; font-weight: bold; margin-bottom: 5px;">1.2s</div>
-                            <div style="color: var(--accent-success); font-size: 14px;">↗️ Excellent</div>
-                        </div>
-                        
-                        <div style="background: var(--bg-card); padding: 20px; border-radius: 12px; border: 1px solid var(--border-color);">
-                            <h3 style="color: var(--accent-warning); margin-bottom: 10px;">🎯 Satisfaction</h3>
-                            <div style="font-size: 32px; font-weight: bold; margin-bottom: 5px;">94%</div>
-                            <div style="color: var(--accent-success); font-size: 14px;">↗️ +3% vs semaine</div>
-                        </div>
-                        
-                        <div style="background: var(--bg-card); padding: 20px; border-radius: 12px; border: 1px solid var(--border-color);">
-                            <h3 style="color: var(--accent-secondary); margin-bottom: 10px;">🔥 Modèle Populaire</h3>
-                            <div style="font-size: 18px; font-weight: bold; margin-bottom: 5px;">Claude 3.5</div>
-                            <div style="color: var(--text-secondary); font-size: 14px;">58% d'utilisation</div>
-                        </div>
-                    </div>
-                    
-                    <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 20px; margin-bottom: 30px;">
-                        <div style="background: var(--bg-card); padding: 20px; border-radius: 12px; border: 1px solid var(--border-color);">
-                            <h3 style="margin-bottom: 15px;">📈 Activité Cette Semaine</h3>
-                            <div style="height: 200px; display: flex; align-items: end; justify-content: space-between; background: var(--bg-tertiary); border-radius: 8px; padding: 20px;">
-                                <div style="width: 30px; height: 60%; background: var(--accent-primary); border-radius: 4px 4px 0 0;"></div>
-                                <div style="width: 30px; height: 80%; background: var(--accent-primary); border-radius: 4px 4px 0 0;"></div>
-                                <div style="width: 30px; height: 45%; background: var(--accent-primary); border-radius: 4px 4px 0 0;"></div>
-                                <div style="width: 30px; height: 90%; background: var(--accent-primary); border-radius: 4px 4px 0 0;"></div>
-                                <div style="width: 30px; height: 70%; background: var(--accent-primary); border-radius: 4px 4px 0 0;"></div>
-                                <div style="width: 30px; height: 100%; background: var(--accent-success); border-radius: 4px 4px 0 0;"></div>
-                                <div style="width: 30px; height: 85%; background: var(--accent-primary); border-radius: 4px 4px 0 0;"></div>
-                            </div>
-                            <div style="display: flex; justify-content: space-between; margin-top: 10px; font-size: 12px; color: var(--text-secondary);">
-                                <span>Lun</span><span>Mar</span><span>Mer</span><span>Jeu</span><span>Ven</span><span>Sam</span><span>Dim</span>
-                            </div>
-                        </div>
-                        
-                        <div style="background: var(--bg-card); padding: 20px; border-radius: 12px; border: 1px solid var(--border-color);">
-                            <h3 style="margin-bottom: 15px;">🎨 Modèles Utilisés</h3>
-                            <div style="display: flex; flex-direction: column; gap: 15px;">
-                                <div style="margin-bottom: 15px;">
-                                    <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
-                                        <span>Claude 3.5</span>
-                                        <span>58%</span>
-                                    </div>
-                                    <div style="width: 100%; height: 8px; background: var(--bg-tertiary); border-radius: 4px;">
-                                        <div style="width: 58%; height: 100%; background: var(--accent-primary); border-radius: 4px;"></div>
-                                    </div>
-                                </div>
-                                <div style="margin-bottom: 15px;">
-                                    <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
-                                        <span>GPT-4</span>
-                                        <span>28%</span>
-                                    </div>
-                                    <div style="width: 100%; height: 8px; background: var(--bg-tertiary); border-radius: 4px;">
-                                        <div style="width: 28%; height: 100%; background: var(--accent-success); border-radius: 4px;"></div>
-                                    </div>
-                                </div>
-                                <div style="margin-bottom: 15px;">
-                                    <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
-                                        <span>Gemini</span>
-                                        <span>14%</span>
-                                    </div>
-                                    <div style="width: 100%; height: 8px; background: var(--bg-tertiary); border-radius: 4px;">
-                                        <div style="width: 14%; height: 100%; background: var(--accent-warning); border-radius: 4px;"></div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div style="background: var(--bg-card); padding: 20px; border-radius: 12px; border: 1px solid var(--border-color);">
-                        <h3 style="margin-bottom: 15px;">🕒 Activité Récente</h3>
-                        <div style="display: flex; flex-direction: column; gap: 12px;">
-                            <div style="display: flex; align-items: center; gap: 12px; padding: 12px; background: var(--bg-tertiary); border-radius: 8px;">
-                                <div style="width: 8px; height: 8px; border-radius: 50%; background: var(--accent-success);"></div>
-                                <div style="flex: 1;">
-                                    <div style="font-weight: 500;">Message envoyé avec Claude 3.5</div>
-                                    <div style="color: var(--text-secondary); font-size: 14px;">il y a 2 minutes</div>
-                                </div>
-                            </div>
-                            <div style="display: flex; align-items: center; gap: 12px; padding: 12px; background: var(--bg-tertiary); border-radius: 8px;">
-                                <div style="width: 8px; height: 8px; border-radius: 50%; background: var(--accent-primary);"></div>
-                                <div style="flex: 1;">
-                                    <div style="font-weight: 500;">Workflow n8n exécuté</div>
-                                    <div style="color: var(--text-secondary); font-size: 14px;">il y a 5 minutes</div>
-                                </div>
-                            </div>
-                            <div style="display: flex; align-items: center; gap: 12px; padding: 12px; background: var(--bg-tertiary); border-radius: 8px;">
-                                <div style="width: 8px; height: 8px; border-radius: 50%; background: var(--accent-warning);"></div>
-                                <div style="flex: 1;">
-                                    <div style="font-weight: 500;">Page Modèles consultée</div>
-                                    <div style="color: var(--text-secondary); font-size: 14px;">il y a 8 minutes</div>
-                                </div>
-                            </div>
-                        </div>
+                <div class="feature-placeholder">
+                    <h2>📊 Analytics</h2>
+                    <p>Statistiques et métriques</p>
+                    <div style="margin-top: 20px;">
+                        <p><strong>Messages aujourd'hui :</strong> 42</p>
+                        <p><strong>Temps de réponse :</strong> 1.2s</p>
+                        <p><strong>Satisfaction :</strong> 94%</p>
+                        <p><strong>Modèle populaire :</strong> Claude 3.5 (58%)</p>
                     </div>
                 </div>
             </div>
@@ -1123,149 +659,63 @@
     </div>
 
     <script>
-        // Toutes les variables et fonctions dans DOMContentLoaded
-        document.addEventListener('DOMContentLoaded', function() {
-            console.log('🚀 DOM chargé, initialisation de l\'application...');
+        console.log('🚀 Initialisation de l\'application...');
 
-            // Variables globales
+        // Variables globales
+        let conversationId = null;
+        let currentPage = 'chat';
+
+        // Fonction de navigation
+        function navigateToPage(targetPage) {
+            console.log(`🎯 Navigation vers: ${targetPage}`);
+            
+            // Cacher toutes les pages
+            document.querySelectorAll('.content-page').forEach(page => {
+                page.classList.remove('active');
+            });
+            
+            // Afficher la page cible
+            const pageElement = document.getElementById(targetPage + '-page');
+            if (pageElement) {
+                pageElement.classList.add('active');
+                currentPage = targetPage;
+                console.log(`✅ Page affichée: ${targetPage}-page`);
+            } else {
+                console.error(`❌ Page introuvable: ${targetPage}-page`);
+                return false;
+            }
+            
+            // Mettre à jour les boutons de navigation
+            document.querySelectorAll('.nav-item').forEach(item => {
+                item.classList.remove('active');
+                if (item.dataset.page === targetPage) {
+                    item.classList.add('active');
+                    
+                    // Mettre à jour le titre
+                    const titleSpan = item.querySelector('span');
+                    if (titleSpan) {
+                        document.querySelector('.page-title').textContent = titleSpan.textContent;
+                    }
+                }
+            });
+            
+            return true;
+        }
+
+        // Fonctions de chat
+        async function sendMessage() {
             const messageInput = document.getElementById('messageInput');
             const sendBtn = document.getElementById('sendBtn');
             const messagesArea = document.getElementById('messages');
             const welcomeScreen = document.getElementById('welcome');
             const modelSelect = document.getElementById('modelSelect');
             const typingIndicator = document.getElementById('typingIndicator');
-            let conversationId = null;
 
-            // Test des éléments DOM
-            console.log('🔍 Test des éléments DOM:');
-            console.log('- messageInput:', !!messageInput);
-            console.log('- sendBtn:', !!sendBtn);
-            console.log('- messagesArea:', !!messagesArea);
-            console.log('- modelSelect:', !!modelSelect);
-            console.log('- typingIndicator:', !!typingIndicator);
-            
-            // Test des pages
-            const pages = ['chat', 'models', 'instructions', 'memory', 'integrations', 'workflows', 'analytics'];
-            pages.forEach(page => {
-                const element = document.getElementById(page + '-page');
-                console.log(`- ${page}-page:`, !!element);
-            });
-            
-            // ====== NAVIGATION SETUP ======
-            console.log('🔧 Configuration de la navigation...');
-            const navItems = document.querySelectorAll('.nav-item');
-            console.log('🔍 Boutons navigation trouvés:', navItems.length);
-            
-            navItems.forEach((item, index) => {
-                const page = item.dataset.page;
-                console.log(`Bouton ${index}: data-page="${page}"`);
-                
-                // Ajouter l'event listener avec une fonction nommée pour debug
-                item.addEventListener('click', function(e) {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    
-                    console.log('🎯 CLIC DÉTECTÉ sur:', page);
-                    
-                    // Vérifier que la page existe
-                    const targetPage = document.getElementById(page + '-page');
-                    if (!targetPage) {
-                        console.error('❌ Page introuvable:', page + '-page');
-                        return;
-                    }
-                    
-                    // Update active nav
-                    document.querySelectorAll('.nav-item').forEach(nav => {
-                        nav.classList.remove('active');
-                        console.log('➖ Removed active from:', nav.dataset.page);
-                    });
-                    item.classList.add('active');
-                    console.log('✅ Added active to:', page);
-                    
-                    // Update page title
-                    const titleSpan = item.querySelector('span');
-                    if (titleSpan) {
-                        const title = titleSpan.textContent;
-                        const pageTitleElement = document.querySelector('.page-title');
-                        if (pageTitleElement) {
-                            pageTitleElement.textContent = title;
-                            console.log('📄 Titre mis à jour:', title);
-                        }
-                    }
-                    
-                    // Hide all pages
-                    document.querySelectorAll('.content-page').forEach(p => {
-                        p.classList.remove('active');
-                        console.log('➖ Page cachée:', p.id);
-                    });
-                    
-                    // Show target page
-                    targetPage.classList.add('active');
-                    console.log('✅ Page affichée:', page + '-page');
-                    
-                    // Special handling for instructions page
-                    if (page === 'instructions') {
-                        setTimeout(() => {
-                            if (typeof loadInstructions === 'function') {
-                                console.log('📝 Loading instructions...');
-                                loadInstructions();
-                            }
-                        }, 100);
-                    }
-                });
-                
-                console.log(`✅ Event listener ajouté pour: ${page}`);
-            });
-            
-            console.log('🎉 Navigation configurée avec succès!');
-                item.addEventListener('click', (e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    
-                    console.log('🔄 Clic sur navigation:', page);
-                    
-                    // Update active nav
-                    document.querySelectorAll('.nav-item').forEach(nav => nav.classList.remove('active'));
-                    item.classList.add('active');
-                    
-                    // Update page title
-                    const titleSpan = item.querySelector('span');
-                    if (titleSpan) {
-                        const title = titleSpan.textContent;
-                        const pageTitleElement = document.querySelector('.page-title');
-                        if (pageTitleElement) {
-                            pageTitleElement.textContent = title;
-                            console.log('📄 Titre mis à jour:', title);
-                        }
-                    }
-                    
-                    // Show page
-                    document.querySelectorAll('.content-page').forEach(p => {
-                        p.classList.remove('active');
-                        console.log('➖ Page cachée:', p.id);
-                    });
-                    
-                    const targetPage = document.getElementById(page + '-page');
-                    if (targetPage) {
-                        targetPage.classList.add('active');
-                        console.log('✅ Page affichée:', page + '-page');
-                        
-                        // Load instructions if needed
-                        if (page === 'instructions') {
-                            setTimeout(() => {
-                                if (typeof loadInstructions === 'function') {
-                                    loadInstructions();
-                                }
-                            }, 100);
-                        }
-                    } else {
-                        console.error('❌ Page introuvable:', page + '-page');
-                    }
-                });
-            });
-        });
+            if (!messageInput || !sendBtn || !messagesArea || !modelSelect) {
+                console.error('❌ Éléments DOM manquants pour le chat');
+                return;
+            }
 
-        async function sendMessage() {
             const message = messageInput.value.trim();
             if (!message) return;
 
@@ -1283,10 +733,12 @@
             messageInput.value = '';
             
             // Show typing indicator
-            showTypingIndicator();
+            if (typingIndicator) {
+                typingIndicator.style.display = 'flex';
+                messagesArea.scrollTop = messagesArea.scrollHeight;
+            }
             
             try {
-                // Prepare data
                 const requestData = {
                     message: message,
                     conversationId: conversationId,
@@ -1295,7 +747,6 @@
                 
                 console.log('📤 Envoi de données:', requestData);
                 
-                // Call real API
                 const response = await fetch('/api/chat', {
                     method: 'POST',
                     headers: {
@@ -1304,33 +755,26 @@
                     body: JSON.stringify(requestData)
                 });
 
-                console.log('📥 Statut réponse:', response.status);
                 const data = await response.json();
                 console.log('📄 Données reçues:', data);
                 
                 // Hide typing indicator
-                hideTypingIndicator();
+                if (typingIndicator) {
+                    typingIndicator.style.display = 'none';
+                }
 
                 if (response.ok) {
-                    // Save conversation ID
                     conversationId = data.conversationId;
-                    
-                    // Add AI response
                     addMessage(data.response, 'assistant');
-                    
-                    // Show info if simulated
-                    if (data.simulated) {
-                        showNotification('💡 Mode simulation actif - Configurez vos clés API pour l\'IA complète', 'info');
-                    }
                 } else {
                     addMessage('❌ Erreur: ' + (data.error || 'Une erreur est survenue'), 'assistant', true);
-                    showNotification('❌ Erreur API: ' + (data.error || 'Problème de connexion'), 'error');
                 }
             } catch (error) {
-                hideTypingIndicator();
+                if (typingIndicator) {
+                    typingIndicator.style.display = 'none';
+                }
                 console.error('Erreur de communication:', error);
-                addMessage('❌ Erreur de connexion. Mode simulation activé.', 'assistant', true);
-                showNotification('🔄 Connexion API échouée - Mode simulation activé', 'info');
+                addMessage('❌ Erreur de connexion. Vérifiez votre connexion et réessayez.', 'assistant', true);
             }
 
             // Re-enable input
@@ -1340,6 +784,9 @@
         }
 
         function addMessage(content, type, isError = false) {
+            const messagesArea = document.getElementById('messages');
+            if (!messagesArea) return;
+
             const messageDiv = document.createElement('div');
             messageDiv.className = `message ${type}`;
             
@@ -1357,158 +804,66 @@
             messagesArea.scrollTop = messagesArea.scrollHeight;
         }
 
-        function showTypingIndicator() {
-            typingIndicator.style.display = 'flex';
-            messagesArea.scrollTop = messagesArea.scrollHeight;
-        }
-
-        function hideTypingIndicator() {
-            typingIndicator.style.display = 'none';
-        }
-
         function sendQuickMessage(message) {
-            messageInput.value = message;
-            sendMessage();
-        }
-
-        // Event listeners
-        sendBtn.addEventListener('click', sendMessage);
-        messageInput.addEventListener('keydown', (e) => {
-            if (e.key === 'Enter' && !e.shiftKey) {
-                e.preventDefault();
+            const messageInput = document.getElementById('messageInput');
+            if (messageInput) {
+                messageInput.value = message;
                 sendMessage();
             }
-        });
-
-        // Auto-resize textarea
-        messageInput.addEventListener('input', function() {
-            this.style.height = '50px';
-            this.style.height = Math.min(this.scrollHeight, 120) + 'px';
-        });
-
-        // Instructions functionality
-        const instructionsForm = document.getElementById('instructionsForm');
-        const loadInstructionsBtn = document.getElementById('loadInstructions');
-        const systemPromptPreview = document.getElementById('systemPromptPreview');
-
-        async function loadInstructions() {
-            try {
-                const response = await fetch('/api/instructions');
-                const data = await response.json();
-                
-                if (data.instructions) {
-                    document.getElementById('brandName').value = data.instructions.brand || '';
-                    document.getElementById('brandTone').value = data.instructions.tone || '';
-                    document.getElementById('expertise').value = data.instructions.expertise || '';
-                    document.getElementById('language').value = data.instructions.language || '';
-                    document.getElementById('personality').value = data.instructions.personality || '';
-                    
-                    updatePromptPreview(data.instructions);
-                }
-            } catch (error) {
-                console.error('Erreur chargement instructions:', error);
-            }
         }
 
-        async function saveInstructions(event) {
-            event.preventDefault();
+        // Initialisation quand le DOM est chargé
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('🎉 DOM chargé, initialisation...');
             
-            const instructions = {
-                brand: document.getElementById('brandName').value,
-                tone: document.getElementById('brandTone').value,
-                expertise: document.getElementById('expertise').value,
-                language: document.getElementById('language').value,
-                personality: document.getElementById('personality').value
-            };
+            // Configurer les boutons de navigation
+            const navItems = document.querySelectorAll('.nav-item');
+            console.log(`🔍 ${navItems.length} boutons de navigation trouvés`);
+            
+            navItems.forEach((item, index) => {
+                const page = item.dataset.page;
+                console.log(`Bouton ${index}: ${page}`);
+                
+                item.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    console.log(`🖱️ Clic détecté sur: ${page}`);
+                    navigateToPage(page);
+                });
+            });
+            
+            // Configurer le chat
+            const messageInput = document.getElementById('messageInput');
+            const sendBtn = document.getElementById('sendBtn');
 
-            try {
-                const response = await fetch('/api/instructions', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify(instructions)
+            if (sendBtn) {
+                sendBtn.addEventListener('click', sendMessage);
+                console.log('✅ Event listener ajouté pour sendBtn');
+            }
+            
+            if (messageInput) {
+                messageInput.addEventListener('keydown', (e) => {
+                    if (e.key === 'Enter' && !e.shiftKey) {
+                        e.preventDefault();
+                        sendMessage();
+                    }
                 });
 
-                const data = await response.json();
-                
-                if (data.success) {
-                    showNotification('✅ Instructions sauvegardées avec succès !', 'success');
-                    updatePromptPreview(data.instructions);
-                } else {
-                    showNotification('❌ Erreur: ' + (data.error || 'Erreur inconnue'), 'error');
-                }
-            } catch (error) {
-                console.error('Erreur sauvegarde instructions:', error);
-                showNotification('❌ Erreur de connexion', 'error');
+                messageInput.addEventListener('input', function() {
+                    this.style.height = '50px';
+                    this.style.height = Math.min(this.scrollHeight, 120) + 'px';
+                });
+                console.log('✅ Event listeners ajoutés pour messageInput');
             }
-        }
-
-        function updatePromptPreview(instructions) {
-            const preview = `Tu es ${instructions.personality || 'assistant IA intelligent'} pour ${instructions.brand || 'Agent Skeleton OSS'}.
-
-TONE ET STYLE:
-- Adopte un ton ${instructions.tone || 'professionnel et bienveillant'}
-- Réponds en ${instructions.language || 'français'}
-- Reste cohérent avec l'identité de marque de ${instructions.brand || 'Agent Skeleton OSS'}
-
-EXPERTISE:
-- Tu es spécialisé en ${instructions.expertise || 'développement, automatisation, intégrations'}
-- Tu aides particulièrement avec les outils : n8n, Coolify, Baserow
-- Tu fournis des solutions concrètes et pratiques
-
-COMPORTEMENT:
-- Sois précis et utile dans tes réponses
-- Adapte ta réponse au niveau technique de l'utilisateur
-- Suggère des améliorations quand c'est pertinent
-- Reste dans le cadre de ${instructions.brand || 'Agent Skeleton OSS'}`;
-
-            systemPromptPreview.textContent = preview;
-        }
-
-        // Event listeners for instructions
-        if (instructionsForm) {
-            instructionsForm.addEventListener('submit', saveInstructions);
-        }
-        if (loadInstructionsBtn) {
-            loadInstructionsBtn.addEventListener('click', loadInstructions);
-        }
-
-        // Auto-load instructions when visiting the page
-        if (window.location.hash === '#instructions') {
-            loadInstructions();
-        }
-
-        // Système de notifications
-        function showNotification(message, type = 'info') {
-            // Supprimer les notifications existantes
-            const existingNotif = document.querySelector('.notification');
-            if (existingNotif) {
-                existingNotif.remove();
-            }
-
-            // Créer la nouvelle notification
-            const notification = document.createElement('div');
-            notification.className = `notification ${type}`;
-            notification.textContent = message;
             
-            document.body.appendChild(notification);
+            // Exposer les fonctions globalement
+            window.navigateToPage = navigateToPage;
+            window.sendQuickMessage = sendQuickMessage;
             
-            // Animer l'apparition
-            setTimeout(() => {
-                notification.classList.add('show');
-            }, 100);
-            
-            // Auto-supprimer après 4 secondes
-            setTimeout(() => {
-                notification.classList.remove('show');
-                setTimeout(() => {
-                    if (document.body.contains(notification)) {
-                        notification.remove();
-                    }
-                }, 300);
-            }, 4000);
-        }
+            console.log('✅ Initialisation terminée');
+        });
+        
+        console.log('📝 Script chargé complètement');
     </script>
 </body>
 </html>
