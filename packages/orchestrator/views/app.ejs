@@ -440,6 +440,159 @@
             color: var(--text-secondary);
         }
 
+        /* Cards Layout */
+        .cards-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            padding: 20px 0;
+            max-width: 1200px;
+        }
+
+        .info-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 24px;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .info-card:hover {
+            border-color: var(--accent-primary);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+        }
+
+        .card-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+
+        .card-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            color: white;
+        }
+
+        .card-icon.model { background: linear-gradient(135deg, #3b82f6, #8b5cf6); }
+        .card-icon.integration { background: linear-gradient(135deg, #10b981, #059669); }
+        .card-icon.workflow { background: linear-gradient(135deg, #f59e0b, #d97706); }
+        .card-icon.analytics { background: linear-gradient(135deg, #ef4444, #dc2626); }
+
+        .card-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin: 0;
+        }
+
+        .card-subtitle {
+            font-size: 14px;
+            color: var(--text-secondary);
+            margin: 4px 0 0 0;
+        }
+
+        .card-content {
+            color: var(--text-secondary);
+            line-height: 1.6;
+        }
+
+        .model-status {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 500;
+            margin-top: 8px;
+        }
+
+        .status-active {
+            background: rgba(16, 185, 129, 0.1);
+            color: var(--accent-success);
+        }
+
+        .status-demo {
+            background: rgba(245, 158, 11, 0.1);
+            color: var(--accent-warning);
+        }
+
+        .status-inactive {
+            background: rgba(239, 68, 68, 0.1);
+            color: var(--accent-danger);
+        }
+
+        .status-dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+        }
+
+        .status-active .status-dot { background: var(--accent-success); }
+        .status-demo .status-dot { background: var(--accent-warning); }
+        .status-inactive .status-dot { background: var(--accent-danger); }
+
+        .metric-value {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin: 8px 0 4px 0;
+        }
+
+        .metric-label {
+            font-size: 14px;
+            color: var(--text-secondary);
+        }
+
+        .workflow-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 0;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .workflow-item:last-child {
+            border-bottom: none;
+        }
+
+        .workflow-status {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--accent-success);
+        }
+
+        .page-header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .page-header h2 {
+            font-size: 28px;
+            font-weight: 700;
+            margin-bottom: 8px;
+            background: var(--gradient-primary);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .page-header p {
+            font-size: 16px;
+            color: var(--text-secondary);
+        }
+
         /* Animations */
         @keyframes messageSlide {
             from { opacity: 0; transform: translateY(10px); }
@@ -602,56 +755,341 @@
 
             <!-- Models Page -->
             <div id="models-page" class="content-page">
-                <div class="feature-placeholder">
+                <div class="page-header">
                     <h2>🧠 Modèles IA</h2>
                     <p>Gestion des modèles d'intelligence artificielle</p>
-                    <div style="margin-top: 20px;">
-                        <p><strong>GPT-4o Mini :</strong> Rapide et efficace pour la plupart des tâches</p>
-                        <p><strong>Grok Beta :</strong> Spécialisé dans le code et l'analyse technique</p>
-                        <p><strong>Claude 3.5 Sonnet :</strong> Excellent pour l'analyse et la créativité</p>
-                        <p><strong>Gemini 2.0 Flash :</strong> Très rapide, bon pour les réponses courtes</p>
+                </div>
+                
+                <div class="cards-grid">
+                    <div class="info-card">
+                        <div class="card-header">
+                            <div class="card-icon model">
+                                <i class="fas fa-bolt"></i>
+                            </div>
+                            <div>
+                                <h3 class="card-title">GPT-4o Mini</h3>
+                                <p class="card-subtitle">OpenAI • 128K contexte</p>
+                            </div>
+                        </div>
+                        <div class="card-content">
+                            <p>Rapide et efficace pour la plupart des tâches. Excellent équilibre entre performance et coût.</p>
+                            <div class="model-status status-active">
+                                <div class="status-dot"></div>
+                                <span>Actif</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="info-card">
+                        <div class="card-header">
+                            <div class="card-icon model">
+                                <i class="fas fa-code"></i>
+                            </div>
+                            <div>
+                                <h3 class="card-title">Grok Beta</h3>
+                                <p class="card-subtitle">xAI via OpenRouter • 128K contexte</p>
+                            </div>
+                        </div>
+                        <div class="card-content">
+                            <p>Spécialisé dans le code et l'analyse technique. Comprend le contexte et l'humour.</p>
+                            <div class="model-status status-demo">
+                                <div class="status-dot"></div>
+                                <span>Mode démo</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="info-card">
+                        <div class="card-header">
+                            <div class="card-icon model">
+                                <i class="fas fa-brain"></i>
+                            </div>
+                            <div>
+                                <h3 class="card-title">Claude 3.5 Sonnet</h3>
+                                <p class="card-subtitle">Anthropic • 200K contexte</p>
+                            </div>
+                        </div>
+                        <div class="card-content">
+                            <p>Excellent pour l'analyse complexe et la créativité. Très bon en raisonnement logique.</p>
+                            <div class="model-status status-active">
+                                <div class="status-dot"></div>
+                                <span>Actif</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="info-card">
+                        <div class="card-header">
+                            <div class="card-icon model">
+                                <i class="fas fa-rocket"></i>
+                            </div>
+                            <div>
+                                <h3 class="card-title">Gemini 2.0 Flash</h3>
+                                <p class="card-subtitle">Google AI • 1M contexte</p>
+                            </div>
+                        </div>
+                        <div class="card-content">
+                            <p>Très rapide, bon pour les réponses courtes et les tâches simples. Contexte très large.</p>
+                            <div class="model-status status-active">
+                                <div class="status-dot"></div>
+                                <span>Actif</span>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
 
             <!-- Integrations Page -->
             <div id="integrations-page" class="content-page">
-                <div class="feature-placeholder">
+                <div class="page-header">
                     <h2>🔌 Intégrations API</h2>
                     <p>Configuration des APIs et services externes</p>
-                    <div style="margin-top: 20px;">
-                        <p><strong>OpenAI :</strong> Pour GPT-4o Mini et autres modèles OpenAI</p>
-                        <p><strong>Anthropic :</strong> Pour Claude 3.5 Sonnet</p>
-                        <p><strong>Google AI :</strong> Pour Gemini 2.0 Flash</p>
-                        <p><strong>xAI :</strong> Pour Grok via OpenRouter</p>
+                </div>
+                
+                <div class="cards-grid">
+                    <div class="info-card">
+                        <div class="card-header">
+                            <div class="card-icon integration">
+                                <i class="fas fa-openid"></i>
+                            </div>
+                            <div>
+                                <h3 class="card-title">OpenAI</h3>
+                                <p class="card-subtitle">API GPT-4o Mini</p>
+                            </div>
+                        </div>
+                        <div class="card-content">
+                            <p>Pour GPT-4o Mini et autres modèles OpenAI. Clé API configurée et fonctionnelle.</p>
+                            <div class="model-status status-active">
+                                <div class="status-dot"></div>
+                                <span>Connecté</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="info-card">
+                        <div class="card-header">
+                            <div class="card-icon integration">
+                                <i class="fas fa-robot"></i>
+                            </div>
+                            <div>
+                                <h3 class="card-title">Anthropic</h3>
+                                <p class="card-subtitle">API Claude 3.5</p>
+                            </div>
+                        </div>
+                        <div class="card-content">
+                            <p>Pour Claude 3.5 Sonnet. API configurée avec gestion des erreurs et fallback.</p>
+                            <div class="model-status status-active">
+                                <div class="status-dot"></div>
+                                <span>Connecté</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="info-card">
+                        <div class="card-header">
+                            <div class="card-icon integration">
+                                <i class="fas fa-google"></i>
+                            </div>
+                            <div>
+                                <h3 class="card-title">Google AI</h3>
+                                <p class="card-subtitle">API Gemini 2.0</p>
+                            </div>
+                        </div>
+                        <div class="card-content">
+                            <p>Pour Gemini 2.0 Flash. Intégration directe avec l'API Google AI Studio.</p>
+                            <div class="model-status status-active">
+                                <div class="status-dot"></div>
+                                <span>Connecté</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="info-card">
+                        <div class="card-header">
+                            <div class="card-icon integration">
+                                <i class="fas fa-route"></i>
+                            </div>
+                            <div>
+                                <h3 class="card-title">OpenRouter</h3>
+                                <p class="card-subtitle">Proxy pour xAI Grok</p>
+                            </div>
+                        </div>
+                        <div class="card-content">
+                            <p>Pour Grok Beta via OpenRouter. Accès aux modèles xAI avec fallback intelligent.</p>
+                            <div class="model-status status-demo">
+                                <div class="status-dot"></div>
+                                <span>Mode démo</span>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
 
             <!-- Workflows Page -->
             <div id="workflows-page" class="content-page">
-                <div class="feature-placeholder">
+                <div class="page-header">
                     <h2>🔄 Workflows n8n</h2>
                     <p>Automatisations et workflows</p>
-                    <div style="margin-top: 20px;">
-                        <p><strong>3 workflows actifs :</strong></p>
-                        <p>• Agent Chat Automation</p>
-                        <p>• Baserow Sync</p>
-                        <p>• Deploy Monitor</p>
+                </div>
+                
+                <div class="cards-grid">
+                    <div class="info-card">
+                        <div class="card-header">
+                            <div class="card-icon workflow">
+                                <i class="fas fa-comments"></i>
+                            </div>
+                            <div>
+                                <h3 class="card-title">Agent Chat Automation</h3>
+                                <p class="card-subtitle">Workflow principal</p>
+                            </div>
+                        </div>
+                        <div class="card-content">
+                            <p>Automatisation complète du chat avec gestion des réponses IA et logging des conversations.</p>
+                            <div class="workflow-item">
+                                <div class="workflow-status"></div>
+                                <span>Traitement des messages</span>
+                            </div>
+                            <div class="workflow-item">
+                                <div class="workflow-status"></div>
+                                <span>Routing vers les modèles IA</span>
+                            </div>
+                            <div class="workflow-item">
+                                <div class="workflow-status"></div>
+                                <span>Sauvegarde Baserow</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="info-card">
+                        <div class="card-header">
+                            <div class="card-icon workflow">
+                                <i class="fas fa-database"></i>
+                            </div>
+                            <div>
+                                <h3 class="card-title">Baserow Sync</h3>
+                                <p class="card-subtitle">Synchronisation données</p>
+                            </div>
+                        </div>
+                        <div class="card-content">
+                            <p>Synchronisation automatique des conversations et métriques avec la base de données Baserow.</p>
+                            <div class="workflow-item">
+                                <div class="workflow-status"></div>
+                                <span>Export conversations</span>
+                            </div>
+                            <div class="workflow-item">
+                                <div class="workflow-status"></div>
+                                <span>Calcul métriques</span>
+                            </div>
+                            <div class="workflow-item">
+                                <div class="workflow-status"></div>
+                                <span>Backup quotidien</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="info-card">
+                        <div class="card-header">
+                            <div class="card-icon workflow">
+                                <i class="fas fa-chart-line"></i>
+                            </div>
+                            <div>
+                                <h3 class="card-title">Deploy Monitor</h3>
+                                <p class="card-subtitle">Surveillance déploiements</p>
+                            </div>
+                        </div>
+                        <div class="card-content">
+                            <p>Monitoring des déploiements Coolify avec alertes automatiques et health checks.</p>
+                            <div class="workflow-item">
+                                <div class="workflow-status"></div>
+                                <span>Health check API</span>
+                            </div>
+                            <div class="workflow-item">
+                                <div class="workflow-status"></div>
+                                <span>Alertes Discord</span>
+                            </div>
+                            <div class="workflow-item">
+                                <div class="workflow-status"></div>
+                                <span>Logs centralisés</span>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
 
             <!-- Analytics Page -->
             <div id="analytics-page" class="content-page">
-                <div class="feature-placeholder">
+                <div class="page-header">
                     <h2>📊 Analytics</h2>
                     <p>Statistiques et métriques</p>
-                    <div style="margin-top: 20px;">
-                        <p><strong>Messages aujourd'hui :</strong> 42</p>
-                        <p><strong>Temps de réponse :</strong> 1.2s</p>
-                        <p><strong>Satisfaction :</strong> 94%</p>
-                        <p><strong>Modèle populaire :</strong> Claude 3.5 (58%)</p>
+                </div>
+                
+                <div class="cards-grid">
+                    <div class="info-card">
+                        <div class="card-header">
+                            <div class="card-icon analytics">
+                                <i class="fas fa-comment-dots"></i>
+                            </div>
+                            <div>
+                                <h3 class="card-title">Messages</h3>
+                                <p class="card-subtitle">Activité conversationnelle</p>
+                            </div>
+                        </div>
+                        <div class="card-content">
+                            <div class="metric-value">42</div>
+                            <div class="metric-label">Messages aujourd'hui</div>
+                            <p style="margin-top: 12px; font-size: 13px;">+15% par rapport à hier</p>
+                        </div>
+                    </div>
+
+                    <div class="info-card">
+                        <div class="card-header">
+                            <div class="card-icon analytics">
+                                <i class="fas fa-clock"></i>
+                            </div>
+                            <div>
+                                <h3 class="card-title">Performance</h3>
+                                <p class="card-subtitle">Temps de réponse</p>
+                            </div>
+                        </div>
+                        <div class="card-content">
+                            <div class="metric-value">1.2s</div>
+                            <div class="metric-label">Temps moyen</div>
+                            <p style="margin-top: 12px; font-size: 13px;">-0.3s par rapport à la semaine dernière</p>
+                        </div>
+                    </div>
+
+                    <div class="info-card">
+                        <div class="card-header">
+                            <div class="card-icon analytics">
+                                <i class="fas fa-thumbs-up"></i>
+                            </div>
+                            <div>
+                                <h3 class="card-title">Satisfaction</h3>
+                                <p class="card-subtitle">Note utilisateurs</p>
+                            </div>
+                        </div>
+                        <div class="card-content">
+                            <div class="metric-value">94%</div>
+                            <div class="metric-label">Taux de satisfaction</div>
+                            <p style="margin-top: 12px; font-size: 13px;">Basé sur 156 évaluations</p>
+                        </div>
+                    </div>
+
+                    <div class="info-card">
+                        <div class="card-header">
+                            <div class="card-icon analytics">
+                                <i class="fas fa-trophy"></i>
+                            </div>
+                            <div>
+                                <h3 class="card-title">Modèle populaire</h3>
+                                <p class="card-subtitle">Utilisation par modèle</p>
+                            </div>
+                        </div>
+                        <div class="card-content">
+                            <div class="metric-value">Claude 3.5</div>
+                            <div class="metric-label">58% des conversations</div>
+                            <p style="margin-top: 12px; font-size: 13px;">GPT-4o Mini: 25%, Gemini: 12%, Grok: 5%</p>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -798,7 +1236,56 @@
                 messageContent.style.color = 'white';
             }
             
-            messageContent.innerHTML = content;
+            // Améliorer l'affichage des réponses AI
+            if (type === 'assistant' && !isError) {
+                // Détecter si c'est une réponse de démo
+                if (content.includes('Mode démo') || content.includes('💡')) {
+                    const demoIndicator = document.createElement('div');
+                    demoIndicator.style.cssText = `
+                        background: rgba(245, 158, 11, 0.1);
+                        color: var(--accent-warning);
+                        padding: 8px 12px;
+                        border-radius: 6px;
+                        font-size: 12px;
+                        margin-bottom: 8px;
+                        display: flex;
+                        align-items: center;
+                        gap: 6px;
+                    `;
+                    demoIndicator.innerHTML = '💡 <span>Mode démo - Configurez vos clés API pour activer l\'IA complète</span>';
+                    messageContent.appendChild(demoIndicator);
+                }
+                
+                // Ajouter l'icône du modèle utilisé
+                const modelSelect = document.getElementById('modelSelect');
+                if (modelSelect) {
+                    const selectedModel = modelSelect.options[modelSelect.selectedIndex].text;
+                    const modelIndicator = document.createElement('div');
+                    modelIndicator.style.cssText = `
+                        font-size: 11px;
+                        color: var(--text-muted);
+                        margin-bottom: 8px;
+                        display: flex;
+                        align-items: center;
+                        gap: 4px;
+                    `;
+                    
+                    let modelIcon = '🤖';
+                    if (selectedModel.includes('GPT')) modelIcon = '🚀';
+                    else if (selectedModel.includes('Claude')) modelIcon = '🧠';
+                    else if (selectedModel.includes('Gemini')) modelIcon = '💎';
+                    else if (selectedModel.includes('Grok')) modelIcon = '⚡';
+                    
+                    modelIndicator.innerHTML = `${modelIcon} ${selectedModel}`;
+                    messageContent.appendChild(modelIndicator);
+                }
+            }
+            
+            // Créer le contenu principal du message
+            const mainContent = document.createElement('div');
+            mainContent.innerHTML = content;
+            messageContent.appendChild(mainContent);
+            
             messageDiv.appendChild(messageContent);
             messagesArea.appendChild(messageDiv);
             messagesArea.scrollTop = messagesArea.scrollHeight;
