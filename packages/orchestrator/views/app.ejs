@@ -661,7 +661,12 @@
                 <button class="nav-item" data-page="models">
                     <i class="nav-icon fas fa-brain"></i>
                     <span>Modèles IA</span>
-                    <span class="nav-badge">8</span>
+                    <span class="nav-badge">4</span>
+                </button>
+                
+                <button class="nav-item" data-page="instructions">
+                    <i class="nav-icon fas fa-book"></i>
+                    <span>Instructions</span>
                 </button>
                 
                 <button class="nav-item" data-page="integrations">
@@ -844,6 +849,110 @@
                                 <div class="status-dot"></div>
                                 <span>Actif</span>
                             </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Instructions Page -->
+            <div id="instructions-page" class="content-page">
+                <div class="page-header">
+                    <h2>📖 Instructions & Configuration</h2>
+                    <p>Guide complet pour configurer et utiliser Agent Skeleton OSS</p>
+                </div>
+                
+                <div class="cards-grid">
+                    <div class="info-card">
+                        <div class="card-header">
+                            <div class="card-icon model">
+                                <i class="fas fa-key"></i>
+                            </div>
+                            <div>
+                                <h3 class="card-title">Configuration APIs</h3>
+                                <p class="card-subtitle">Étapes pour activer l'IA</p>
+                            </div>
+                        </div>
+                        <div class="card-content">
+                            <p><strong>1. OpenAI (GPT-4o Mini)</strong></p>
+                            <p>• Allez sur <a href="https://platform.openai.com/api-keys" target="_blank" style="color: var(--accent-primary);">platform.openai.com/api-keys</a></p>
+                            <p>• Créez une nouvelle clé API</p>
+                            <p>• Variable Coolify: <code style="background: var(--bg-tertiary); padding: 2px 6px; border-radius: 4px;">OPENAI_API_KEY=sk-proj-votre-cle</code></p>
+                            
+                            <p style="margin-top: 16px;"><strong>2. Anthropic (Claude 3.5)</strong></p>
+                            <p>• Visitez <a href="https://console.anthropic.com/" target="_blank" style="color: var(--accent-primary);">console.anthropic.com</a></p>
+                            <p>• Générez une clé API</p>
+                            <p>• Variable: <code style="background: var(--bg-tertiary); padding: 2px 6px; border-radius: 4px;">ANTHROPIC_API_KEY=sk-ant-votre-cle</code></p>
+                        </div>
+                    </div>
+
+                    <div class="info-card">
+                        <div class="card-header">
+                            <div class="card-icon integration">
+                                <i class="fas fa-cloud"></i>
+                            </div>
+                            <div>
+                                <h3 class="card-title">APIs Supplémentaires</h3>
+                                <p class="card-subtitle">Google AI & OpenRouter</p>
+                            </div>
+                        </div>
+                        <div class="card-content">
+                            <p><strong>3. Google AI (Gemini 2.0)</strong></p>
+                            <p>• Rendez-vous sur <a href="https://aistudio.google.com/app/apikey" target="_blank" style="color: var(--accent-primary);">aistudio.google.com/app/apikey</a></p>
+                            <p>• Créez une clé API</p>
+                            <p>• Variable: <code style="background: var(--bg-tertiary); padding: 2px 6px; border-radius: 4px;">GOOGLE_API_KEY=votre-cle-google</code></p>
+                            
+                            <p style="margin-top: 16px;"><strong>4. OpenRouter (Grok xAI)</strong></p>
+                            <p>• Inscrivez-vous sur <a href="https://openrouter.ai/keys" target="_blank" style="color: var(--accent-primary);">openrouter.ai/keys</a></p>
+                            <p>• Générez une clé</p>
+                            <p>• Variable: <code style="background: var(--bg-tertiary); padding: 2px 6px; border-radius: 4px;">OPENROUTER_API_KEY=sk-or-v1-votre-cle</code></p>
+                        </div>
+                    </div>
+
+                    <div class="info-card">
+                        <div class="card-header">
+                            <div class="card-icon workflow">
+                                <i class="fas fa-server"></i>
+                            </div>
+                            <div>
+                                <h3 class="card-title">Déploiement Coolify</h3>
+                                <p class="card-subtitle">Configuration production</p>
+                            </div>
+                        </div>
+                        <div class="card-content">
+                            <p><strong>Variables d'environnement Coolify :</strong></p>
+                            <p>1. Allez dans votre projet Coolify</p>
+                            <p>2. Section "Variables d'environnement"</p>
+                            <p>3. Ajoutez chaque clé API</p>
+                            <p>4. Marquez comme "secret" 🔒</p>
+                            <p>5. Redéployez l'application</p>
+                            
+                            <div style="background: rgba(16, 185, 129, 0.1); border: 1px solid var(--accent-success); border-radius: 6px; padding: 12px; margin-top: 12px;">
+                                <strong style="color: var(--accent-success);">💡 Tip :</strong> Une seule clé API suffit pour activer le mode complet !
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="info-card">
+                        <div class="card-header">
+                            <div class="card-icon analytics">
+                                <i class="fas fa-cogs"></i>
+                            </div>
+                            <div>
+                                <h3 class="card-title">Utilisation Avancée</h3>
+                                <p class="card-subtitle">Workflows & Intégrations</p>
+                            </div>
+                        </div>
+                        <div class="card-content">
+                            <p><strong>Workflows n8n :</strong></p>
+                            <p>• Agent Chat Automation : Automatise les réponses</p>
+                            <p>• Baserow Sync : Sauvegarde des conversations</p>
+                            <p>• Deploy Monitor : Surveillance système</p>
+                            
+                            <p style="margin-top: 16px;"><strong>Personnalisation :</strong></p>
+                            <p>• Variables de marque : <code style="background: var(--bg-tertiary); padding: 2px 6px; border-radius: 4px;">BRAND_NAME</code></p>
+                            <p>• Ton de l'IA : <code style="background: var(--bg-tertiary); padding: 2px 6px; border-radius: 4px;">BRAND_TONE</code></p>
+                            <p>• Expertise : <code style="background: var(--bg-tertiary); padding: 2px 6px; border-radius: 4px;">EXPERTISE_AREAS</code></p>
+                            <p>• Langue : <code style="background: var(--bg-tertiary); padding: 2px 6px; border-radius: 4px;">RESPONSE_LANGUAGE</code></p>
                         </div>
                     </div>
                 </div>
@@ -1340,7 +1449,7 @@
             console.log('🔍 Vérification du statut des APIs...');
             
             try {
-                const response = await fetch('/api/status');
+                const response = await fetch('/api/keys-status');
                 const status = await response.json();
                 
                 console.log('📊 Statut des APIs:', status);
