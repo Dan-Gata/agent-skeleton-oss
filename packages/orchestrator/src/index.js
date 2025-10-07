@@ -111,23 +111,18 @@ app.get('/health', (req, res) => {
 
 // 🔑 API Keys Status Check (pour debug)
 app.get('/api/keys-status', (req, res) => {
+    const hasOpenRouter = !!process.env.OPENROUTER_API_KEY;
     const status = {
-        openai: !!process.env.OPENAI_API_KEY,
-        anthropic: !!process.env.ANTHROPIC_API_KEY,
-        google: !!process.env.GOOGLE_API_KEY,
-        openrouter: !!process.env.OPENROUTER_API_KEY,
-        keys_count: [
-            process.env.OPENAI_API_KEY,
-            process.env.ANTHROPIC_API_KEY, 
-            process.env.GOOGLE_API_KEY,
-            process.env.OPENROUTER_API_KEY
-        ].filter(Boolean).length,
-        demo_mode: ![
-            process.env.OPENAI_API_KEY,
-            process.env.ANTHROPIC_API_KEY, 
-            process.env.GOOGLE_API_KEY,
-            process.env.OPENROUTER_API_KEY
-        ].some(Boolean)
+        openrouter: hasOpenRouter,
+        all_models_available: hasOpenRouter,
+        provider: 'OpenRouter (Unified API)',
+        models: {
+            'gpt-4o-mini': hasOpenRouter ? 'Available via OpenRouter' : 'Requires OpenRouter key',
+            'claude-3.5-sonnet': hasOpenRouter ? 'Available via OpenRouter' : 'Requires OpenRouter key',
+            'gemini-2.0-flash': hasOpenRouter ? 'Available via OpenRouter' : 'Requires OpenRouter key',
+            'grok-beta': hasOpenRouter ? 'Available via OpenRouter' : 'Requires OpenRouter key'
+        },
+        demo_mode: !hasOpenRouter
     };
     
     res.json(status);
@@ -151,12 +146,10 @@ app.post('/api/chat', chatLimiter, async (req, res) => {
 
         console.log('✅ Message valide reçu:', { message, conversationId, model });
         
-        // Debug des clés API
-        console.log('🔑 État des clés API:', {
-            OPENAI: !!process.env.OPENAI_API_KEY,
-            ANTHROPIC: !!process.env.ANTHROPIC_API_KEY,
-            GOOGLE: !!process.env.GOOGLE_API_KEY,
-            OPENROUTER: !!process.env.OPENROUTER_API_KEY
+        // Debug des clés API (OpenRouter uniquement)
+        console.log('🔑 État OpenRouter:', {
+            OPENROUTER_KEY: !!process.env.OPENROUTER_API_KEY,
+            ALL_MODELS: !!process.env.OPENROUTER_API_KEY ? 'Available' : 'Demo Mode'
         });
 
         // Responses basées sur le modèle sélectionné

@@ -868,43 +868,47 @@
                                 <i class="fas fa-key"></i>
                             </div>
                             <div>
-                                <h3 class="card-title">Configuration APIs</h3>
-                                <p class="card-subtitle">Étapes pour activer l'IA</p>
+                                <h3 class="card-title">Configuration OpenRouter</h3>
+                                <p class="card-subtitle">API unifiée pour tous les modèles</p>
                             </div>
                         </div>
                         <div class="card-content">
-                            <p><strong>1. OpenAI (GPT-4o Mini)</strong></p>
-                            <p>• Allez sur <a href="https://platform.openai.com/api-keys" target="_blank" style="color: var(--accent-primary);">platform.openai.com/api-keys</a></p>
-                            <p>• Créez une nouvelle clé API</p>
-                            <p>• Variable Coolify: <code style="background: var(--bg-tertiary); padding: 2px 6px; border-radius: 4px;">OPENAI_API_KEY=sk-proj-votre-cle</code></p>
+                            <p><strong>🎯 Solution recommandée : OpenRouter</strong></p>
+                            <p>• Une seule clé API pour tous les modèles IA</p>
+                            <p>• Accès à GPT-4o, Claude 3.5, Gemini 2.0, Grok</p>
+                            <p>• Facturation transparente et unifiée</p>
                             
-                            <p style="margin-top: 16px;"><strong>2. Anthropic (Claude 3.5)</strong></p>
-                            <p>• Visitez <a href="https://console.anthropic.com/" target="_blank" style="color: var(--accent-primary);">console.anthropic.com</a></p>
-                            <p>• Générez une clé API</p>
-                            <p>• Variable: <code style="background: var(--bg-tertiary); padding: 2px 6px; border-radius: 4px;">ANTHROPIC_API_KEY=sk-ant-votre-cle</code></p>
+                            <p style="margin-top: 16px;"><strong>Configuration :</strong></p>
+                            <p>1. Allez sur <a href="https://openrouter.ai/keys" target="_blank" style="color: var(--accent-primary);">openrouter.ai/keys</a></p>
+                            <p>2. Créez un compte et générez une clé API</p>
+                            <p>3. Ajoutez des crédits à votre compte</p>
+                            <p>4. Variable Coolify: <code style="background: var(--bg-tertiary); padding: 2px 6px; border-radius: 4px;">OPENROUTER_API_KEY=sk-or-v1-votre-cle</code></p>
                         </div>
                     </div>
 
                     <div class="info-card">
                         <div class="card-header">
                             <div class="card-icon integration">
-                                <i class="fas fa-cloud"></i>
+                                <i class="fas fa-brain"></i>
                             </div>
                             <div>
-                                <h3 class="card-title">APIs Supplémentaires</h3>
-                                <p class="card-subtitle">Google AI & OpenRouter</p>
+                                <h3 class="card-title">Modèles Disponibles</h3>
+                                <p class="card-subtitle">Via OpenRouter</p>
                             </div>
                         </div>
                         <div class="card-content">
-                            <p><strong>3. Google AI (Gemini 2.0)</strong></p>
-                            <p>• Rendez-vous sur <a href="https://aistudio.google.com/app/apikey" target="_blank" style="color: var(--accent-primary);">aistudio.google.com/app/apikey</a></p>
-                            <p>• Créez une clé API</p>
-                            <p>• Variable: <code style="background: var(--bg-tertiary); padding: 2px 6px; border-radius: 4px;">GOOGLE_API_KEY=votre-cle-google</code></p>
+                            <p><strong>4 modèles IA premium :</strong></p>
+                            <p>🚀 <strong>GPT-4o Mini</strong> (openai/gpt-4o-mini)</p>
+                            <p>• Rapide et économique, excellent pour la plupart des tâches</p>
                             
-                            <p style="margin-top: 16px;"><strong>4. OpenRouter (Grok xAI)</strong></p>
-                            <p>• Inscrivez-vous sur <a href="https://openrouter.ai/keys" target="_blank" style="color: var(--accent-primary);">openrouter.ai/keys</a></p>
-                            <p>• Générez une clé</p>
-                            <p>• Variable: <code style="background: var(--bg-tertiary); padding: 2px 6px; border-radius: 4px;">OPENROUTER_API_KEY=sk-or-v1-votre-cle</code></p>
+                            <p style="margin-top: 12px;">🧠 <strong>Claude 3.5 Sonnet</strong> (anthropic/claude-3.5-sonnet)</p>
+                            <p>• Excellence en analyse et raisonnement complexe</p>
+                            
+                            <p style="margin-top: 12px;">💎 <strong>Gemini 2.0 Flash</strong> (google/gemini-2.0-flash-exp)</p>
+                            <p>• Ultra-rapide avec contexte très étendu (1M tokens)</p>
+                            
+                            <p style="margin-top: 12px;">⚡ <strong>Grok Beta</strong> (x-ai/grok-beta)</p>
+                            <p>• Spécialisé code & humour, perspective unique</p>
                         </div>
                     </div>
 
@@ -976,79 +980,88 @@
                 </div>
                 
                 <div class="cards-grid">
-                    <div class="info-card" id="openai-card">
-                        <div class="card-header">
-                            <div class="card-icon integration">
-                                <i class="fas fa-openid"></i>
-                            </div>
-                            <div>
-                                <h3 class="card-title">OpenAI</h3>
-                                <p class="card-subtitle">API GPT-4o Mini</p>
-                            </div>
-                        </div>
-                        <div class="card-content">
-                            <p>Pour GPT-4o Mini et autres modèles OpenAI. Accès aux modèles les plus performants.</p>
-                            <div class="model-status status-demo" id="openai-status">
-                                <div class="status-dot"></div>
-                                <span>Vérification...</span>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="info-card" id="anthropic-card">
-                        <div class="card-header">
-                            <div class="card-icon integration">
-                                <i class="fas fa-robot"></i>
-                            </div>
-                            <div>
-                                <h3 class="card-title">Anthropic</h3>
-                                <p class="card-subtitle">API Claude 3.5</p>
-                            </div>
-                        </div>
-                        <div class="card-content">
-                            <p>Pour Claude 3.5 Sonnet. Excellence en analyse et raisonnement complexe.</p>
-                            <div class="model-status status-demo" id="anthropic-status">
-                                <div class="status-dot"></div>
-                                <span>Vérification...</span>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="info-card" id="google-card">
-                        <div class="card-header">
-                            <div class="card-icon integration">
-                                <i class="fas fa-google"></i>
-                            </div>
-                            <div>
-                                <h3 class="card-title">Google AI</h3>
-                                <p class="card-subtitle">API Gemini 2.0</p>
-                            </div>
-                        </div>
-                        <div class="card-content">
-                            <p>Pour Gemini 2.0 Flash. Traitement ultra-rapide avec contexte étendu.</p>
-                            <div class="model-status status-demo" id="google-status">
-                                <div class="status-dot"></div>
-                                <span>Vérification...</span>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="info-card" id="openrouter-card">
+                    <div class="info-card" id="openrouter-main-card">
                         <div class="card-header">
                             <div class="card-icon integration">
                                 <i class="fas fa-route"></i>
                             </div>
                             <div>
-                                <h3 class="card-title">OpenRouter</h3>
-                                <p class="card-subtitle">Proxy pour xAI Grok</p>
+                                <h3 class="card-title">OpenRouter (API Unifiée)</h3>
+                                <p class="card-subtitle">Accès à tous les modèles IA</p>
                             </div>
                         </div>
                         <div class="card-content">
-                            <p>Pour Grok Beta via OpenRouter. Accès aux modèles xAI et autres providers.</p>
-                            <div class="model-status status-demo" id="openrouter-status">
+                            <p>Provider principal pour tous les modèles : GPT-4o Mini, Claude 3.5, Gemini 2.0, Grok Beta</p>
+                            <div class="model-status status-demo" id="openrouter-main-status">
                                 <div class="status-dot"></div>
                                 <span>Vérification...</span>
                             </div>
+                        </div>
+                    </div>
+
+                    <div class="info-card" id="models-overview-card">
+                        <div class="card-header">
+                            <div class="card-icon model">
+                                <i class="fas fa-brain"></i>
+                            </div>
+                            <div>
+                                <h3 class="card-title">Modèles Disponibles</h3>
+                                <p class="card-subtitle">Via OpenRouter</p>
+                            </div>
+                        </div>
+                        <div class="card-content">
+                            <p><strong>4 modèles IA premium :</strong></p>
+                            <p>🚀 <strong>GPT-4o Mini</strong> - openai/gpt-4o-mini</p>
+                            <p>🧠 <strong>Claude 3.5 Sonnet</strong> - anthropic/claude-3.5-sonnet</p>
+                            <p>💎 <strong>Gemini 2.0 Flash</strong> - google/gemini-2.0-flash-exp</p>
+                            <p>⚡ <strong>Grok Beta</strong> - x-ai/grok-beta</p>
+                        </div>
+                    </div>
+
+                    <div class="info-card" id="configuration-card">
+                        <div class="card-header">
+                            <div class="card-icon workflow">
+                                <i class="fas fa-cog"></i>
+                            </div>
+                            <div>
+                                <h3 class="card-title">Configuration Simple</h3>
+                                <p class="card-subtitle">Une seule clé pour tout</p>
+                            </div>
+                        </div>
+                        <div class="card-content">
+                            <p><strong>Avantages OpenRouter :</strong></p>
+                            <p>• <strong>Une seule clé API</strong> pour tous les modèles</p>
+                            <p>• <strong>Facturation unifiée</strong> et transparente</p>
+                            <p>• <strong>Failover automatique</strong> entre providers</p>
+                            <p>• <strong>Rate limiting</strong> et monitoring intégrés</p>
+                            
+                            <div style="background: rgba(16, 185, 129, 0.1); border: 1px solid var(--accent-success); border-radius: 6px; padding: 12px; margin-top: 12px;">
+                                <strong style="color: var(--accent-success);">💡 Configuration Coolify :</strong><br>
+                                <code style="background: var(--bg-tertiary); padding: 2px 6px; border-radius: 4px;">OPENROUTER_API_KEY=sk-or-v1-votre-cle</code>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="info-card" id="pricing-card">
+                        <div class="card-header">
+                            <div class="card-icon analytics">
+                                <i class="fas fa-dollar-sign"></i>
+                            </div>
+                            <div>
+                                <h3 class="card-title">Tarification</h3>
+                                <p class="card-subtitle">Pay-per-use optimisé</p>
+                            </div>
+                        </div>
+                        <div class="card-content">
+                            <p><strong>Coûts par modèle :</strong></p>
+                            <p>💰 <strong>GPT-4o Mini :</strong> Le plus économique</p>
+                            <p>💰💰 <strong>Claude 3.5 :</strong> Premium, excellent rapport qualité/prix</p>
+                            <p>💰 <strong>Gemini 2.0 :</strong> Très rapide, contexte large</p>
+                            <p>💰💰 <strong>Grok Beta :</strong> Spécialisé, humour & code</p>
+                            
+                            <p style="margin-top: 12px; font-size: 13px; color: var(--text-secondary);">
+                                Voir les tarifs détaillés sur <a href="https://openrouter.ai/docs#models" target="_blank" style="color: var(--accent-primary);">openrouter.ai/docs</a>
+                            </p>
                         </div>
                     </div>
                 </div>
@@ -1428,30 +1441,37 @@
 
         // Fonctions pour la gestion des intégrations API
         async function checkApiStatus() {
-            console.log('🔍 Vérification du statut des APIs...');
+            console.log('🔍 Vérification du statut OpenRouter...');
             
             try {
                 const response = await fetch('/api/keys-status');
                 const status = await response.json();
                 
-                console.log('📊 Statut des APIs:', status);
+                console.log('📊 Statut OpenRouter:', status);
                 
-                // Mettre à jour les cartes en fonction du statut
-                updateApiCard('openai', status.openai);
-                updateApiCard('anthropic', status.anthropic);
-                updateApiCard('google', status.google);
-                updateApiCard('openrouter', status.openrouter);
+                // Mettre à jour la carte principale
+                const mainStatus = document.getElementById('openrouter-main-status');
+                if (mainStatus) {
+                    mainStatus.className = 'model-status';
+                    if (status.all_models_available) {
+                        mainStatus.classList.add('status-active');
+                        mainStatus.innerHTML = '<div class="status-dot"></div><span>✅ Tous modèles disponibles</span>';
+                    } else {
+                        mainStatus.classList.add('status-inactive');
+                        mainStatus.innerHTML = '<div class="status-dot"></div><span>❌ Clé OpenRouter requise</span>';
+                    }
+                }
                 
                 // Afficher un message global
                 if (status.demo_mode) {
-                    showApiMessage('⚠️ Mode démo actif - Aucune clé API configurée', 'warning');
+                    showApiMessage('⚠️ Mode démo - Ajoutez votre clé OpenRouter pour activer tous les modèles IA', 'warning');
                 } else {
-                    showApiMessage(`✅ ${status.keys_count} API(s) configurée(s)`, 'success');
+                    showApiMessage('✅ OpenRouter connecté - Tous les modèles IA sont disponibles', 'success');
                 }
                 
             } catch (error) {
                 console.error('❌ Erreur lors de la vérification:', error);
-                showApiMessage('❌ Erreur lors de la vérification du statut', 'error');
+                showApiMessage('❌ Erreur lors de la vérification du statut OpenRouter', 'error');
             }
         }
 
@@ -1523,31 +1543,31 @@
 
         function showApiInstructions() {
             const instructions = `
-🔑 **Configuration des clés API**
+🔑 **Configuration OpenRouter (API Unifiée)**
 
-**1. OpenAI (GPT-4o Mini)**
-• Allez sur https://platform.openai.com/api-keys
-• Créez une nouvelle clé API
-• Ajoutez la variable: OPENAI_API_KEY=sk-proj-votre-cle
+**Pourquoi OpenRouter ?**
+✅ Une seule clé pour TOUS les modèles IA
+✅ Accès à GPT-4o, Claude 3.5, Gemini 2.0, Grok
+✅ Facturation transparente et unifiée
+✅ Failover automatique entre providers
 
-**2. Anthropic (Claude 3.5)**
-• Visitez https://console.anthropic.com/
-• Générez une clé API
-• Ajoutez: ANTHROPIC_API_KEY=sk-ant-votre-cle
+**Configuration :**
+1. Allez sur https://openrouter.ai/keys
+2. Créez un compte et générez une clé API
+3. Ajoutez des crédits à votre compte OpenRouter
+4. Variable Coolify : OPENROUTER_API_KEY=sk-or-v1-votre-cle
 
-**3. Google AI (Gemini 2.0)**
-• Rendez-vous sur https://aistudio.google.com/app/apikey
-• Créez une clé API
-• Ajoutez: GOOGLE_API_KEY=votre-cle-google
+**Modèles disponibles via OpenRouter :**
+• openai/gpt-4o-mini (GPT-4o Mini)
+• anthropic/claude-3.5-sonnet (Claude 3.5)
+• google/gemini-2.0-flash-exp (Gemini 2.0)
+• x-ai/grok-beta (Grok Beta)
 
-**4. OpenRouter (Grok via xAI)**
-• Inscrivez-vous sur https://openrouter.ai/keys
-• Générez une clé
-• Ajoutez: OPENROUTER_API_KEY=sk-or-v1-votre-cle
+**Variables Coolify nécessaires :**
+OPENROUTER_API_KEY=sk-or-v1-votre-cle-openrouter
 
-**5. Variables Coolify**
-Ajoutez ces variables dans Coolify > Variables d'environnement
-Marquez-les comme "secrets" pour la sécurité.
+**C'est tout ! 🎉**
+Une seule clé = Accès à tous les meilleurs modèles IA
             `.trim();
             
             // Créer une modal simple
@@ -1581,7 +1601,7 @@ Marquez-les comme "secrets" pour la sécurité.
             
             content.innerHTML = `
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
-                    <h3 style="margin: 0; color: var(--text-primary);">Configuration des APIs</h3>
+                    <h3 style="margin: 0; color: var(--text-primary);">Configuration OpenRouter</h3>
                     <button onclick="this.closest('div[style*=\"position: fixed\"]').remove()" style="background: none; border: none; color: var(--text-secondary); font-size: 20px; cursor: pointer;">×</button>
                 </div>
                 <pre style="white-space: pre-wrap; font-family: inherit; color: var(--text-secondary); line-height: 1.6;">${instructions}</pre>
