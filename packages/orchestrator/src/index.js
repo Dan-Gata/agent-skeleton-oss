@@ -110,7 +110,7 @@ app.get('/health', (req, res) => {
 });
 
 // 🔑 API Keys Status Check (pour debug)
-app.get('/api/status', (req, res) => {
+app.get('/api/keys-status', (req, res) => {
     const status = {
         openai: !!process.env.OPENAI_API_KEY,
         anthropic: !!process.env.ANTHROPIC_API_KEY,
