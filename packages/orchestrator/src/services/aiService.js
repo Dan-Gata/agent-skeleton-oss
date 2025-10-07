@@ -63,6 +63,12 @@ COMPORTEMENT:
     async sendMessage(message, model = 'gpt-4o-mini', conversationId = null) {
         try {
             console.log(`🤖 Envoi message à ${model}:`, message);
+            console.log(`🔑 Clés disponibles:`, {
+                openai: !!this.config.openai.apiKey,
+                anthropic: !!this.config.anthropic.apiKey,
+                google: !!this.config.google.apiKey,
+                openrouter: !!this.config.openrouter.apiKey
+            });
 
             // Router vers la bonne API selon le modèle
             if (model.includes('gpt') || model.includes('openai')) {
@@ -71,10 +77,11 @@ COMPORTEMENT:
                 return await this.callAnthropic(message, model);
             } else if (model.includes('gemini') || model.includes('google')) {
                 return await this.callGoogle(message, model);
-            } else if (model.includes('grok') || this.config.openrouter.apiKey) {
+            } else if (model.includes('grok') || model === 'grok-beta') {
                 return await this.callOpenRouter(message, model);
             } else {
                 // Fallback vers simulation améliorée
+                console.log('⚠️ Aucune API trouvée pour le modèle:', model);
                 return await this.simulateResponse(message, model);
             }
         } catch (error) {
@@ -350,7 +357,8 @@ COMPORTEMENT:
         return {
             response: contextualResponse,
             model: model,
-            simulated: true
+            simulated: true,
+            demo_mode: true
         };
     }
 }

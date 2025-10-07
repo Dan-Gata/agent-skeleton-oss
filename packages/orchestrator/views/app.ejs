@@ -1338,12 +1338,22 @@
                 if (response.ok) {
                     conversationId = data.conversationId;
                     
-                    // Détecter si c'est une réponse simulée
-                    const isSimulated = data.simulated || data.response.includes('Mode démo');
-                    
-                    if (isSimulated) {
-                        // Ajouter un indicateur de mode démo avant la réponse
-                        addDemoIndicator();
+                    // Ajouter un indicateur simple en mode démo
+                    if (data.demo_mode && !document.getElementById('demo-notice')) {
+                        const demoNotice = document.createElement('div');
+                        demoNotice.id = 'demo-notice';
+                        demoNotice.style.cssText = `
+                            background: rgba(245, 158, 11, 0.1);
+                            border: 1px solid rgba(245, 158, 11, 0.3);
+                            color: var(--accent-warning);
+                            padding: 8px 12px;
+                            border-radius: 6px;
+                            font-size: 12px;
+                            margin: 8px 0;
+                            text-align: center;
+                        `;
+                        demoNotice.textContent = '💡 Mode démo - Configurez vos clés API pour l\'IA complète';
+                        messagesArea.appendChild(demoNotice);
                     }
                     
                     addMessage(data.response, 'assistant');
@@ -1362,34 +1372,6 @@
             messageInput.disabled = false;
             sendBtn.disabled = false;
             messageInput.focus();
-        }
-
-        function addDemoIndicator() {
-            const messagesArea = document.getElementById('messages');
-            if (!messagesArea) return;
-
-            const indicatorDiv = document.createElement('div');
-            indicatorDiv.style.cssText = `
-                background: rgba(245, 158, 11, 0.1);
-                border: 1px solid rgba(245, 158, 11, 0.3);
-                color: var(--accent-warning);
-                padding: 12px 16px;
-                border-radius: 8px;
-                font-size: 13px;
-                margin: 8px auto;
-                max-width: 600px;
-                text-align: center;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                gap: 8px;
-                animation: fadeIn 0.3s ease;
-            `;
-            
-            indicatorDiv.innerHTML = '💡 <span><strong>Mode démo activé</strong> - Ajoutez vos clés API dans les variables d\'environnement pour des réponses IA personnalisées</span>';
-            
-            messagesArea.appendChild(indicatorDiv);
-            messagesArea.scrollTop = messagesArea.scrollHeight;
         }
 
         function addMessage(content, type, isError = false) {

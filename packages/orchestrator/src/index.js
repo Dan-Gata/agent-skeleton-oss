@@ -150,6 +150,14 @@ app.post('/api/chat', chatLimiter, async (req, res) => {
         }
 
         console.log('✅ Message valide reçu:', { message, conversationId, model });
+        
+        // Debug des clés API
+        console.log('🔑 État des clés API:', {
+            OPENAI: !!process.env.OPENAI_API_KEY,
+            ANTHROPIC: !!process.env.ANTHROPIC_API_KEY,
+            GOOGLE: !!process.env.GOOGLE_API_KEY,
+            OPENROUTER: !!process.env.OPENROUTER_API_KEY
+        });
 
         // Responses basées sur le modèle sélectionné
         const modelResponses = {
