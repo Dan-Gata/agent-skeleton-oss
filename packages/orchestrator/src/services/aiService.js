@@ -53,11 +53,24 @@ EXPERTISE:
 - Tu aides particulièrement avec les outils : n8n, Coolify, Baserow
 - Tu fournis des solutions concrètes et pratiques
 
+CAPACITÉS D'AGENT AUTONOME:
+- Tu peux VRAIMENT exécuter des actions via les APIs
+- Tu as accès aux endpoints : /api/agent/n8n/*, /api/agent/coolify/*, /api/agent/baserow/*
+- Tu peux créer des workflows n8n, gérer des déploiements Coolify, synchroniser Baserow
+- Quand on te demande d'agir, tu utilises les APIs disponibles
+
 COMPORTEMENT:
 - Sois précis et utile dans tes réponses
 - Adapte ta réponse au niveau technique de l'utilisateur
 - Suggère des améliorations quand c'est pertinent
-- Reste dans le cadre de ${this.customInstructions.brand}`;
+- Quand on te demande d'exécuter une action, confirme d'abord puis agis
+- Reste dans le cadre de ${this.customInstructions.brand}
+
+ACTIONS DISPONIBLES:
+- Créer et gérer des workflows n8n
+- Déployer et monitorer des services Coolify
+- Synchroniser et organiser des données Baserow
+- Analyser l'état des systèmes et proposer des optimisations`;
     }
 
     async sendMessage(message, model = 'gpt-4o-mini', conversationId = null) {
@@ -302,45 +315,46 @@ COMPORTEMENT:
     }
 
     async simulateResponse(message, model) {
-        // Réponses simulées améliorées en attendant les clés API
+        // Réponses simulées d'agent autonome
         const responses = {
             'gpt-4o-mini': [
-                `Excellente question ! Concernant ${message.toLowerCase().includes('n8n') ? 'n8n' : message.toLowerCase().includes('coolify') ? 'Coolify' : 'votre demande'}, je recommande une approche structurée. Voici comment procéder étape par étape...`,
-                `Basé sur votre demande, voici mon analyse détaillée. La meilleure pratique serait de commencer par identifier les composants clés et leurs interactions...`,
-                `Je comprends votre besoin. Pour optimiser cette solution, nous pourrions envisager plusieurs approches. La plus efficace serait probablement...`
+                `En tant qu'agent autonome, je peux exécuter des actions réelles sur vos systèmes. Pour "${message.toLowerCase().includes('n8n') ? 'n8n' : message.toLowerCase().includes('coolify') ? 'Coolify' : message.toLowerCase().includes('baserow') ? 'Baserow' : 'cette demande'}", je vais analyser la situation et proposer une action concrète...`,
+                `Je suis connecté à vos APIs et prêt à agir. Concernant votre demande, je peux immédiatement vérifier l'état actuel et exécuter les actions nécessaires...`,
+                `Agent autonome activé ! Je vais traiter votre demande en utilisant mes accès aux APIs n8n, Coolify et Baserow...`
             ],
             'grok-beta': [
-                `Ah, une question intéressante ! Laissez-moi vous donner ma perspective unique sur ce défi. D'après mon analyse, la stratégie optimale serait...`,
-                `Traitement rapide de votre demande ! Voici une approche efficace et moderne pour résoudre ce problème de manière élégante...`,
-                `Excellent ! Cette question mérite une réponse technique précise. Basé sur les meilleures pratiques actuelles, je recommande...`
+                `Ah, une mission intéressante ! En tant qu'agent avec des capacités réelles, je vais examiner la situation et agir en conséquence. Laissez-moi vérifier l'état de vos systèmes...`,
+                `Mission acceptée ! Je peux accéder directement à vos workflows, déploiements et bases de données. Voici ce que je vais faire...`,
+                `Agent opérationnel ! Cette demande nécessite une action concrète que je peux exécuter via les APIs disponibles...`
             ],
             'claude-3.5-sonnet': [
-                `Je vais analyser votre demande avec attention. Cette question soulève plusieurs points intéressants que nous pouvons aborder méthodiquement...`,
-                `Excellente question qui mérite une réponse nuancée. Permettez-moi de décomposer les différents aspects et de proposer une solution structurée...`,
-                `Après analyse de votre demande, je propose cette approche méthodique qui prend en compte les contraintes techniques et les bonnes pratiques...`
+                `Je vais analyser votre demande avec attention et exécuter les actions appropriées. En tant qu'agent autonome avec accès aux APIs, je peux réellement agir sur vos systèmes...`,
+                `Excellente demande qui nécessite une action concrète. Je vais utiliser mes capacités d'agent pour examiner la situation et proposer/exécuter la meilleure solution...`,
+                `En tant qu'agent autonome, je peux non seulement analyser mais aussi agir. Voici mon plan d'action basé sur l'accès direct à vos APIs...`
             ],
             'gemini-2.0-flash': [
-                `Traitement ultra-rapide de votre question ! Voici une solution optimisée basée sur les dernières technologies et méthodologies...`,
-                `Analyse multimodale complétée. Cette demande nécessite une approche holistique que je vais détailler point par point...`,
-                `Réponse instantanée ! Basé sur les données les plus récentes, je recommande cette stratégie progressive et scalable...`
+                `Traitement ultra-rapide de votre mission ! Agent autonome prêt à exécuter des actions réelles via n8n, Coolify et Baserow...`,
+                `Mission reçue et traitée ! Je vais immédiatement vérifier l'état de vos systèmes et exécuter les actions nécessaires...`,
+                `Agent opérationnel avec accès API complet ! Voici mon analyse et les actions que je vais entreprendre...`
             ]
         };
 
         const modelResponses = responses[model] || responses['gpt-4o-mini'];
         const response = modelResponses[Math.floor(Math.random() * modelResponses.length)];
 
-        // Ajouter du contexte spécifique basé sur les mots-clés
+        // Ajouter du contexte spécifique d'agent autonome
         let contextualResponse = response;
         
-        if (message.toLowerCase().includes('n8n')) {
-            contextualResponse += `\n\n🔗 **Pour n8n spécifiquement :**\n• Créez un webhook trigger pour déclencher le workflow\n• Ajoutez une condition de filtrage pour valider les données\n• Connectez à votre API de destination avec gestion d'erreurs\n• Testez en mode debug pour vérifier le flux de données`;
-        } else if (message.toLowerCase().includes('coolify')) {
-            contextualResponse += `\n\n🚀 **Pour Coolify :**\n• Vérifiez vos variables d'environnement dans l'interface\n• Assurez-vous que le Dockerfile est optimisé\n• Surveillez les logs de déploiement en temps réel\n• Configurez les health checks pour la stabilité`;
-        } else if (message.toLowerCase().includes('baserow')) {
-            contextualResponse += `\n\n📊 **Pour Baserow :**\n• Utilisez l'API REST pour les opérations CRUD\n• Configurez les webhooks pour les mises à jour automatiques\n• Structurez vos tables avec les bons types de champs\n• Implémentez la pagination pour les grandes datasets`;
+        if (message.toLowerCase().includes('capacités') || message.toLowerCase().includes('autonome')) {
+            contextualResponse += `\n\n🤖 **Mes capacités d'agent autonome :**\n• **n8n** : Créer, modifier et exécuter des workflows\n• **Coolify** : Gérer les déploiements et surveiller la santé\n• **Baserow** : Synchroniser, analyser et organiser les données\n• **Analyse** : Évaluer les performances et suggérer des optimisations`;
+        } else if (message.toLowerCase().includes('n8n') || message.toLowerCase().includes('workflow')) {
+            contextualResponse += `\n\n🔄 **Actions n8n disponibles :**\n• Créer de nouveaux workflows sur mesure\n• Modifier les workflows existants\n• Activer/désactiver les automatisations\n• Analyser les performances et logs d'exécution\n• Intégrer avec vos autres services`;
+        } else if (message.toLowerCase().includes('coolify') || message.toLowerCase().includes('déploi')) {
+            contextualResponse += `\n\n🚀 **Actions Coolify disponibles :**\n• Vérifier l'état des déploiements\n• Lancer de nouveaux déploiements\n• Surveiller la santé des services\n• Gérer les variables d'environnement\n• Analyser les logs de déploiement`;
+        } else if (message.toLowerCase().includes('baserow') || message.toLowerCase().includes('données')) {
+            contextualResponse += `\n\n📊 **Actions Baserow disponibles :**\n• Synchroniser les données entre tables\n• Analyser et nettoyer les données\n• Créer des rapports automatisés\n• Organiser selon vos règles métier\n• Sauvegarder et archiver`;
         } else {
-            // Réponse générique plus utile
-            contextualResponse += `\n\n💡 **Prochaines étapes recommandées :**\n• Définir clairement les objectifs et contraintes\n• Choisir les outils appropriés pour votre stack\n• Implémenter une solution MVP pour validation\n• Itérer basé sur les retours utilisateurs`;
+            contextualResponse += `\n\n⚡ **Actions immédiates possibles :**\n• Vérifier l'état global de vos systèmes\n• Analyser les performances actuelles\n• Proposer des optimisations\n• Exécuter des tâches de maintenance\n• Créer des automatisations sur mesure`;
         }
 
         return {

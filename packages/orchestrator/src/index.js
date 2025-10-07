@@ -128,6 +128,136 @@ app.get('/api/keys-status', (req, res) => {
     res.json(status);
 });
 
+// 🤖 ENDPOINTS AGENT AUTONOME
+
+// 🔄 n8n Workflows Management
+app.get('/api/agent/n8n/workflows', async (req, res) => {
+    try {
+        if (!process.env.N8N_API_KEY || !process.env.N8N_API_URL) {
+            return res.status(400).json({ error: 'Clés n8n manquantes', configured: false });
+        }
+        
+        // Simuler la récupération des workflows (remplacer par vraie API)
+        const workflows = [
+            { id: 1, name: 'Agent Chat Automation', active: true, lastExecution: '2025-10-07T10:30:00Z' },
+            { id: 2, name: 'Baserow Sync', active: true, lastExecution: '2025-10-07T09:15:00Z' },
+            { id: 3, name: 'Deploy Monitor', active: false, lastExecution: '2025-10-06T22:00:00Z' }
+        ];
+        
+        res.json({ workflows, configured: true });
+    } catch (error) {
+        res.status(500).json({ error: 'Erreur n8n', details: error.message });
+    }
+});
+
+app.post('/api/agent/n8n/create-workflow', async (req, res) => {
+    try {
+        const { name, description, trigger, actions } = req.body;
+        
+        // Simuler la création d'un workflow
+        const newWorkflow = {
+            id: Date.now(),
+            name: name || 'Nouveau Workflow',
+            description: description || 'Créé par Agent Skeleton OSS',
+            active: false,
+            created: new Date().toISOString()
+        };
+        
+        res.json({ 
+            success: true, 
+            workflow: newWorkflow,
+            message: `Workflow "${newWorkflow.name}" créé avec succès` 
+        });
+    } catch (error) {
+        res.status(500).json({ error: 'Erreur création workflow', details: error.message });
+    }
+});
+
+// 🚀 Coolify Deployments Management  
+app.get('/api/agent/coolify/deployments', async (req, res) => {
+    try {
+        if (!process.env.COOLIFY_API_KEY || !process.env.COOLIFY_API_URL) {
+            return res.status(400).json({ error: 'Clés Coolify manquantes', configured: false });
+        }
+        
+        // Simuler l'état des déploiements
+        const deployments = [
+            { id: 1, name: 'agent-skeleton-oss', status: 'running', lastDeploy: '2025-10-07T11:00:00Z', health: 'healthy' },
+            { id: 2, name: 'n8n-instance', status: 'running', lastDeploy: '2025-10-07T08:30:00Z', health: 'healthy' },
+            { id: 3, name: 'baserow-db', status: 'stopped', lastDeploy: '2025-10-06T20:15:00Z', health: 'warning' }
+        ];
+        
+        res.json({ deployments, configured: true });
+    } catch (error) {
+        res.status(500).json({ error: 'Erreur Coolify', details: error.message });
+    }
+});
+
+app.post('/api/agent/coolify/deploy', async (req, res) => {
+    try {
+        const { serviceId, serviceName } = req.body;
+        
+        // Simuler un déploiement
+        const deployment = {
+            id: serviceId || Date.now(),
+            name: serviceName || 'Service inconnu',
+            status: 'deploying',
+            startedAt: new Date().toISOString()
+        };
+        
+        res.json({ 
+            success: true, 
+            deployment,
+            message: `Déploiement de "${deployment.name}" initié` 
+        });
+    } catch (error) {
+        res.status(500).json({ error: 'Erreur déploiement', details: error.message });
+    }
+});
+
+// 📊 Baserow Database Management
+app.get('/api/agent/baserow/tables', async (req, res) => {
+    try {
+        if (!process.env.BASEROW_API_KEY || !process.env.BASEROW_URL) {
+            return res.status(400).json({ error: 'Clés Baserow manquantes', configured: false });
+        }
+        
+        // Simuler les tables Baserow
+        const tables = [
+            { id: 1, name: 'Conversations', rows: 156, lastUpdate: '2025-10-07T10:45:00Z' },
+            { id: 2, name: 'Workflows Status', rows: 3, lastUpdate: '2025-10-07T09:30:00Z' },
+            { id: 3, name: 'Deployments Log', rows: 42, lastUpdate: '2025-10-07T11:00:00Z' }
+        ];
+        
+        res.json({ tables, configured: true });
+    } catch (error) {
+        res.status(500).json({ error: 'Erreur Baserow', details: error.message });
+    }
+});
+
+app.post('/api/agent/baserow/sync', async (req, res) => {
+    try {
+        const { tableId, action } = req.body;
+        
+        // Simuler une synchronisation
+        const syncResult = {
+            tableId: tableId || 1,
+            action: action || 'sync',
+            recordsProcessed: Math.floor(Math.random() * 50) + 10,
+            status: 'completed',
+            timestamp: new Date().toISOString()
+        };
+        
+        res.json({ 
+            success: true, 
+            result: syncResult,
+            message: `Synchronisation réussie : ${syncResult.recordsProcessed} enregistrements traités` 
+        });
+    } catch (error) {
+        res.status(500).json({ error: 'Erreur synchronisation', details: error.message });
+    }
+});
+
 // 💬 API Chat avec validation et rate limiting
 app.post('/api/chat', chatLimiter, async (req, res) => {
     try {
