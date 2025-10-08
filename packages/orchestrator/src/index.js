@@ -5,9 +5,13 @@ const helmet = require('helmet');
 const cors = require('cors');
 const rateLimit = require('express-rate-limit');
 const { body, validationResult } = require('express-validator');
+const cookieParser = require('cookie-parser');
 
-// Import du service IA
+// Import des services
 const aiService = require('./services/aiService');
+const { authService, requireAuth } = require('./middleware/auth');
+const { memoryService } = require('./services/memoryService');
+const { socialWorkflowService } = require('./services/socialWorkflowService');
 
 const app = express();
 const port = process.env.PORT || 3000;
@@ -69,26 +73,89 @@ const chatLimiter = rateLimit({
 app.use(limiter);
 
 // Middleware pour parsing JSON et URL-encoded
+app.use(cookieParser());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 // Fichiers statiques
 app.use(express.static(path.join(__dirname, '../public')));
 
-// 🏠 Route principale - Interface moderne
-app.get('/', (req, res) => {
+// 🏠 Route principale - Interface moderne (protégée)
+app.get('/', requireAuth, (req, res) => {
     res.render('app', {
         title: 'Agent Skeleton OSS',
-        version: '1.0.0'
+        version: '1.0.0',
+        user: req.user
     });
 });
 
-// 📱 Route pour l'interface moderne
-app.get('/app', (req, res) => {
+// � Route de connexion (non protégée)
+app.get('/login', (req, res) => {
+    res.render('login', { title: 'Connexion - Agent Skeleton OSS' });
+});
+
+// �📱 Route pour l'interface moderne (protégée)
+app.get('/app', requireAuth, (req, res) => {
     res.render('app', {
         title: 'Agent Skeleton OSS - Interface Moderne',
-        version: '1.0.0'
+        version: '1.0.0',
+        user: req.user
     });
+});
+
+// 🔐 Routes d'authentification
+app.post('/api/auth/register', [
+    body('username').isLength({ min: 3 }).withMessage('Nom d\'utilisateur requis (min 3 caractères)'),
+    body('password').isLength({ min: 6 }).withMessage('Mot de passe requis (min 6 caractères)'),
+    body('email').isEmail().withMessage('Email valide requis')
+], (req, res) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+        return res.status(400).json({ errors: errors.array() });
+    }
+
+    try {
+        const { username, password, email } = req.body;
+        const result = authService.createAccount(username, password, email);
+        res.json({ success: true, message: 'Compte créé avec succès' });
+    } catch (error) {
+        res.status(400).json({ error: error.message });
+    }
+});
+
+app.post('/api/auth/login', [
+    body('username').notEmpty().withMessage('Nom d\'utilisateur requis'),
+    body('password').notEmpty().withMessage('Mot de passe requis')
+], (req, res) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+        return res.status(400).json({ errors: errors.array() });
+    }
+
+    try {
+        const { username, password } = req.body;
+        const result = authService.login(username, password);
+        
+        // Définir le cookie de session
+        res.cookie('sessionId', result.sessionId, {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === 'production',
+            maxAge: 24 * 60 * 60 * 1000 // 24 heures
+        });
+
+        res.json({ success: true, user: result.user });
+    } catch (error) {
+        res.status(401).json({ error: error.message });
+    }
+});
+
+app.post('/api/auth/logout', requireAuth, (req, res) => {
+    const sessionId = req.cookies?.sessionId;
+    if (sessionId) {
+        authService.logout(sessionId);
+        res.clearCookie('sessionId');
+    }
+    res.json({ success: true, message: 'Déconnexion réussie' });
 });
 
 // 🔧 Route de debug pour tester la navigation
@@ -258,8 +325,72 @@ app.post('/api/agent/baserow/sync', async (req, res) => {
     }
 });
 
-// 💬 API Chat avec validation et rate limiting
-app.post('/api/chat', chatLimiter, async (req, res) => {
+// 🎭 Routes pour les workflows de réseaux sociaux
+app.post('/api/agent/social/create-publisher', requireAuth, async (req, res) => {
+    try {
+        const { platforms, autoPost } = req.body;
+        const userId = req.user.userId;
+        
+        const result = await socialWorkflowService.createSocialPublishingWorkflow(
+            userId, 
+            platforms || ['facebook', 'twitter', 'linkedin']
+        );
+        
+        if (result.success) {
+            memoryService.saveConversation(userId, 
+                `Créer un workflow de publication sociale pour ${platforms?.join(', ')}`,
+                `Workflow de publication créé avec succès pour les plateformes: ${platforms?.join(', ')}`,
+                'system',
+                { workflowId: result.workflowId, action: 'create_social_workflow' }
+            );
+        }
+        
+        res.json(result);
+    } catch (error) {
+        res.status(500).json({ error: 'Erreur création workflow social', details: error.message });
+    }
+});
+
+app.post('/api/agent/social/create-monitor', requireAuth, async (req, res) => {
+    try {
+        const { keywords, platforms } = req.body;
+        const userId = req.user.userId;
+        
+        const result = await socialWorkflowService.createSocialMonitoringWorkflow(
+            userId,
+            keywords || []
+        );
+        
+        if (result.success) {
+            memoryService.saveConversation(userId,
+                `Créer un monitoring social pour: ${keywords?.join(', ')}`,
+                `Workflow de monitoring créé pour surveiller: ${keywords?.join(', ')}`,
+                'system',
+                { workflowId: result.workflowId, action: 'create_monitor_workflow' }
+            );
+        }
+        
+        res.json(result);
+    } catch (error) {
+        res.status(500).json({ error: 'Erreur création monitoring social', details: error.message });
+    }
+});
+
+// 🧠 Routes de mémoire pour l'agent
+app.get('/api/agent/memory/conversations', requireAuth, (req, res) => {
+    try {
+        const userId = req.user.userId;
+        const limit = parseInt(req.query.limit) || 20;
+        
+        const conversations = memoryService.getConversationHistory(userId, limit);
+        res.json({ conversations, count: conversations.length });
+    } catch (error) {
+        res.status(500).json({ error: 'Erreur récupération mémoire', details: error.message });
+    }
+});
+
+// 💬 API Chat avec validation, rate limiting et mémoire
+app.post('/api/chat', chatLimiter, requireAuth, async (req, res) => {
     try {
         console.log('🔍 Données reçues brutes:', req.body);
         
@@ -316,10 +447,22 @@ app.post('/api/chat', chatLimiter, async (req, res) => {
             `🎯 ${model || 'L\'assistant'} est prêt à vous accompagner dans cette tâche.`
         ];
 
-        // Appel du service IA réel
-        const aiResponse = await aiService.sendMessage(message, model, conversationId);
+        // Récupérer le contexte de mémoire pour l'utilisateur
+        const personalizedContext = memoryService.generatePersonalizedContext(req.user.userId);
+        
+        // Appel du service IA réel avec contexte personnalisé
+        const aiResponse = await aiService.sendMessage(message, model, conversationId, personalizedContext);
         
         console.log('🤖 Réponse IA reçue:', aiResponse);
+
+        // Sauvegarder la conversation dans la mémoire
+        memoryService.saveConversation(req.user.userId, message, aiResponse.response, model, {
+            simulated: aiResponse.simulated,
+            conversationId: conversationId
+        });
+
+        // Apprendre des préférences utilisateur
+        memoryService.learnFromConversation(req.user.userId, message, aiResponse.response);
 
         // Si c'est une simulation, on ajoute un indicateur
         let finalResponse = aiResponse.response;
