@@ -80,12 +80,39 @@ function requireAuth(req, res, next) {
     const sessionId = req.headers['x-session-id'] || req.cookies?.sessionId;
     
     if (!sessionId) {
+        // Si c'est une requête AJAX, retourner JSON
+        if (req.xhr || req.headers.accept?.indexOf('json') > -1) {
+            return res.status(401).json({ error: 'Session requise', needAuth: true });
+        }
+        // Sinon, rediriger vers la page de connexion
+        return res.redirect('/login');
+    }
+
+    const session = authService.verifySession(sessionId);
+    if (!session) {
+        // Session invalide ou expirée
+        if (req.xhr || req.headers.accept?.indexOf('json') > -1) {
+            return res.status(401).json({ error: 'Session invalide ou expirée', needAuth: true });
+        }
+        res.clearCookie('sessionId');
+        return res.redirect('/login');
+    }
+
+    req.user = session;
+    next();
+}
+
+// Middleware pour les APIs qui nécessitent une réponse JSON
+function requireAuthAPI(req, res, next) {
+    const sessionId = req.headers['x-session-id'] || req.cookies?.sessionId;
+    
+    if (!sessionId) {
         return res.status(401).json({ error: 'Session requise', needAuth: true });
     }
 
     const session = authService.verifySession(sessionId);
     if (!session) {
-        return res.status(401).json({ error: 'Session invalide', needAuth: true });
+        return res.status(401).json({ error: 'Session invalide ou expirée', needAuth: true });
     }
 
     req.user = session;
@@ -94,4 +121,4 @@ function requireAuth(req, res, next) {
 
 const authService = new AuthService();
 
-module.exports = { AuthService, authService, requireAuth };
+module.exports = { AuthService, authService, requireAuth, requireAuthAPI };

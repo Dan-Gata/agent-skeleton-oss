@@ -689,11 +689,14 @@
 
         <!-- Main Content -->
         <main class="main-content">
-            <div class="top-bar">
-                <h1 class="page-title">Chat Assistant</h1>
+        <div class="top-bar">
+            <h1 class="page-title">Chat Assistant</h1>
+            <div class="top-bar-actions">
+                <button id="logout-btn" class="logout-btn" style="background: var(--accent-danger); color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-size: 14px;">
+                    <i class="fas fa-sign-out-alt"></i> Déconnexion
+                </button>
             </div>
-
-            <!-- Chat Page -->
+        </div>            <!-- Chat Page -->
             <div id="chat-page" class="content-page active">
                 <div class="chat-container">
                     <div class="messages-area" id="messages">
@@ -1378,7 +1381,15 @@
                     
                     addMessage(data.response, 'assistant');
                 } else {
-                    addMessage('❌ Erreur: ' + (data.error || 'Une erreur est survenue'), 'assistant', true);
+                    // Vérifier si c'est une erreur d'authentification
+                    if (data.needAuth) {
+                        addMessage('🔐 Session expirée. Redirection vers la connexion...', 'assistant', true);
+                        setTimeout(() => {
+                            window.location.href = '/login';
+                        }, 2000);
+                    } else {
+                        addMessage('❌ Erreur: ' + (data.error || 'Une erreur est survenue'), 'assistant', true);
+                    }
                 }
             } catch (error) {
                 if (typingIndicator) {
@@ -1452,6 +1463,16 @@
             
             try {
                 const response = await fetch('/api/keys-status');
+                
+                if (!response.ok) {
+                    if (response.status === 401) {
+                        console.log('Session expirée, redirection...');
+                        window.location.href = '/login';
+                        return;
+                    }
+                    throw new Error(`HTTP ${response.status}`);
+                }
+                
                 const status = await response.json();
                 
                 console.log('📊 Statut OpenRouter:', status);
@@ -1631,6 +1652,29 @@ Une seule clé = Accès à tous les meilleurs modèles IA
             }
         }
 
+        // Fonction de déconnexion
+        async function logout() {
+            try {
+                const response = await fetch('/api/auth/logout', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                if (response.ok) {
+                    window.location.href = '/login';
+                } else {
+                    console.error('Erreur lors de la déconnexion');
+                    // Rediriger quand même vers login
+                    window.location.href = '/login';
+                }
+            } catch (error) {
+                console.error('Erreur de déconnexion:', error);
+                window.location.href = '/login';
+            }
+        }
+
         // Initialisation quand le DOM est chargé
         document.addEventListener('DOMContentLoaded', function() {
             console.log('🎉 DOM chargé, initialisation...');
@@ -1695,6 +1739,13 @@ Une seule clé = Accès à tous les meilleurs modèles IA
                     checkApiStatus();
                 }
             }, 1000);
+            
+            // Bouton de déconnexion
+            const logoutBtn = document.getElementById('logout-btn');
+            if (logoutBtn) {
+                logoutBtn.addEventListener('click', logout);
+                console.log('✅ Event listener ajouté pour logout');
+            }
             
             // Exposer les fonctions globalement
             window.navigateToPage = navigateToPage;

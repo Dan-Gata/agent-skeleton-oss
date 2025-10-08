@@ -9,7 +9,7 @@ const cookieParser = require('cookie-parser');
 
 // Import des services
 const aiService = require('./services/aiService');
-const { authService, requireAuth } = require('./middleware/auth');
+const { authService, requireAuth, requireAuthAPI } = require('./middleware/auth');
 const { memoryService } = require('./services/memoryService');
 const { socialWorkflowService } = require('./services/socialWorkflowService');
 
@@ -149,7 +149,7 @@ app.post('/api/auth/login', [
     }
 });
 
-app.post('/api/auth/logout', requireAuth, (req, res) => {
+app.post('/api/auth/logout', requireAuthAPI, (req, res) => {
     const sessionId = req.cookies?.sessionId;
     if (sessionId) {
         authService.logout(sessionId);
@@ -326,7 +326,7 @@ app.post('/api/agent/baserow/sync', async (req, res) => {
 });
 
 // 🎭 Routes pour les workflows de réseaux sociaux
-app.post('/api/agent/social/create-publisher', requireAuth, async (req, res) => {
+app.post('/api/agent/social/create-publisher', requireAuthAPI, async (req, res) => {
     try {
         const { platforms, autoPost } = req.body;
         const userId = req.user.userId;
@@ -351,7 +351,7 @@ app.post('/api/agent/social/create-publisher', requireAuth, async (req, res) => 
     }
 });
 
-app.post('/api/agent/social/create-monitor', requireAuth, async (req, res) => {
+app.post('/api/agent/social/create-monitor', requireAuthAPI, async (req, res) => {
     try {
         const { keywords, platforms } = req.body;
         const userId = req.user.userId;
@@ -377,7 +377,7 @@ app.post('/api/agent/social/create-monitor', requireAuth, async (req, res) => {
 });
 
 // 🧠 Routes de mémoire pour l'agent
-app.get('/api/agent/memory/conversations', requireAuth, (req, res) => {
+app.get('/api/agent/memory/conversations', requireAuthAPI, (req, res) => {
     try {
         const userId = req.user.userId;
         const limit = parseInt(req.query.limit) || 20;
@@ -390,7 +390,7 @@ app.get('/api/agent/memory/conversations', requireAuth, (req, res) => {
 });
 
 // 💬 API Chat avec validation, rate limiting et mémoire
-app.post('/api/chat', chatLimiter, requireAuth, async (req, res) => {
+app.post('/api/chat', chatLimiter, requireAuthAPI, async (req, res) => {
     try {
         console.log('🔍 Données reçues brutes:', req.body);
         

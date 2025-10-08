@@ -332,12 +332,35 @@
                         showSuccess('Connexion réussie ! Redirection...');
                         setTimeout(() => {
                             window.location.href = '/';
-                        }, 1500);
+                        }, 1000);
                     } else {
-                        showSuccess('Compte créé avec succès ! Vous pouvez maintenant vous connecter.');
-                        setTimeout(() => {
-                            switchLink.click(); // Basculer vers la connexion
-                        }, 2000);
+                        showSuccess('Compte créé avec succès ! Connexion automatique...');
+                        // Après création de compte, se connecter automatiquement
+                        setTimeout(async () => {
+                            try {
+                                const loginResponse = await fetch('/api/auth/login', {
+                                    method: 'POST',
+                                    headers: {
+                                        'Content-Type': 'application/json'
+                                    },
+                                    body: JSON.stringify({
+                                        username: data.username,
+                                        password: data.password
+                                    })
+                                });
+                                
+                                if (loginResponse.ok) {
+                                    window.location.href = '/';
+                                } else {
+                                    // Si la connexion auto échoue, basculer vers le formulaire de connexion
+                                    switchLink.click();
+                                    showSuccess('Compte créé ! Veuillez vous connecter.');
+                                }
+                            } catch (error) {
+                                switchLink.click();
+                                showSuccess('Compte créé ! Veuillez vous connecter.');
+                            }
+                        }, 1500);
                     }
                 } else {
                     if (result.errors) {
