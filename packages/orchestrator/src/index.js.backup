@@ -17,6 +17,29 @@ const fileService = require('./services/fileService');
 
 const app = express();
 const port = process.env.PORT || 3000;
+    
+    res.render('app', {
+        title: 'Agent Skeleton OSS - Interface Moderne',
+        version: '1.0.0',
+        user: req.user,
+        cacheBuster: Date.now() // Force le rechargement des assets
+    });
+});
+const cors = require('cors');
+const rateLimit = require('express-rate-limit');
+const { body, validationResult } = require('express-validator');
+const cookieParser = require('cookie-parser');
+const multer = require('multer');
+
+// Import des services
+const aiService = require('./services/aiService');
+const { authService, requireAuth, requireAuthAPI } = require('./middleware/auth');
+const { memoryService } = require('./services/memoryService');
+const { socialWorkflowService } = require('./services/socialWorkflowService');
+const fileService = require('./services/fileService');
+
+const app = express();
+const port = process.env.PORT || 3000;
 
 // 🔒 SÉCURITÉ : Configuration des headers de sécurité
 app.use(helmet({
@@ -125,30 +148,12 @@ app.get('/login', (req, res) => {
     res.render('login', { title: 'Connexion - Agent Skeleton OSS' });
 });
 
-// 📱 Route pour l'interface moderne (protégée)
+// �📱 Route pour l'interface moderne (protégée)
 app.get('/app', requireAuth, (req, res) => {
     res.render('app', {
         title: 'Agent Skeleton OSS - Interface Moderne',
         version: '1.0.0',
         user: req.user
-    });
-});
-
-// 🔧 Route de debug sans cache (ajout temporaire)
-app.get('/app-debug', requireAuth, (req, res) => {
-    res.set({
-        'Cache-Control': 'no-cache, no-store, must-revalidate, max-age=0',
-        'Pragma': 'no-cache',
-        'Expires': '0',
-        'ETag': false,
-        'Last-Modified': new Date().toUTCString()
-    });
-    
-    res.render('app', {
-        title: 'Agent Skeleton OSS - Interface Moderne (DEBUG)',
-        version: '1.0.0-debug-' + Date.now(),
-        user: req.user,
-        cacheBuster: Date.now()
     });
 });
 

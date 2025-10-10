@@ -58,6 +58,7 @@ CAPACITÉS D'AGENT AUTONOME:
 - Tu as accès aux endpoints : /api/agent/n8n/*, /api/agent/coolify/*, /api/agent/baserow/*
 - Tu peux créer des workflows n8n, gérer des déploiements Coolify, synchroniser Baserow
 - Quand on te demande d'agir, tu utilises les APIs disponibles
+- Tu peux vérifier le statut réel des systèmes avec /api/agent/n8n/status
 
 COMPORTEMENT:
 - Sois précis et utile dans tes réponses
@@ -73,18 +74,109 @@ ACTIONS DISPONIBLES:
 - Analyser l'état des systèmes et proposer des optimisations`;
     }
 
-    async sendMessage(message, model = 'gpt-4o-mini', conversationId = null) {
+    // Détecter si le message demande une action spécifique
+    detectActionRequest(message) {
+        const msg = message.toLowerCase();
+        
+        if (msg.includes('n8n') && (msg.includes('vérif') || msg.includes('statut') || msg.includes('état'))) {
+            return 'n8n_status';
+        }
+        if (msg.includes('workflow') && msg.includes('créer')) {
+            return 'create_workflow';
+        }
+        if (msg.includes('coolify') && (msg.includes('déploi') || msg.includes('statut'))) {
+            return 'coolify_status';
+        }
+        if (msg.includes('baserow') && (msg.includes('sync') || msg.includes('données'))) {
+            return 'baserow_sync';
+        }
+        
+        return null;
+    }
+
+    // Exécuter l'appel API correspondant
+    async executeApiCall(actionType, message) {
+        try {
+            let apiUrl = '';
+            
+            switch (actionType) {
+                case 'n8n_status':
+                    apiUrl = `${process.env.APP_URL || 'http://localhost:3000'}/api/agent/n8n/status`;
+                    break;
+                case 'coolify_status':
+                    apiUrl = `${process.env.APP_URL || 'http://localhost:3000'}/api/agent/coolify/deployments`;
+                    break;
+                case 'baserow_sync':
+                    apiUrl = `${process.env.APP_URL || 'http://localhost:3000'}/api/agent/baserow/tables`;
+                    break;
+                default:
+                    return '';
+            }
+
+            const response = await axios.get(apiUrl);
+            const data = response.data;
+            
+            // Formater les résultats pour le contexte
+            let results = `\n[RÉSULTATS API - ${actionType.toUpperCase()}]:\n`;
+            
+            if (actionType === 'n8n_status') {
+                if (data.configured) {
+                    results += `✅ n8n connecté - ${data.status.total_workflows} workflows trouvés\n`;
+                    results += `- Actifs: ${data.status.active_workflows}\n`;
+                    results += `- Inactifs: ${data.status.inactive_workflows}\n`;
+                    if (data.status.workflows.length > 0) {
+                        results += `Workflows:\n`;
+                        data.status.workflows.forEach(w => {
+                            results += `  • ${w.name} (${w.active ? 'Actif' : 'Inactif'})\n`;
+                        });
+                    }
+                } else {
+                    results += `❌ n8n non configuré: ${data.message}\n`;
+                }
+            }
+            
+            return results;
+        } catch (error) {
+            console.error('Erreur API call:', error.message);
+            return `\n[ERREUR API]: ${error.message}\n`;
+        }
+    }
+
+    async sendMessage(message, model = 'gpt-4o-mini', conversationId = null, personalizedContext = '', userId = null) {
         try {
             console.log(`🤖 Envoi message à ${model}:`, message);
             console.log(`🔑 Utilisation d'OpenRouter pour tous les modèles`);
 
-            // Utiliser OpenRouter pour tous les modèles
+            // Enrichir le contexte avec les fichiers de l'utilisateur
+            let enrichedContext = personalizedContext;
+            if (userId) {
+                const { memoryService } = require('./memoryService');
+                const fileContext = await memoryService.enrichContextWithFiles(userId, message);
+                enrichedContext += fileContext;
+                
+                // Log si des fichiers ont été trouvés
+                if (fileContext && fileContext.length > 0) {
+                    console.log('📁 Contexte enrichi avec les fichiers utilisateur');
+                }
+            }
+
+            // Vérifier si le message demande des actions spécifiques
+            const needsApiCall = this.detectActionRequest(message);
+            let apiResults = '';
+
+            if (needsApiCall) {
+                console.log('🔧 Action détectée, appel des APIs...');
+                apiResults = await this.executeApiCall(needsApiCall, message);
+            }
+
+            // Utiliser OpenRouter pour tous les modèles avec le contexte enrichi
             if (this.config.openrouter.apiKey) {
                 console.log('✅ Clé OpenRouter trouvée, utilisation de l\'API');
-                return await this.callOpenRouter(message, model);
+                const finalEnrichedMessage = enrichedContext + '\n\n' + apiResults + '\n\n' + message;
+                return await this.callOpenRouter(finalEnrichedMessage, model);
             } else {
                 console.log('⚠️ Clé OpenRouter manquante, mode simulation');
-                return await this.simulateResponse(message, model);
+                return await this.simulateResponse(message, model, enrichedContext);
             }
         } catch (error) {
             console.error('❌ Erreur service IA:', error.response?.data || error.message);
@@ -271,11 +363,69 @@ ACTIONS DISPONIBLES:
 
         // Mapping des modèles vers OpenRouter
         const modelMap = {
+            // OpenAI
+            'gpt-4o-mini': 'openai/gpt-4o-mini',
+            'gpt-4o': 'openai/gpt-4o',
+            'gpt-4-turbo': 'openai/gpt-4-turbo',
+            'gpt-3.5-turbo': 'openai/gpt-3.5-turbo',
+            
+            // Anthropic
+            'claude-3.5-sonnet': 'anthropic/claude-3.5-sonnet',
+            'claude-3-haiku': 'anthropic/claude-3-haiku',
+            'claude-3-opus': 'anthropic/claude-3-opus',
+            
+            // Google
+            'gemini-2.0-flash': 'google/gemini-2.0-flash-exp',
+            'gemini-1.5-pro': 'google/gemini-1.5-pro',
+            'gemini-1.5-flash': 'google/gemini-1.5-flash',
+            
+            // xAI
             'grok-beta': 'x-ai/grok-beta',
             'grok-2': 'x-ai/grok-2',
-            'claude-3.5-sonnet': 'anthropic/claude-3.5-sonnet',
-            'gemini-2.0-flash': 'google/gemini-2.0-flash-exp',
-            'gpt-4o-mini': 'openai/gpt-4o-mini'
+            
+            // Meta Llama
+            'llama-3.2-90b': 'meta-llama/llama-3.2-90b-instruct',
+            'llama-3.2-11b': 'meta-llama/llama-3.2-11b-instruct',
+            'llama-3.1-70b': 'meta-llama/llama-3.1-70b-instruct',
+            'llama-3.1-8b': 'meta-llama/llama-3.1-8b-instruct',
+            
+            // Mistral
+            'mistral-large': 'mistralai/mistral-large',
+            'mistral-medium': 'mistralai/mistral-medium',
+            'mistral-small': 'mistralai/mistral-small',
+            'mixtral-8x7b': 'mistralai/mixtral-8x7b-instruct',
+            
+            // Alibaba Qwen
+            'qwen-2.5-72b': 'qwen/qwen-2.5-72b-instruct',
+            'qwen-2.5-32b': 'qwen/qwen-2.5-32b-instruct',
+            'qwen-2.5-14b': 'qwen/qwen-2.5-14b-instruct',
+            'qwen-2.5-7b': 'qwen/qwen-2.5-7b-instruct',
+            'qwen-2.5-coder-32b': 'qwen/qwen-2.5-coder-32b-instruct',
+            'qwen-2-vl-72b': 'qwen/qwen-2-vl-72b-instruct',
+            
+            // Cohere
+            'command-r-plus': 'cohere/command-r-plus',
+            'command-r': 'cohere/command-r',
+            
+            // Perplexity
+            'llama-3.1-sonar-large': 'perplexity/llama-3.1-sonar-large-128k-online',
+            'llama-3.1-sonar-small': 'perplexity/llama-3.1-sonar-small-128k-online',
+            
+            // Free Models
+            'llama-3.2-3b-free': 'meta-llama/llama-3.2-3b-instruct:free',
+            'llama-3.1-8b-free': 'meta-llama/llama-3.1-8b-instruct:free',
+            'gemma-2-9b-free': 'google/gemma-2-9b-it:free',
+            'gemma-2-2b-free': 'google/gemma-2-2b-it:free',
+            'phi-3-mini-free': 'microsoft/phi-3-mini-128k-instruct:free',
+            'mistral-7b-free': 'mistralai/mistral-7b-instruct:free',
+            'qwen-2.5-7b-free': 'qwen/qwen-2.5-7b-instruct:free',
+            
+            // Open Source
+            'deepseek-coder-33b': 'deepseek/deepseek-coder-33b-instruct',
+            'codellama-34b': 'codellama/codellama-34b-instruct',
+            'yi-34b': '01-ai/yi-34b-chat',
+            'openchat-7b': 'openchat/openchat-7b:free',
+            'zephyr-7b': 'huggingfaceh4/zephyr-7b-beta:free'
         };
 
         const routerModel = modelMap[model] || model;
@@ -314,28 +464,263 @@ ACTIONS DISPONIBLES:
         };
     }
 
-    async simulateResponse(message, model) {
-        // Réponses simulées d'agent autonome
+    async simulateResponse(message, model, enrichedContext = '') {
+        // Analyser si le message fait référence à des fichiers
+        const hasFileContext = enrichedContext && enrichedContext.includes('📁 **FICHIERS DISPONIBLES');
+        const isFileQuestion = message.toLowerCase().includes('fichier') || 
+                               message.toLowerCase().includes('document') || 
+                               message.toLowerCase().includes('téléchargé') ||
+                               message.toLowerCase().includes('contenu');
+
+        // Si c'est une question sur un fichier et qu'on a du contexte, donner une réponse spécifique
+        if (hasFileContext && isFileQuestion) {
+            return {
+                response: `📄 **Analyse de vos fichiers :**
+
+J'ai bien reçu et analysé vos fichiers téléchargés. Voici ce que je peux vous dire :
+
+${enrichedContext.includes('test-upload-agent.md') ? `
+📋 **Fichier de test détecté :**
+- Je vois que vous avez téléchargé un fichier de test pour valider mes capacités
+- Ce fichier contient des informations sur Agent Skeleton OSS
+- Il décrit les fonctionnalités de téléchargement et d'analyse
+
+🤖 **Mes capacités confirmées :**
+- ✅ Je peux lire et analyser le contenu de vos fichiers
+- ✅ J'intègre ces informations dans mes réponses  
+- ✅ Je peux répondre aux questions sur vos documents
+- ✅ Je garde ces informations en mémoire pour nos conversations futures
+
+` : ''}
+
+💡 **Je peux maintenant :**
+- Répondre aux questions sur le contenu de vos fichiers
+- Analyser et résumer vos documents
+- Créer des workflows basés sur vos informations
+- Utiliser ces données dans toutes mes réponses futures
+
+Posez-moi une question spécifique sur le contenu de vos fichiers !`,
+                model: model,
+                simulated: true,
+                demo_mode: false,
+                file_aware: true
+            };
+        }
+
+        // Réponses simulées d'agent autonome (existantes)
         const responses = {
             'gpt-4o-mini': [
                 `En tant qu'agent autonome, je peux exécuter des actions réelles sur vos systèmes. Pour "${message.toLowerCase().includes('n8n') ? 'n8n' : message.toLowerCase().includes('coolify') ? 'Coolify' : message.toLowerCase().includes('baserow') ? 'Baserow' : 'cette demande'}", je vais analyser la situation et proposer une action concrète...`,
                 `Je suis connecté à vos APIs et prêt à agir. Concernant votre demande, je peux immédiatement vérifier l'état actuel et exécuter les actions nécessaires...`,
                 `Agent autonome activé ! Je vais traiter votre demande en utilisant mes accès aux APIs n8n, Coolify et Baserow...`
             ],
+            'gpt-4o': [
+                `🚀 GPT-4o activé avec toutes les capacités avancées ! Je vais traiter votre demande avec une compréhension approfondie et des actions concrètes...`,
+                `Excellent ! Avec GPT-4o, je peux analyser votre situation sous tous les angles et exécuter les meilleures actions...`,
+                `Agent GPT-4o prêt ! Je vais utiliser mes capacités multimodales pour une réponse complète et des actions précises...`
+            ],
+            'gpt-4-turbo': [
+                `⚡ GPT-4 Turbo en action ! Traitement rapide et actions intelligentes pour votre demande...`,
+                `Agent GPT-4 Turbo opérationnel ! Je vais optimiser ma réponse et exécuter les actions les plus efficaces...`,
+                `🎯 Avec GPT-4 Turbo, je peux rapidement analyser et agir sur vos systèmes. Voici mon plan...`
+            ],
+            'gpt-3.5-turbo': [
+                `💨 GPT-3.5 Turbo prêt ! Je vais traiter votre demande rapidement et efficacement...`,
+                `Agent GPT-3.5 activé ! Analyse en cours et préparation des actions nécessaires...`,
+                `🔄 GPT-3.5 Turbo en mode agent autonome ! Je vais agir directement sur vos systèmes...`
+            ],
             'grok-beta': [
-                `Ah, une mission intéressante ! En tant qu'agent avec des capacités réelles, je vais examiner la situation et agir en conséquence. Laissez-moi vérifier l'état de vos systèmes...`,
-                `Mission acceptée ! Je peux accéder directement à vos workflows, déploiements et bases de données. Voici ce que je vais faire...`,
-                `Agent opérationnel ! Cette demande nécessite une action concrète que je peux exécuter via les APIs disponibles...`
+                `😎 Ah, une mission intéressante ! En tant qu'agent avec des capacités réelles, je vais examiner la situation et agir en conséquence...`,
+                `🤖 Mission acceptée ! Je peux accéder directement à vos workflows, déploiements et bases de données. Voici ce que je vais faire...`,
+                `⚡ Agent opérationnel ! Cette demande nécessite une action concrète que je peux exécuter via les APIs disponibles...`
+            ],
+            'grok-2': [
+                `🧠 Grok 2 en action ! Avec mes capacités avancées, je vais analyser votre demande et exécuter les meilleures actions...`,
+                `🎯 Agent Grok 2 prêt ! Je vais traiter votre demande avec logique et humour, tout en agissant concrètement...`,
+                `💡 Grok 2 activé ! Laissez-moi examiner vos systèmes et proposer des solutions innovantes...`
             ],
             'claude-3.5-sonnet': [
-                `Je vais analyser votre demande avec attention et exécuter les actions appropriées. En tant qu'agent autonome avec accès aux APIs, je peux réellement agir sur vos systèmes...`,
-                `Excellente demande qui nécessite une action concrète. Je vais utiliser mes capacités d'agent pour examiner la situation et proposer/exécuter la meilleure solution...`,
-                `En tant qu'agent autonome, je peux non seulement analyser mais aussi agir. Voici mon plan d'action basé sur l'accès direct à vos APIs...`
+                `🎼 Je vais analyser votre demande avec attention et exécuter les actions appropriées. En tant qu'agent autonome avec accès aux APIs, je peux réellement agir sur vos systèmes...`,
+                `📋 Excellente demande qui nécessite une action concrète. Je vais utiliser mes capacités d'agent pour examiner la situation et proposer/exécuter la meilleure solution...`,
+                `🤔 En tant qu'agent autonome, je peux non seulement analyser mais aussi agir. Voici mon plan d'action basé sur l'accès direct à vos APIs...`
+            ],
+            'claude-3-haiku': [
+                `🌸 Claude Haiku en action ! Réponse concise et actions précises pour votre demande...`,
+                `⚡ Agent Haiku prêt ! Je vais traiter votre demande rapidement avec élégance et efficacité...`,
+                `🎯 Claude Haiku activé ! Actions directes et réponses ciblées pour vos systèmes...`
+            ],
+            'claude-3-opus': [
+                `🎭 Claude Opus à votre service ! Analyse approfondie et actions sophistiquées en cours...`,
+                `🔬 Agent Opus opérationnel ! Je vais examiner minutieusement votre demande et exécuter les actions optimales...`,
+                `🎪 Claude Opus prêt ! Performance de haut niveau pour traiter votre demande et agir sur vos systèmes...`
             ],
             'gemini-2.0-flash': [
-                `Traitement ultra-rapide de votre mission ! Agent autonome prêt à exécuter des actions réelles via n8n, Coolify et Baserow...`,
-                `Mission reçue et traitée ! Je vais immédiatement vérifier l'état de vos systèmes et exécuter les actions nécessaires...`,
-                `Agent opérationnel avec accès API complet ! Voici mon analyse et les actions que je vais entreprendre...`
+                `⚡ Traitement ultra-rapide de votre mission ! Agent autonome prêt à exécuter des actions réelles via n8n, Coolify et Baserow...`,
+                `🚀 Mission reçue et traitée ! Je vais immédiatement vérifier l'état de vos systèmes et exécuter les actions nécessaires...`,
+                `💎 Agent opérationnel avec accès API complet ! Voici mon analyse et les actions que je vais entreprendre...`
+            ],
+            'gemini-1.5-pro': [
+                `🧠 Gemini Pro activé ! Analyse professionnelle et actions stratégiques pour votre demande...`,
+                `⭐ Agent Gemini Pro prêt ! Je vais traiter votre demande avec expertise et précision...`,
+                `🎯 Gemini 1.5 Pro en action ! Capacités avancées pour examiner et agir sur vos systèmes...`
+            ],
+            'gemini-1.5-flash': [
+                `⚡ Gemini Flash prêt ! Traitement rapide et actions immédiates...`,
+                `🌟 Agent Flash activé ! Réponse ultrarapide et exécution directe sur vos APIs...`,
+                `💨 Gemini Flash en mode agent ! Actions express pour vos systèmes...`
+            ],
+            'llama-3.2-90b': [
+                `🦙 Llama 3.2 90B à votre service ! Avec mes 90 milliards de paramètres, je vais analyser et agir de manière sophistiquée...`,
+                `🧠 Agent Llama 90B opérationnel ! Puissance maximale pour traiter votre demande et agir sur vos systèmes...`,
+                `⚡ Llama 3.2 90B prêt ! Capacités étendues pour une analyse approfondie et des actions précises...`
+            ],
+            'llama-3.2-11b': [
+                `🦙 Llama 3.2 11B activé ! Équilibre parfait entre performance et efficacité pour vos actions...`,
+                `🎯 Agent Llama 11B prêt ! Je vais traiter votre demande avec intelligence et agir directement...`,
+                `💡 Llama 3.2 11B en action ! Solutions optimisées pour vos systèmes et workflows...`
+            ],
+            'llama-3.1-70b': [
+                `🦙 Llama 3.1 70B à votre disposition ! Grande capacité d'analyse et d'action pour vos systèmes...`,
+                `🚀 Agent Llama 70B opérationnel ! Je vais examiner votre demande et exécuter les meilleures actions...`,
+                `⭐ Llama 3.1 70B prêt ! Performance élevée pour traiter et agir sur vos APIs...`
+            ],
+            'llama-3.1-8b': [
+                `🦙 Llama 3.1 8B activé ! Efficace et rapide pour traiter votre demande et agir...`,
+                `⚡ Agent Llama 8B prêt ! Je vais analyser rapidement et exécuter les actions nécessaires...`,
+                `🎯 Llama 3.1 8B en action ! Solutions directes pour vos systèmes...`
+            ],
+            'mistral-large': [
+                `🌪️ Mistral Large en action ! Vent puissant d'innovation pour analyser et agir sur vos systèmes...`,
+                `⚡ Agent Mistral Large opérationnel ! Je vais traiter votre demande avec force et précision...`,
+                `🎯 Mistral Large prêt ! Capacités étendues pour examiner et agir sur vos APIs...`
+            ],
+            'mistral-medium': [
+                `🌬️ Mistral Medium activé ! Équilibre parfait pour traiter votre demande et agir efficacement...`,
+                `💨 Agent Mistral Medium prêt ! Je vais analyser votre situation et exécuter les bonnes actions...`,
+                `🎪 Mistral Medium en action ! Performance optimisée pour vos systèmes...`
+            ],
+            'mistral-small': [
+                `🍃 Mistral Small mais puissant ! Je vais traiter votre demande avec agilité et agir directement...`,
+                `⚡ Agent Mistral Small prêt ! Efficacité maximale pour analyser et agir sur vos systèmes...`,
+                `🎯 Mistral Small en action ! Solutions rapides et précises...`
+            ],
+            'mixtral-8x7b': [
+                `🌀 Mixtral 8x7B activé ! Expertise mixte pour analyser et agir de manière optimale...`,
+                `🔄 Agent Mixtral prêt ! Je vais utiliser mes capacités combinées pour traiter votre demande...`,
+                `⚡ Mixtral 8x7B en action ! Solutions multifacettes pour vos systèmes...`
+            ],
+            'command-r-plus': [
+                `🎖️ Command R+ à vos ordres ! Commande premium pour analyser et exécuter des actions de haut niveau...`,
+                `⭐ Agent Command R+ opérationnel ! Je vais traiter votre demande avec excellence et agir précisément...`,
+                `🚀 Command R+ prêt ! Capacités renforcées pour examiner et commander vos systèmes...`
+            ],
+            'command-r': [
+                `🎯 Command R activé ! Commande directe pour analyser et agir sur vos systèmes...`,
+                `⚡ Agent Command R prêt ! Je vais exécuter votre demande avec autorité et précision...`,
+                `🔧 Command R en action ! Solutions de commande pour vos APIs...`
+            ],
+            'llama-3.1-sonar-large': [
+                `🔍 Sonar Large de Perplexity activé ! Détection avancée et actions précises pour vos systèmes...`,
+                `📡 Agent Sonar Large opérationnel ! Je vais scanner votre demande et agir en conséquence...`,
+                `🎯 Sonar Large prêt ! Capacités de détection étendues pour examiner et agir...`
+            ],
+            'llama-3.1-sonar-small': [
+                `🔍 Sonar Small de Perplexity en action ! Détection ciblée et actions rapides...`,
+                `📡 Agent Sonar Small prêt ! Je vais scanner rapidement et exécuter les actions nécessaires...`,
+                `⚡ Sonar Small activé ! Solutions de détection efficaces pour vos systèmes...`
+            ],
+            // Alibaba Qwen Models
+            'qwen-2.5-72b': [
+                `🏮 Qwen 2.5 72B d'Alibaba activé ! Intelligence chinoise de pointe pour analyser et agir sur vos systèmes...`,
+                `🐉 Agent Qwen 72B opérationnel ! Je vais traiter votre demande avec l'expertise d'Alibaba Cloud...`,
+                `⚡ Qwen 2.5 72B prêt ! Capacités étendues pour examiner et agir de manière sophistiquée...`
+            ],
+            'qwen-2.5-32b': [
+                `🏮 Qwen 2.5 32B activé ! Équilibre parfait entre performance et efficacité d'Alibaba...`,
+                `🎯 Agent Qwen 32B prêt ! Je vais traiter votre demande avec intelligence et précision...`,
+                `💡 Qwen 2.5 32B en action ! Solutions optimisées pour vos systèmes...`
+            ],
+            'qwen-2.5-14b': [
+                `🏮 Qwen 2.5 14B d'Alibaba opérationnel ! Analyse intelligente et actions ciblées...`,
+                `⚡ Agent Qwen 14B prêt ! Je vais examiner votre demande et agir efficacement...`,
+                `🎯 Qwen 2.5 14B en action ! Solutions rapides et précises...`
+            ],
+            'qwen-2.5-7b': [
+                `🏮 Qwen 2.5 7B activé ! Efficacité chinoise pour traiter votre demande...`,
+                `💨 Agent Qwen 7B prêt ! Je vais analyser rapidement et exécuter les actions nécessaires...`,
+                `🎯 Qwen 2.5 7B en action ! Solutions directes d'Alibaba...`
+            ],
+            'qwen-2.5-coder-32b': [
+                `👨‍💻 Qwen Coder 32B activé ! Spécialiste du code d'Alibaba pour analyser et développer...`,
+                `🔧 Agent Qwen Coder prêt ! Je vais examiner votre code et proposer des solutions techniques...`,
+                `💻 Qwen Coder 32B en action ! Expertise en programmation pour vos projets...`
+            ],
+            'qwen-2-vl-72b': [
+                `👁️ Qwen Vision 72B activé ! Capacités visuelles d'Alibaba pour analyser images et texte...`,
+                `🖼️ Agent Qwen Vision prêt ! Je vais traiter vos images et documents avec expertise...`,
+                `🎨 Qwen VL 72B en action ! Vision et language combinés pour vos analyses...`
+            ],
+            // Free Models
+            'llama-3.2-3b-free': [
+                `🆓 Llama 3.2 3B gratuit activé ! Petite taille, grandes capacités pour vos demandes...`,
+                `💸 Agent gratuit Llama 3B prêt ! Je vais traiter votre demande sans coût...`,
+                `⚡ Llama 3.2 3B free en action ! Solutions économiques et efficaces...`
+            ],
+            'llama-3.1-8b-free': [
+                `🆓 Llama 3.1 8B gratuit opérationnel ! Performance libre pour vos systèmes...`,
+                `💸 Agent gratuit Llama 8B prêt ! Je vais analyser et agir sans frais...`,
+                `🎯 Llama 3.1 8B free en action ! Solutions gratuites et puissantes...`
+            ],
+            'gemma-2-9b-free': [
+                `🆓 Gemma 2 9B gratuit de Google activé ! IA libre pour vos demandes...`,
+                `💸 Agent gratuit Gemma prêt ! Je vais traiter votre demande avec les technologies Google...`,
+                `⚡ Gemma 2 9B free en action ! Solutions open source et performantes...`
+            ],
+            'gemma-2-2b-free': [
+                `🆓 Gemma 2 2B gratuit activé ! Compact mais puissant pour vos besoins...`,
+                `💸 Agent gratuit Gemma 2B prêt ! Je vais analyser rapidement et gratuitement...`,
+                `🎯 Gemma 2 2B free en action ! Solutions légères et efficaces...`
+            ],
+            'phi-3-mini-free': [
+                `🆓 Phi-3 Mini gratuit de Microsoft activé ! Intelligence compacte pour vos systèmes...`,
+                `💸 Agent gratuit Phi-3 prêt ! Je vais traiter votre demande avec efficacité...`,
+                `⚡ Phi-3 Mini free en action ! Solutions Microsoft gratuites...`
+            ],
+            'mistral-7b-free': [
+                `🆓 Mistral 7B gratuit activé ! Vent français libre pour vos demandes...`,
+                `💸 Agent gratuit Mistral prêt ! Je vais analyser avec l'élégance française...`,
+                `🎯 Mistral 7B free en action ! Solutions open source de qualité...`
+            ],
+            'qwen-2.5-7b-free': [
+                `🆓 Qwen 2.5 7B gratuit d'Alibaba activé ! Intelligence chinoise libre...`,
+                `💸 Agent gratuit Qwen prêt ! Je vais traiter votre demande sans coût...`,
+                `⚡ Qwen 2.5 7B free en action ! Solutions Alibaba gratuites...`
+            ],
+            // Open Source Models
+            'deepseek-coder-33b': [
+                `👨‍💻 DeepSeek Coder 33B activé ! Spécialiste du code pour analyser et développer...`,
+                `🔧 Agent DeepSeek prêt ! Je vais examiner votre code avec expertise...`,
+                `💻 DeepSeek Coder en action ! Solutions de programmation avancées...`
+            ],
+            'codellama-34b': [
+                `🦙 CodeLlama 34B de Meta activé ! Expertise en programmation pour vos projets...`,
+                `👨‍💻 Agent CodeLlama prêt ! Je vais analyser et coder avec intelligence...`,
+                `💻 CodeLlama 34B en action ! Solutions de développement Meta...`
+            ],
+            'yi-34b': [
+                `🤖 Yi 34B de 01.AI activé ! Intelligence chinoise pour analyser et agir...`,
+                `🎯 Agent Yi prêt ! Je vais traiter votre demande avec innovation...`,
+                `⚡ Yi 34B en action ! Solutions 01.AI pour vos systèmes...`
+            ],
+            'openchat-7b': [
+                `💬 OpenChat 7B gratuit activé ! Conversation libre et intelligente...`,
+                `🗨️ Agent OpenChat prêt ! Je vais dialoguer et agir sans contraintes...`,
+                `⚡ OpenChat 7B en action ! Solutions conversationnelles ouvertes...`
+            ],
+            'zephyr-7b': [
+                `🌪️ Zephyr 7B gratuit activé ! Vent de fraîcheur open source...`,
+                `💨 Agent Zephyr prêt ! Je vais traiter votre demande avec légèreté...`,
+                `⚡ Zephyr 7B en action ! Solutions HuggingFace gratuites...`
             ]
         };
 

@@ -255,7 +255,7 @@
             width: 100%;
             min-height: 50px;
             max-height: 120px;
-            padding: 15px 50px 15px 15px;
+            padding: 15px 90px 15px 15px; /* Plus d'espace à droite pour 2 boutons */
             border: 1px solid var(--border-color);
             border-radius: 25px;
             background: var(--bg-tertiary);
@@ -297,6 +297,126 @@
         .send-btn:disabled {
             opacity: 0.5;
             cursor: not-allowed;
+        }
+
+        /* File upload button */
+        .file-btn {
+            position: absolute;
+            right: 48px;
+            bottom: 8px;
+            width: 32px;
+            height: 32px;
+            border: none;
+            border-radius: 50%;
+            background: var(--accent-success);
+            color: white;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .file-btn:hover:not(:disabled) {
+            background: #10b981;
+            transform: scale(1.1);
+        }
+
+        .file-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .file-input {
+            display: none;
+        }
+
+        /* File upload area */
+        .file-upload-area {
+            display: none;
+            padding: 16px;
+            margin: 8px 0;
+            border: 2px dashed var(--accent-primary);
+            border-radius: 8px;
+            text-align: center;
+            background: rgba(59, 130, 246, 0.05);
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .file-upload-area:hover {
+            background: rgba(59, 130, 246, 0.1);
+        }
+
+        .file-upload-area.dragover {
+            background: rgba(59, 130, 246, 0.2);
+            border-color: var(--accent-secondary);
+        }
+
+        .file-list {
+            margin-top: 16px;
+        }
+
+        .file-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 8px 12px;
+            margin: 4px 0;
+            background: var(--bg-secondary);
+            border-radius: 6px;
+            border: 1px solid var(--border-color);
+        }
+
+        .file-info {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .file-icon {
+            color: var(--accent-primary);
+        }
+
+        .file-name {
+            font-weight: 500;
+        }
+
+        .file-size {
+            color: var(--text-secondary);
+            font-size: 12px;
+        }
+
+        .file-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .file-btn-small {
+            padding: 4px 8px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+            transition: all 0.2s ease;
+        }
+
+        .file-btn-analyze {
+            background: var(--accent-primary);
+            color: white;
+        }
+
+        .file-btn-analyze:hover {
+            background: var(--accent-secondary);
+        }
+
+        .file-btn-delete {
+            background: var(--accent-danger);
+            color: white;
+        }
+
+        .file-btn-delete:hover {
+            background: #dc2626;
         }
 
         /* Typing indicator */
@@ -748,10 +868,45 @@
                             <div class="model-selector">
                                 <span class="model-label">Modèle :</span>
                                 <select id="modelSelect" class="model-select" title="Sélectionnez un modèle IA">
+                                    <!-- OpenAI Models -->
                                     <option value="gpt-4o-mini">GPT-4o Mini (OpenAI)</option>
-                                    <option value="grok-beta">Grok Beta (xAI)</option>
+                                    <option value="gpt-4o">GPT-4o (OpenAI)</option>
+                                    <option value="gpt-4-turbo">GPT-4 Turbo (OpenAI)</option>
+                                    <option value="gpt-3.5-turbo">GPT-3.5 Turbo (OpenAI)</option>
+                                    
+                                    <!-- Anthropic Models -->
                                     <option value="claude-3.5-sonnet">Claude 3.5 Sonnet (Anthropic)</option>
+                                    <option value="claude-3-haiku">Claude 3 Haiku (Anthropic)</option>
+                                    <option value="claude-3-opus">Claude 3 Opus (Anthropic)</option>
+                                    
+                                    <!-- Google Models -->
                                     <option value="gemini-2.0-flash">Gemini 2.0 Flash (Google)</option>
+                                    <option value="gemini-1.5-pro">Gemini 1.5 Pro (Google)</option>
+                                    <option value="gemini-1.5-flash">Gemini 1.5 Flash (Google)</option>
+                                    
+                                    <!-- xAI Models -->
+                                    <option value="grok-beta">Grok Beta (xAI)</option>
+                                    <option value="grok-2">Grok 2 (xAI)</option>
+                                    
+                                    <!-- Meta Models -->
+                                    <option value="llama-3.2-90b">Llama 3.2 90B (Meta)</option>
+                                    <option value="llama-3.2-11b">Llama 3.2 11B (Meta)</option>
+                                    <option value="llama-3.1-70b">Llama 3.1 70B (Meta)</option>
+                                    <option value="llama-3.1-8b">Llama 3.1 8B (Meta)</option>
+                                    
+                                    <!-- Mistral Models -->
+                                    <option value="mistral-large">Mistral Large (Mistral AI)</option>
+                                    <option value="mistral-medium">Mistral Medium (Mistral AI)</option>
+                                    <option value="mistral-small">Mistral Small (Mistral AI)</option>
+                                    <option value="mixtral-8x7b">Mixtral 8x7B (Mistral AI)</option>
+                                    
+                                    <!-- Cohere Models -->
+                                    <option value="command-r-plus">Command R+ (Cohere)</option>
+                                    <option value="command-r">Command R (Cohere)</option>
+                                    
+                                    <!-- Perplexity Models -->
+                                    <option value="llama-3.1-sonar-large">Sonar Large (Perplexity)</option>
+                                    <option value="llama-3.1-sonar-small">Sonar Small (Perplexity)</option>
                                 </select>
                             </div>
                             <textarea 
@@ -761,9 +916,30 @@
                                 rows="1"
                                 title="Zone de saisie de message"
                             ></textarea>
+                            
+                            <input type="file" id="fileInput" class="file-input" accept=".txt,.md,.json,.csv,.pdf,.jpg,.jpeg,.png,.webp,.docx,.xlsx" />
+                            
+                            <button id="fileBtn" class="file-btn" title="Télécharger un fichier">
+                                <i class="fas fa-paperclip"></i>
+                            </button>
+                            
                             <button id="sendBtn" class="send-btn" title="Envoyer le message">
                                 <i class="fas fa-paper-plane"></i>
                             </button>
+                            
+                            <!-- Zone de téléchargement de fichiers -->
+                            <div id="fileUploadArea" class="file-upload-area">
+                                <div>
+                                    <i class="fas fa-cloud-upload-alt" style="font-size: 24px; margin-bottom: 8px;"></i>
+                                    <p>Glissez-déposez un fichier ici ou <strong>cliquez pour sélectionner</strong></p>
+                                    <p style="font-size: 12px; color: var(--text-secondary); margin-top: 4px;">
+                                        Formats supportés: TXT, MD, JSON, CSV, PDF, Images, DOCX, XLSX (max 10MB)
+                                    </p>
+                                </div>
+                            </div>
+                            
+                            <!-- Liste des fichiers -->
+                            <div id="fileList" class="file-list"></div>
                             
                             <div id="typingIndicator" class="typing-indicator">
                                 <div class="typing-dots">
@@ -1519,6 +1695,274 @@
             }
         }
 
+        // 📁 Fonctions de gestion des fichiers
+        function initializeFileUpload() {
+            console.log('📁 Initialisation de la gestion des fichiers...');
+            
+            const fileBtn = document.getElementById('fileBtn');
+            const fileInput = document.getElementById('fileInput');
+            const fileUploadArea = document.getElementById('fileUploadArea');
+            
+            if (!fileBtn || !fileInput || !fileUploadArea) {
+                console.warn('⚠️ Éléments de fichier manquants');
+                return;
+            }
+            
+            // Clic sur le bouton fichier
+            fileBtn.addEventListener('click', () => {
+                fileUploadArea.style.display = fileUploadArea.style.display === 'block' ? 'none' : 'block';
+            });
+            
+            // Clic sur la zone d'upload
+            fileUploadArea.addEventListener('click', () => {
+                fileInput.click();
+            });
+            
+            // Sélection de fichier
+            fileInput.addEventListener('change', handleFileSelect);
+            
+            // Drag & Drop
+            fileUploadArea.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                fileUploadArea.classList.add('dragover');
+            });
+            
+            fileUploadArea.addEventListener('dragleave', (e) => {
+                e.preventDefault();
+                fileUploadArea.classList.remove('dragover');
+            });
+            
+            fileUploadArea.addEventListener('drop', (e) => {
+                e.preventDefault();
+                fileUploadArea.classList.remove('dragover');
+                
+                const files = Array.from(e.dataTransfer.files);
+                if (files.length > 0) {
+                    handleFileUpload(files[0]);
+                }
+            });
+            
+            // Charger la liste des fichiers existants
+            loadUserFiles();
+            
+            console.log('✅ Gestion des fichiers initialisée');
+        }
+        
+        function handleFileSelect(e) {
+            const file = e.target.files[0];
+            if (file) {
+                handleFileUpload(file);
+            }
+        }
+        
+        async function handleFileUpload(file) {
+            console.log('📤 Upload du fichier:', file.name);
+            
+            // Validation de la taille
+            if (file.size > 10 * 1024 * 1024) {
+                showFileMessage('Fichier trop volumineux (max 10MB)', 'error');
+                return;
+            }
+            
+            const formData = new FormData();
+            formData.append('file', file);
+            
+            try {
+                showFileMessage('📤 Téléchargement en cours...', 'info');
+                
+                const response = await fetch('/api/files/upload', {
+                    method: 'POST',
+                    body: formData,
+                    credentials: 'include'
+                });
+                
+                const result = await response.json();
+                
+                if (response.ok) {
+                    showFileMessage('✅ Fichier téléchargé et analysé par l\'agent !', 'success');
+                    
+                    // Ajouter le message d'analyse au chat
+                    addMessageToChat('system', result.analysis);
+                    
+                    // Recharger la liste des fichiers
+                    loadUserFiles();
+                    
+                    // Cacher la zone d'upload
+                    document.getElementById('fileUploadArea').style.display = 'none';
+                    
+                    // Reset du input
+                    document.getElementById('fileInput').value = '';
+                } else {
+                    throw new Error(result.error || 'Erreur de téléchargement');
+                }
+            } catch (error) {
+                console.error('❌ Erreur upload:', error);
+                showFileMessage(`❌ Erreur: ${error.message}`, 'error');
+            }
+        }
+        
+        async function loadUserFiles() {
+            try {
+                const response = await fetch('/api/files', {
+                    credentials: 'include'
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    displayFileList(data.files);
+                }
+            } catch (error) {
+                console.error('❌ Erreur chargement fichiers:', error);
+            }
+        }
+        
+        function displayFileList(files) {
+            const fileList = document.getElementById('fileList');
+            if (!fileList) return;
+            
+            if (files.length === 0) {
+                fileList.innerHTML = '';
+                return;
+            }
+            
+            fileList.innerHTML = files.map(file => {
+                const sizeKB = Math.round(file.size / 1024);
+                const icon = getFileIcon(file.mimeType);
+                
+                return `
+                    <div class="file-item">
+                        <div class="file-info">
+                            <i class="fas ${icon} file-icon"></i>
+                            <div>
+                                <div class="file-name">${file.originalName}</div>
+                                <div class="file-size">${sizeKB} KB • ${new Date(file.uploadedAt).toLocaleDateString()}</div>
+                            </div>
+                        </div>
+                        <div class="file-actions">
+                            <button class="file-btn-small file-btn-analyze" onclick="analyzeFile('${file.id}')">
+                                <i class="fas fa-search"></i> Analyser
+                            </button>
+                            <button class="file-btn-small file-btn-delete" onclick="deleteFile('${file.id}')">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+        
+        function getFileIcon(mimeType) {
+            if (mimeType.startsWith('text/')) return 'fa-file-text';
+            if (mimeType.startsWith('image/')) return 'fa-file-image';
+            if (mimeType.includes('pdf')) return 'fa-file-pdf';
+            if (mimeType.includes('json')) return 'fa-file-code';
+            if (mimeType.includes('csv')) return 'fa-file-csv';
+            if (mimeType.includes('word')) return 'fa-file-word';
+            if (mimeType.includes('excel') || mimeType.includes('sheet')) return 'fa-file-excel';
+            return 'fa-file';
+        }
+        
+        async function analyzeFile(fileId) {
+            try {
+                showFileMessage('🤖 Analyse en cours...', 'info');
+                
+                const response = await fetch(`/api/files/${fileId}/analyze`, {
+                    method: 'POST',
+                    credentials: 'include'
+                });
+                
+                const result = await response.json();
+                
+                if (response.ok) {
+                    showFileMessage('✅ Fichier analysé et intégré à la mémoire !', 'success');
+                    addMessageToChat('system', result.analysis);
+                } else {
+                    throw new Error(result.error || 'Erreur d\'analyse');
+                }
+            } catch (error) {
+                console.error('❌ Erreur analyse:', error);
+                showFileMessage(`❌ Erreur: ${error.message}`, 'error');
+            }
+        }
+        
+        async function deleteFile(fileId) {
+            if (!confirm('Êtes-vous sûr de vouloir supprimer ce fichier ?')) {
+                return;
+            }
+            
+            try {
+                const response = await fetch(`/api/files/${fileId}`, {
+                    method: 'DELETE',
+                    credentials: 'include'
+                });
+                
+                const result = await response.json();
+                
+                if (response.ok) {
+                    showFileMessage('🗑️ Fichier supprimé', 'success');
+                    loadUserFiles();
+                } else {
+                    throw new Error(result.error || 'Erreur de suppression');
+                }
+            } catch (error) {
+                console.error('❌ Erreur suppression:', error);
+                showFileMessage(`❌ Erreur: ${error.message}`, 'error');
+            }
+        }
+        
+        function showFileMessage(message, type) {
+            // Chercher ou créer l'élément de message
+            let messageElement = document.getElementById('file-message');
+            if (!messageElement) {
+                messageElement = document.createElement('div');
+                messageElement.id = 'file-message';
+                messageElement.style.cssText = `
+                    position: fixed;
+                    top: 20px;
+                    right: 20px;
+                    padding: 12px 16px;
+                    border-radius: 6px;
+                    font-size: 14px;
+                    z-index: 10000;
+                    max-width: 300px;
+                    animation: slideIn 0.3s ease;
+                `;
+                document.body.appendChild(messageElement);
+            }
+            
+            // Styles selon le type
+            let bgColor, textColor;
+            switch (type) {
+                case 'success':
+                    bgColor = 'rgba(16, 185, 129, 0.9)';
+                    textColor = 'white';
+                    break;
+                case 'error':
+                    bgColor = 'rgba(239, 68, 68, 0.9)';
+                    textColor = 'white';
+                    break;
+                case 'info':
+                    bgColor = 'rgba(59, 130, 246, 0.9)';
+                    textColor = 'white';
+                    break;
+                default:
+                    bgColor = 'rgba(107, 114, 128, 0.9)';
+                    textColor = 'white';
+            }
+            
+            messageElement.style.background = bgColor;
+            messageElement.style.color = textColor;
+            messageElement.textContent = message;
+            
+            // Disparition automatique après 5 secondes
+            setTimeout(() => {
+                if (messageElement) {
+                    messageElement.style.animation = 'fadeOut 0.3s ease';
+                    setTimeout(() => messageElement.remove(), 300);
+                }
+            }, 5000);
+        }
+
         function showApiMessage(message, type) {
             // Chercher ou créer l'élément de message
             let messageElement = document.getElementById('api-message');
@@ -1746,6 +2190,9 @@ Une seule clé = Accès à tous les meilleurs modèles IA
                 logoutBtn.addEventListener('click', logout);
                 console.log('✅ Event listener ajouté pour logout');
             }
+            
+            // 📁 Gestion des fichiers
+            initializeFileUpload();
             
             // Exposer les fonctions globalement
             window.navigateToPage = navigateToPage;

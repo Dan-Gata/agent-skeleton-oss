@@ -133,6 +133,77 @@ class MemoryService {
     getUserProfile(userId) {
         return this.userProfiles.get(userId) || null;
     }
+
+    // Récupérer les fichiers téléchargés d'un utilisateur avec leur contenu
+    async getUserFiles(userId) {
+        const knowledge = this.agentKnowledge.get(userId);
+        if (!knowledge || !knowledge.uploaded_files) return [];
+        
+        return knowledge.uploaded_files || [];
+    }
+
+    // Enrichir le contexte avec le contenu des fichiers
+    async enrichContextWithFiles(userId, currentMessage) {
+        try {
+            const fileService = require('./fileService');
+            const userFiles = await this.getUserFiles(userId);
+            
+            if (!userFiles || userFiles.length === 0) {
+                return '';
+            }
+
+            let fileContext = '\n\n📁 **FICHIERS DISPONIBLES POUR L\'AGENT :**\n';
+            
+            for (const fileData of userFiles) {
+                try {
+                    // Récupérer le contenu réel du fichier
+                    const fileContent = await fileService.readFileContent(fileData.fileId);
+                    
+                    if (fileContent && fileContent.type === 'text' && fileContent.content) {
+                        fileContext += `\n**📄 ${fileContent.metadata.originalName}** (ID: ${fileData.fileId}):\n`;
+                        
+                        // Limiter le contenu pour éviter de surcharger le contexte
+                        const content = fileContent.content;
+                        if (content.length > 2000) {
+                            fileContext += content.substring(0, 2000) + '...\n[Contenu tronqué - fichier accessible avec ID]\n';
+                        } else {
+                            fileContext += content + '\n';
+                        }
+                        
+                        fileContext += `---\n`;
+                    } else if (fileContent) {
+                        fileContext += `\n**📎 ${fileContent.metadata.originalName}** (${fileContent.type}): Fichier disponible (ID: ${fileData.fileId})\n`;
+                    }
+                } catch (error) {
+                    console.error('Erreur lecture fichier pour contexte:', error);
+                }
+            }
+            
+            // Ajouter des instructions pour l'agent
+            fileContext += `\n🤖 **INSTRUCTIONS POUR L'AGENT :**\n`;
+            fileContext += `- Tu as accès aux fichiers ci-dessus et peux t'y référer dans tes réponses\n`;
+            fileContext += `- Utilise le contenu de ces fichiers pour enrichir tes réponses\n`;
+            fileContext += `- Quand tu mentionnes un fichier, cite son nom\n`;
+            fileContext += `- Tu peux analyser, résumer ou répondre aux questions sur ces documents\n\n`;
+            
+            return fileContext;
+        } catch (error) {
+            console.error('Erreur enrichissement contexte fichiers:', error);
+            return '';
+        }
+    }
+
+    // Vérifier si un message fait référence à un fichier spécifique
+    detectFileReference(message) {
+        const fileKeywords = [
+            'fichier', 'document', 'pdf', 'texte', 'contenu',
+            'téléchargé', 'uploadé', 'analysé', 'dans le document',
+            'selon le fichier', 'based on', 'file', 'document'
+        ];
+        
+        const msg = message.toLowerCase();
+        return fileKeywords.some(keyword => msg.includes(keyword));
+    }
 }
 
 const memoryService = new MemoryService();
