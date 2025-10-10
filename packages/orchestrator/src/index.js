@@ -152,6 +152,103 @@ app.get('/app-debug', requireAuth, (req, res) => {
     });
 });
 
+// 🧪 Route de test de fichiers (SANS AUTHENTIFICATION)
+app.get('/test-files', (req, res) => {
+    res.send(`
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <title>Test Upload - Agent Skeleton OSS</title>
+        <meta charset="UTF-8">
+        <style>
+            body { font-family: Arial, sans-serif; padding: 20px; background: #0a0e27; color: white; }
+            .container { max-width: 800px; margin: 0 auto; }
+            .upload-area { border: 2px dashed #3b82f6; padding: 40px; margin: 20px 0; text-align: center; border-radius: 8px; }
+            .upload-area:hover { background: rgba(59, 130, 246, 0.1); }
+            input[type="file"] { margin: 20px 0; padding: 10px; }
+            button { padding: 12px 24px; border: none; border-radius: 6px; cursor: pointer; background: #10b981; color: white; }
+            .result { margin: 20px 0; padding: 20px; background: #1a1a1a; border-radius: 8px; }
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <h1>🧪 Test de Téléchargement de Fichiers</h1>
+            
+            <div class="upload-area" onclick="document.getElementById('fileInput').click()">
+                <h3>📁 Zone de Test Upload</h3>
+                <p>Cliquez ici pour sélectionner un fichier</p>
+                <input type="file" id="fileInput" style="display: none;" accept=".txt,.md,.json,.csv,.pdf,.jpg,.jpeg,.png,.webp,.docx,.xlsx">
+            </div>
+            
+            <button onclick="uploadFile()">📤 Tester l'Upload</button>
+            
+            <div id="result" class="result" style="display: none;">
+                <h3>📊 Résultat du Test</h3>
+                <div id="resultContent"></div>
+            </div>
+        </div>
+
+        <script>
+            async function uploadFile() {
+                const fileInput = document.getElementById('fileInput');
+                const file = fileInput.files[0];
+                
+                if (!file) {
+                    alert('Veuillez sélectionner un fichier d\\'abord !');
+                    return;
+                }
+                
+                const formData = new FormData();
+                formData.append('file', file);
+                
+                const resultDiv = document.getElementById('result');
+                const resultContent = document.getElementById('resultContent');
+                
+                resultContent.innerHTML = '⏳ Test en cours...';
+                resultDiv.style.display = 'block';
+                
+                try {
+                    const response = await fetch('/api/files/upload-test', {
+                        method: 'POST',
+                        body: formData
+                    });
+                    
+                    const result = await response.json();
+                    
+                    if (response.ok) {
+                        resultContent.innerHTML = \`
+                            <h4>✅ Test réussi !</h4>
+                            <p><strong>Fichier:</strong> \${result.file.originalName}</p>
+                            <p><strong>Taille:</strong> \${Math.round(result.file.size/1024)} KB</p>
+                            <p><strong>Type:</strong> \${result.file.type}</p>
+                            <div style="margin-top: 15px; padding: 15px; background: #2a2a2a; border-radius: 6px;">
+                                \${result.analysis.replace(/\\n/g, '<br>')}
+                            </div>
+                        \`;
+                    } else {
+                        throw new Error(result.error || 'Erreur inconnue');
+                    }
+                } catch (error) {
+                    resultContent.innerHTML = \`
+                        <h4>❌ Erreur de test</h4>
+                        <p>Détails: \${error.message}</p>
+                    \`;
+                }
+            }
+            
+            document.getElementById('fileInput').addEventListener('change', function() {
+                const file = this.files[0];
+                if (file) {
+                    document.querySelector('.upload-area p').textContent = 
+                        \`Fichier sélectionné: \${file.name} (\${Math.round(file.size/1024)} KB)\`;
+                }
+            });
+        </script>
+    </body>
+    </html>
+    `);
+});
+
 // 🔐 Routes d'authentification
 app.post('/api/auth/register', [
     body('username').isLength({ min: 3 }).withMessage('Nom d\'utilisateur requis (min 3 caractères)'),
@@ -645,9 +742,53 @@ app.post('/api/chat', chatLimiter, requireAuthAPI, async (req, res) => {
     }
 });
 
-// � API Gestion des fichiers
+// 📁 API Gestion des fichiers
 
-// Upload d'un fichier
+// Upload d'un fichier (VERSION TEMPORAIRE SANS AUTH POUR TEST)
+app.post('/api/files/upload-test', upload.single('file'), async (req, res) => {
+    try {
+        console.log('📁 Test upload reçu:', req.file ? req.file.originalname : 'Aucun fichier');
+        
+        if (!req.file) {
+            return res.status(400).json({ error: 'Aucun fichier fourni' });
+        }
+
+        // Simuler l'analyse sans sauvegarder réellement
+        const analysis = {
+            fileName: req.file.originalname,
+            size: req.file.size,
+            type: req.file.mimetype,
+            analysisResult: `✅ Fichier "${req.file.originalname}" analysé avec succès ! 
+            
+🤖 **Analyse automatique :**
+- Nom: ${req.file.originalname}
+- Taille: ${Math.round(req.file.size / 1024)} KB
+- Type: ${req.file.mimetype}
+
+L'agent peut maintenant utiliser ce fichier dans ses réponses !`
+        };
+
+        res.json({
+            success: true,
+            file: {
+                id: Date.now(),
+                originalName: req.file.originalname,
+                size: req.file.size,
+                type: req.file.mimetype
+            },
+            analysis: analysis.analysisResult,
+            message: '✅ Test de téléchargement réussi !'
+        });
+    } catch (error) {
+        console.error('❌ Erreur upload test:', error);
+        res.status(500).json({ 
+            error: 'Erreur lors du test de téléchargement', 
+            details: error.message 
+        });
+    }
+});
+
+// Upload d'un fichier (VERSION COMPLÈTE AVEC AUTH)
 app.post('/api/files/upload', requireAuthAPI, upload.single('file'), async (req, res) => {
     try {
         if (!req.file) {
