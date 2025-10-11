@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Auth</title>
+</head>
+<body>
+    <h1>Test d'authentification</h1>
+    
+    <div>
+        <h2>Test Inscription</h2>
+        <button onclick="testRegister()">Tester inscription</button>
+        <div id="registerResult"></div>
+    </div>
+    
+    <div>
+        <h2>Test Connexion</h2>
+        <button onclick="testLogin()">Tester connexion</button>
+        <div id="loginResult"></div>
+    </div>
+    
+    <script>
+        async function testRegister() {
+            try {
+                const response = await fetch('http://localhost:3000/api/register', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        email: 'test@example.com',
+                        password: 'test123',
+                        name: 'Test User'
+                    })
+                });
+                
+                const result = await response.json();
+                document.getElementById('registerResult').innerHTML = 
+                    `<p>Status: ${response.status}</p><pre>${JSON.stringify(result, null, 2)}</pre>`;
+            } catch (error) {
+                document.getElementById('registerResult').innerHTML = 
+                    `<p style="color: red;">Erreur: ${error.message}</p>`;
+            }
+        }
+        
+        async function testLogin() {
+            try {
+                const response = await fetch('http://localhost:3000/api/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        email: 'test@example.com',
+                        password: 'test123'
+                    })
+                });
+                
+                const result = await response.json();
+                document.getElementById('loginResult').innerHTML = 
+                    `<p>Status: ${response.status}</p><pre>${JSON.stringify(result, null, 2)}</pre>`;
+            } catch (error) {
+                document.getElementById('loginResult').innerHTML = 
+                    `<p style="color: red;">Erreur: ${error.message}</p>`;
+            }
+        }
+    </script>
+</body>
+</html>

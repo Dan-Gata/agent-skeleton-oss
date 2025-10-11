@@ -272,19 +272,27 @@ app.get('/login', (req, res) => {
 
 // API de connexion
 app.post('/api/login', (req, res) => {
+    console.log('🔐 Tentative de connexion:', req.body);
+    
     const { email, password } = req.body;
     
     if (!email || !password) {
+        console.log('❌ Email ou mot de passe manquant');
         return res.status(400).json({ error: 'Email et mot de passe requis' });
     }
     
     const user = global.users[email];
+    console.log('👤 Utilisateur trouvé:', user ? 'Oui' : 'Non');
+    
     if (!user || user.password !== password) {
+        console.log('❌ Identifiants incorrects');
         return res.status(401).json({ error: 'Identifiants incorrects' });
     }
     
     const sessionId = Date.now().toString() + Math.random().toString(36);
     global.sessions[sessionId] = user;
+    
+    console.log('✅ Session créée:', sessionId);
     
     res.cookie('sessionId', sessionId, { httpOnly: true, maxAge: 24 * 60 * 60 * 1000 });
     res.json({ success: true, message: 'Connexion réussie !', user: { email: user.email, name: user.name } });
@@ -292,13 +300,17 @@ app.post('/api/login', (req, res) => {
 
 // API d'inscription
 app.post('/api/register', (req, res) => {
+    console.log('📝 Tentative d\'inscription:', req.body);
+    
     const { email, password, name } = req.body;
     
     if (!email || !password || !name) {
+        console.log('❌ Champs manquants');
         return res.status(400).json({ error: 'Tous les champs sont requis' });
     }
     
     if (global.users[email]) {
+        console.log('❌ Email déjà utilisé');
         return res.status(409).json({ error: 'Cet email est déjà utilisé' });
     }
     
@@ -312,6 +324,9 @@ app.post('/api/register', (req, res) => {
     // Initialiser la conversation de l'utilisateur
     global.conversations[email] = [];
     
+    console.log('✅ Utilisateur créé:', email);
+    console.log('👥 Total utilisateurs:', Object.keys(global.users).length);
+    
     res.json({ success: true, message: 'Inscription réussie ! Vous pouvez maintenant vous connecter.' });
 });
 
@@ -323,6 +338,64 @@ app.post('/api/logout', (req, res) => {
     }
     res.clearCookie('sessionId');
     res.redirect('/login');
+});
+
+// Route de test pour l'authentification
+app.get('/test-auth', (req, res) => {
+    res.sendFile(path.join(__dirname, '../test-auth.html'));
+});
+
+// Endpoint de débogage
+app.get('/debug', (req, res) => {
+    res.json({
+        users: Object.keys(global.users),
+        sessions: Object.keys(global.sessions),
+        files: Object.keys(global.uploadedFiles || {}),
+        totalUsers: Object.keys(global.users).length,
+        totalSessions: Object.keys(global.sessions).length
+    });
+});
+
+// Route simple pour tester si le serveur fonctionne
+app.get('/simple', (req, res) => {
+    res.send(`
+    <!DOCTYPE html>
+    <html>
+    <head><title>Test Simple</title></head>
+    <body>
+        <h1>✅ Serveur fonctionne !</h1>
+        <div>
+            <button onclick="testAuth()">Tester Auth</button>
+            <div id="result"></div>
+        </div>
+        <script>
+            async function testAuth() {
+                try {
+                    const response = await fetch('/api/register', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            email: 'test@test.com',
+                            password: '123456',
+                            name: 'Test User'
+                        })
+                    });
+                    
+                    const data = await response.json();
+                    document.getElementById('result').innerHTML = 
+                        '<h3>Inscription:</h3>' +
+                        '<p>Status: ' + response.status + '</p>' +
+                        '<pre>' + JSON.stringify(data, null, 2) + '</pre>';
+                    
+                } catch (error) {
+                    document.getElementById('result').innerHTML = 
+                        '<p style="color: red;">Erreur: ' + error.message + '</p>';
+                }
+            }
+        </script>
+    </body>
+    </html>
+    `);
 });
 global.users = {}; // Stockage des utilisateurs
 
