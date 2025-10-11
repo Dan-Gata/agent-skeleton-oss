@@ -8,8 +8,10 @@ const cookieParser = require('cookie-parser');
 const app = express();
 const port = process.env.PORT || 3000;
 
-// Configuration sécurisée
-app.use(helmet());
+// Configuration sécurisée avec CSP désactivé temporairement pour debug
+app.use(helmet({
+    contentSecurityPolicy: false, // Désactiver CSP temporairement
+}));
 app.use(cors({ origin: true, credentials: true }));
 app.use(cookieParser());
 app.use(express.json({ limit: '10mb' }));
