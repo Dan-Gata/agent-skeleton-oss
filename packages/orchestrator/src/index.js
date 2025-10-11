@@ -641,7 +641,48 @@ app.get('/api/agent/memory/conversations', requireAuthAPI, (req, res) => {
     }
 });
 
-// 💬 API Chat avec validation, rate limiting et mémoire
+// � Route de debug pour vérifier la mémoire et les fichiers
+app.get('/api/debug/memory', requireAuthAPI, async (req, res) => {
+    try {
+        const userId = req.user.userId;
+        
+        // Récupérer toutes les données de mémoire pour cet utilisateur
+        const conversations = memoryService.getConversationHistory(userId, 10);
+        const userFiles = await memoryService.getUserFiles(userId);
+        const personalizedContext = memoryService.generatePersonalizedContext(userId);
+        
+        // Vérifier les fichiers stockés dans le service de fichiers
+        const filesList = await fileService.listUserFiles(userId);
+        
+        res.json({
+            userId: userId,
+            memoryStats: {
+                conversations: conversations.length,
+                userFiles: userFiles.length,
+                contextLength: personalizedContext.length
+            },
+            files: {
+                inMemory: userFiles.map(f => ({
+                    fileId: f.fileId,
+                    fileName: f.fileName,
+                    hasContent: !!f.fullContent,
+                    uploadedAt: f.uploadedAt
+                })),
+                inFileService: filesList.map(f => ({
+                    id: f.id,
+                    originalName: f.originalName,
+                    size: f.size,
+                    uploadedAt: f.uploadedAt
+                }))
+            },
+            contextPreview: personalizedContext.substring(0, 500) + '...'
+        });
+    } catch (error) {
+        res.status(500).json({ error: 'Erreur debug mémoire', details: error.message });
+    }
+});
+
+// �💬 API Chat avec validation, rate limiting et mémoire
 app.post('/api/chat', chatLimiter, requireAuthAPI, async (req, res) => {
     try {
         console.log('🔍 Données reçues brutes:', req.body);
@@ -701,6 +742,15 @@ app.post('/api/chat', chatLimiter, requireAuthAPI, async (req, res) => {
 
         // Récupérer le contexte de mémoire pour l'utilisateur
         const personalizedContext = memoryService.generatePersonalizedContext(req.user.userId);
+        console.log('🧠 Contexte personnalisé généré pour userId:', req.user.userId);
+        console.log('📄 Longueur du contexte:', personalizedContext.length);
+        
+        // Debug: vérifier les fichiers dans la mémoire
+        const userFiles = await memoryService.getUserFiles(req.user.userId);
+        console.log('📁 Fichiers trouvés pour cet utilisateur:', userFiles.length);
+        if (userFiles.length > 0) {
+            console.log('📋 Liste des fichiers:', userFiles.map(f => ({ fileId: f.fileId, fileName: f.fileName })));
+        }
         
         // Appel du service IA réel avec contexte personnalisé et accès aux fichiers
         const aiResponse = await aiService.sendMessage(message, model, conversationId, personalizedContext, req.user.userId);
@@ -795,16 +845,21 @@ app.post('/api/files/upload', requireAuthAPI, upload.single('file'), async (req,
             return res.status(400).json({ error: 'Aucun fichier fourni' });
         }
 
-        const userId = req.user.id;
+        const userId = req.user.userId || req.user.id; // Harmonisation des identifiants
+        console.log('📁 Upload pour userId:', userId);
+        
         const metadata = await fileService.saveFile(req.file, userId);
         
         // Analyser le fichier pour l'agent
         const analysis = await fileService.analyzeForAgent(metadata.id);
         
-        // Stocker dans la mémoire de l'agent
+        // Stocker dans la mémoire de l'agent avec le contenu du fichier
+        console.log('🧠 Ajout à la mémoire pour userId:', userId);
         memoryService.addUserPreference(userId, 'uploaded_files', {
             fileId: metadata.id,
+            fileName: metadata.originalName,
             analysis: analysis,
+            fullContent: analysis.fullContent || '', // Contenu complet pour l'agent
             uploadedAt: new Date().toISOString()
         });
 
