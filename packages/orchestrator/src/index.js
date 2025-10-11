@@ -709,8 +709,18 @@ app.post('/api/auth/logout', (req, res) => {
     res.json({ success: true, message: 'Déconnexion réussie' });
 });
 
-// Route principale - Interface SaaS moderne et simple (SANS requireAuth pour éviter boucle infinie)
+// Route principale - Interface SaaS moderne et simple (avec vérification manuelle auth)
 app.get('/', (req, res) => {
+    // Vérification manuelle de l'authentification
+    const sessionId = req.cookies.sessionId;
+    const session = sessionId ? global.sessions[sessionId] : null;
+    const user = session ? global.users.find(u => u.id === session.userId) : null;
+    
+    // Si pas connecté, rediriger vers login
+    if (!user) {
+        return res.redirect('/login');
+    }
+    
     res.send(`
     <!DOCTYPE html>
     <html lang="fr">
@@ -925,8 +935,8 @@ app.get('/', (req, res) => {
     <body>
         <div class="top-bar">
             <div class="user-info">
-                <div class="user-avatar">${req.user.name.charAt(0).toUpperCase()}</div>
-                <span>Bonjour, <strong>${req.user.name}</strong></span>
+                <div class="user-avatar">${user.email.charAt(0).toUpperCase()}</div>
+                <span>Bonjour, <strong>${user.email}</strong></span>
             </div>
             <button class="logout-btn" onclick="logout()">🚪 Déconnexion</button>
         </div>
@@ -938,7 +948,7 @@ app.get('/', (req, res) => {
             </div>
             
             <div class="welcome-message">
-                <h3>👋 Bienvenue ${req.user.name} !</h3>
+                <h3>👋 Bienvenue ${user.email} !</h3>
                 <p>Votre plateforme IA sécurisée est prête. Explorez les fonctionnalités ci-dessous.</p>
             </div>
             
@@ -1529,4 +1539,4 @@ app.listen(port, () => {
     console.log(`💚 Health: http://localhost:${port}/health`);
 });
 
-module.exports = app;
+module.exports = app;         
