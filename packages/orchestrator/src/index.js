@@ -167,6 +167,11 @@ app.get('/simple', (req, res) => {
     </html>
     `);
 });
+
+// Page de debug avancée
+app.get('/debug-auth', (req, res) => {
+    res.sendFile(path.join(__dirname, '../debug-auth.html'));
+});
 global.users = {}; // Stockage des utilisateurs
 
 // Middleware d'authentification
