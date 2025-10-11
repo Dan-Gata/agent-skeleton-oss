@@ -23,17 +23,440 @@ app.set('views', path.join(__dirname, '../views'));
 global.uploadedFiles = {};
 global.conversations = {};
 
-// Route principale
+// Route principale - Interface moderne
 app.get('/', (req, res) => {
     res.send(`
-        <h1>🚀 Agent Skeleton OSS - Version Simplifiée</h1>
-        <p>Application démarrée avec succès !</p>
-        <ul>
-            <li><a href="/chat">💬 Chat IA (60+ Modèles)</a></li>
-            <li><a href="/upload-test">🔧 Test Upload</a></li>
-            <li><a href="/health">💚 Health Check</a></li>
-            <li><a href="/api/status">📊 API Status</a></li>
-        </ul>
+    <!DOCTYPE html>
+    <html lang="fr">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>🚀 Agent Skeleton OSS - Interface Moderne</title>
+        <style>
+            * { margin: 0; padding: 0; box-sizing: border-box; }
+            
+            body {
+                font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+                background: linear-gradient(135deg, #0f0f23 0%, #16213e 50%, #1a1a2e 100%);
+                color: white;
+                min-height: 100vh;
+                overflow-x: hidden;
+            }
+            
+            .header {
+                text-align: center;
+                padding: 60px 20px;
+                background: rgba(255,255,255,0.05);
+                backdrop-filter: blur(10px);
+                border-bottom: 1px solid rgba(52, 152, 219, 0.3);
+            }
+            
+            .header h1 {
+                font-size: 3.5rem;
+                background: linear-gradient(45deg, #3498db, #e74c3c, #f39c12);
+                -webkit-background-clip: text;
+                -webkit-text-fill-color: transparent;
+                background-clip: text;
+                margin-bottom: 10px;
+                text-shadow: 0 0 30px rgba(52, 152, 219, 0.5);
+            }
+            
+            .header p {
+                font-size: 1.2rem;
+                color: #bdc3c7;
+                margin-bottom: 30px;
+            }
+            
+            .status-bar {
+                display: flex;
+                justify-content: center;
+                gap: 30px;
+                flex-wrap: wrap;
+            }
+            
+            .status-item {
+                background: rgba(52, 152, 219, 0.1);
+                padding: 15px 25px;
+                border-radius: 25px;
+                border: 1px solid rgba(52, 152, 219, 0.3);
+                display: flex;
+                align-items: center;
+                gap: 10px;
+                font-size: 0.9rem;
+            }
+            
+            .status-dot {
+                width: 8px;
+                height: 8px;
+                background: #2ecc71;
+                border-radius: 50%;
+                animation: pulse 2s infinite;
+            }
+            
+            @keyframes pulse {
+                0% { opacity: 1; }
+                50% { opacity: 0.5; }
+                100% { opacity: 1; }
+            }
+            
+            .main-content {
+                max-width: 1400px;
+                margin: 0 auto;
+                padding: 60px 20px;
+            }
+            
+            .features-grid {
+                display: grid;
+                grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+                gap: 30px;
+                margin-bottom: 60px;
+            }
+            
+            .feature-card {
+                background: rgba(255,255,255,0.05);
+                backdrop-filter: blur(15px);
+                border-radius: 20px;
+                padding: 40px;
+                border: 1px solid rgba(52, 152, 219, 0.2);
+                transition: all 0.3s ease;
+                position: relative;
+                overflow: hidden;
+            }
+            
+            .feature-card::before {
+                content: '';
+                position: absolute;
+                top: -50%;
+                left: -50%;
+                width: 200%;
+                height: 200%;
+                background: linear-gradient(45deg, transparent, rgba(52, 152, 219, 0.1), transparent);
+                transform: rotate(45deg);
+                transition: all 0.6s ease;
+                opacity: 0;
+            }
+            
+            .feature-card:hover::before {
+                opacity: 1;
+                animation: shimmer 1.5s ease-in-out;
+            }
+            
+            @keyframes shimmer {
+                0% { transform: translateX(-100%) translateY(-100%) rotate(45deg); }
+                100% { transform: translateX(100%) translateY(100%) rotate(45deg); }
+            }
+            
+            .feature-card:hover {
+                transform: translateY(-10px);
+                border-color: rgba(52, 152, 219, 0.5);
+                box-shadow: 0 20px 40px rgba(52, 152, 219, 0.2);
+            }
+            
+            .feature-icon {
+                font-size: 4rem;
+                margin-bottom: 20px;
+                display: block;
+                text-align: center;
+            }
+            
+            .feature-title {
+                font-size: 1.8rem;
+                margin-bottom: 15px;
+                color: #3498db;
+                text-align: center;
+            }
+            
+            .feature-description {
+                color: #bdc3c7;
+                line-height: 1.6;
+                margin-bottom: 25px;
+                text-align: center;
+            }
+            
+            .feature-stats {
+                display: grid;
+                grid-template-columns: repeat(2, 1fr);
+                gap: 15px;
+                margin-bottom: 25px;
+            }
+            
+            .stat-item {
+                background: rgba(52, 152, 219, 0.1);
+                padding: 15px;
+                border-radius: 10px;
+                text-align: center;
+                border: 1px solid rgba(52, 152, 219, 0.2);
+            }
+            
+            .stat-number {
+                font-size: 1.5rem;
+                font-weight: bold;
+                color: #3498db;
+            }
+            
+            .stat-label {
+                font-size: 0.8rem;
+                color: #95a5a6;
+                margin-top: 5px;
+            }
+            
+            .action-button {
+                display: block;
+                width: 100%;
+                padding: 15px 30px;
+                background: linear-gradient(45deg, #3498db, #2980b9);
+                color: white;
+                text-decoration: none;
+                border-radius: 25px;
+                text-align: center;
+                font-weight: bold;
+                font-size: 1.1rem;
+                transition: all 0.3s ease;
+                border: 2px solid transparent;
+                position: relative;
+                overflow: hidden;
+            }
+            
+            .action-button::before {
+                content: '';
+                position: absolute;
+                top: 0;
+                left: -100%;
+                width: 100%;
+                height: 100%;
+                background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+                transition: left 0.5s;
+            }
+            
+            .action-button:hover::before {
+                left: 100%;
+            }
+            
+            .action-button:hover {
+                transform: scale(1.05);
+                box-shadow: 0 10px 25px rgba(52, 152, 219, 0.3);
+                border-color: rgba(255,255,255,0.3);
+            }
+            
+            .admin-panel {
+                background: rgba(231, 76, 60, 0.1);
+                border: 1px solid rgba(231, 76, 60, 0.3);
+                border-radius: 20px;
+                padding: 30px;
+                margin-top: 40px;
+            }
+            
+            .admin-title {
+                color: #e74c3c;
+                font-size: 1.5rem;
+                margin-bottom: 20px;
+                text-align: center;
+            }
+            
+            .admin-actions {
+                display: grid;
+                grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+                gap: 15px;
+            }
+            
+            .admin-button {
+                padding: 12px 20px;
+                background: rgba(231, 76, 60, 0.2);
+                color: #e74c3c;
+                text-decoration: none;
+                border-radius: 10px;
+                text-align: center;
+                transition: all 0.3s ease;
+                border: 1px solid rgba(231, 76, 60, 0.3);
+            }
+            
+            .admin-button:hover {
+                background: rgba(231, 76, 60, 0.3);
+                transform: translateY(-2px);
+            }
+            
+            .footer {
+                text-align: center;
+                padding: 40px;
+                color: #7f8c8d;
+                border-top: 1px solid rgba(52, 152, 219, 0.2);
+                margin-top: 60px;
+            }
+            
+            .version-info {
+                display: inline-flex;
+                align-items: center;
+                gap: 10px;
+                background: rgba(52, 152, 219, 0.1);
+                padding: 10px 20px;
+                border-radius: 20px;
+                margin-top: 15px;
+            }
+            
+            @media (max-width: 768px) {
+                .header h1 { font-size: 2.5rem; }
+                .features-grid { grid-template-columns: 1fr; }
+                .feature-card { padding: 25px; }
+                .status-bar { flex-direction: column; align-items: center; }
+            }
+        </style>
+    </head>
+    <body>
+        <div class="header">
+            <h1>🚀 Agent Skeleton OSS</h1>
+            <p>Plateforme IA Complète avec 60+ Modèles • Upload de Fichiers • Chat Intelligent</p>
+            
+            <div class="status-bar">
+                <div class="status-item">
+                    <div class="status-dot"></div>
+                    <span>Serveur Actif</span>
+                </div>
+                <div class="status-item">
+                    <div class="status-dot"></div>
+                    <span>OpenRouter Connecté</span>
+                </div>
+                <div class="status-item">
+                    <div class="status-dot"></div>
+                    <span>Upload Fonctionnel</span>
+                </div>
+                <div class="status-item">
+                    <div class="status-dot"></div>
+                    <span>Chat IA Prêt</span>
+                </div>
+            </div>
+        </div>
+        
+        <div class="main-content">
+            <div class="features-grid">
+                <!-- Feature 1: Chat IA -->
+                <div class="feature-card">
+                    <div class="feature-icon">💬</div>
+                    <h2 class="feature-title">Chat IA Avancé</h2>
+                    <p class="feature-description">
+                        Chattez avec 60+ modèles IA incluant GPT-4o, Claude 3.5, Gemini Pro, 
+                        Alibaba Qwen et des modèles gratuits. Interface moderne avec sélection 
+                        de modèles en temps réel.
+                    </p>
+                    
+                    <div class="feature-stats">
+                        <div class="stat-item">
+                            <div class="stat-number">60+</div>
+                            <div class="stat-label">Modèles IA</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-number">10</div>
+                            <div class="stat-label">Modèles Gratuits</div>
+                        </div>
+                    </div>
+                    
+                    <a href="/chat" class="action-button">🚀 Démarrer le Chat</a>
+                </div>
+                
+                <!-- Feature 2: Upload -->
+                <div class="feature-card">
+                    <div class="feature-icon">📁</div>
+                    <h2 class="feature-title">Upload Intelligent</h2>
+                    <p class="feature-description">
+                        Uploadez vos fichiers avec drag & drop ou copier-coller. 
+                        L'IA peut automatiquement analyser et utiliser le contenu 
+                        de vos documents dans les conversations.
+                    </p>
+                    
+                    <div class="feature-stats">
+                        <div class="stat-item">
+                            <div class="stat-number">50KB</div>
+                            <div class="stat-label">Taille Max</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-number">3</div>
+                            <div class="stat-label">Méthodes Upload</div>
+                        </div>
+                    </div>
+                    
+                    <a href="/upload-test" class="action-button">📤 Tester Upload</a>
+                </div>
+            </div>
+            
+            <!-- Panneau Admin -->
+            <div class="admin-panel">
+                <h3 class="admin-title">🔧 Panneau d'Administration</h3>
+                <div class="admin-actions">
+                    <a href="/health" class="admin-button">💚 Health Check</a>
+                    <a href="/api/status" class="admin-button">📊 API Status</a>
+                    <a href="/api/files-list" class="admin-button">📋 Liste Fichiers</a>
+                </div>
+            </div>
+        </div>
+        
+        <div class="footer">
+            <p>Agent Skeleton OSS - Plateforme IA Open Source</p>
+            <div class="version-info">
+                <span>⚡</span>
+                <span>Version 2.0 Moderne</span>
+                <span>•</span>
+                <span id="uptime">Chargement...</span>
+            </div>
+        </div>
+        
+        <script>
+            // Animation d'entrée
+            document.addEventListener('DOMContentLoaded', function() {
+                const cards = document.querySelectorAll('.feature-card');
+                cards.forEach((card, index) => {
+                    card.style.opacity = '0';
+                    card.style.transform = 'translateY(50px)';
+                    
+                    setTimeout(() => {
+                        card.style.transition = 'all 0.6s ease';
+                        card.style.opacity = '1';
+                        card.style.transform = 'translateY(0)';
+                    }, index * 200);
+                });
+                
+                updateUptime();
+                setInterval(updateUptime, 1000);
+            });
+            
+            // Mise à jour du temps de fonctionnement
+            async function updateUptime() {
+                try {
+                    const response = await fetch('/health');
+                    const data = await response.json();
+                    const uptime = Math.floor(data.uptime);
+                    const hours = Math.floor(uptime / 3600);
+                    const minutes = Math.floor((uptime % 3600) / 60);
+                    const seconds = uptime % 60;
+                    
+                    document.getElementById('uptime').textContent = 
+                        \`⏱️ \${hours}h \${minutes}m \${seconds}s\`;
+                } catch (error) {
+                    document.getElementById('uptime').textContent = '⏱️ En ligne';
+                }
+            }
+            
+            // Effets visuels
+            document.querySelectorAll('.feature-card').forEach(card => {
+                card.addEventListener('mousemove', (e) => {
+                    const rect = card.getBoundingClientRect();
+                    const x = e.clientX - rect.left;
+                    const y = e.clientY - rect.top;
+                    
+                    const centerX = rect.width / 2;
+                    const centerY = rect.height / 2;
+                    
+                    const rotateX = (y - centerY) / 10;
+                    const rotateY = (centerX - x) / 10;
+                    
+                    card.style.transform = \`perspective(1000px) rotateX(\${rotateX}deg) rotateY(\${rotateY}deg) translateY(-10px)\`;
+                });
+                
+                card.addEventListener('mouseleave', () => {
+                    card.style.transform = 'perspective(1000px) rotateX(0) rotateY(0) translateY(0)';
+                });
+            });
+        </script>
+    </body>
+    </html>
     `);
 });
 
