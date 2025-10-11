@@ -1,4 +1,4 @@
-// Version simplifiée pour déploiement Coolify - Agent Skeleton OSS
+// Version complète et professionnelle - Agent Skeleton OSS
 const express = require('express');
 const path = require('path');
 const helmet = require('helmet');
@@ -8,23 +8,724 @@ const cookieParser = require('cookie-parser');
 const app = express();
 const port = process.env.PORT || 3000;
 
-// Configuration basique
+// Configuration sécurisée
 app.use(helmet());
 app.use(cors({ origin: true, credentials: true }));
 app.use(cookieParser());
 app.use(express.json({ limit: '10mb' }));
 app.use(express.raw({ type: '*/*', limit: '10mb' }));
 
-// Configuration EJS
+// Stockage en mémoire (base de données temporaire)
+global.users = {};
+global.uploadedFiles = {};
+global.conversations = {};
+global.sessions = {};
+
+// Configuration EJS pour les vues
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, '../views'));
 
-// Stockage temporaire en mémoire
-global.uploadedFiles = {};
-global.conversations = {};
+// Middleware d'authentification
+function requireAuth(req, res, next) {
+    const sessionId = req.cookies.sessionId;
+    if (!sessionId || !global.sessions[sessionId]) {
+        return res.redirect('/login');
+    }
+    req.user = global.sessions[sessionId];
+    next();
+}
+
+// Route de connexion
+app.get('/login', (req, res) => {
+    res.send(`
+    <!DOCTYPE html>
+    <html lang="fr">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Connexion - Agent Skeleton OSS</title>
+        <style>
+            * { margin: 0; padding: 0; box-sizing: border-box; }
+            
+            body {
+                font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                min-height: 100vh;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                color: white;
+            }
+            
+            .auth-container {
+                background: rgba(255, 255, 255, 0.1);
+                backdrop-filter: blur(20px);
+                border-radius: 20px;
+                padding: 3rem;
+                box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+                border: 1px solid rgba(255, 255, 255, 0.2);
+                width: 100%;
+                max-width: 400px;
+            }
+            
+            .logo {
+                text-align: center;
+                margin-bottom: 2rem;
+            }
+            
+            .logo h1 {
+                font-size: 2rem;
+                margin-bottom: 0.5rem;
+            }
+            
+            .logo p {
+                opacity: 0.8;
+                font-size: 0.9rem;
+            }
+            
+            .form-group {
+                margin-bottom: 1.5rem;
+            }
+            
+            .form-group label {
+                display: block;
+                margin-bottom: 0.5rem;
+                font-weight: 500;
+            }
+            
+            .form-group input {
+                width: 100%;
+                padding: 1rem;
+                border: 1px solid rgba(255, 255, 255, 0.3);
+                border-radius: 10px;
+                background: rgba(255, 255, 255, 0.1);
+                color: white;
+                font-size: 1rem;
+            }
+            
+            .form-group input::placeholder {
+                color: rgba(255, 255, 255, 0.7);
+            }
+            
+            .form-group input:focus {
+                outline: none;
+                border-color: rgba(255, 255, 255, 0.5);
+                background: rgba(255, 255, 255, 0.15);
+            }
+            
+            .btn {
+                width: 100%;
+                padding: 1rem;
+                background: linear-gradient(45deg, #4299e1, #3182ce);
+                color: white;
+                border: none;
+                border-radius: 10px;
+                font-size: 1rem;
+                font-weight: 600;
+                cursor: pointer;
+                transition: all 0.3s ease;
+                margin-bottom: 1rem;
+            }
+            
+            .btn:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 10px 20px rgba(66, 153, 225, 0.3);
+            }
+            
+            .toggle-auth {
+                text-align: center;
+                margin-top: 1rem;
+            }
+            
+            .toggle-auth a {
+                color: rgba(255, 255, 255, 0.8);
+                text-decoration: none;
+            }
+            
+            .toggle-auth a:hover {
+                color: white;
+            }
+            
+            .error {
+                background: rgba(231, 76, 60, 0.2);
+                border: 1px solid rgba(231, 76, 60, 0.3);
+                color: #e74c3c;
+                padding: 1rem;
+                border-radius: 10px;
+                margin-bottom: 1rem;
+                text-align: center;
+            }
+            
+            .success {
+                background: rgba(46, 204, 113, 0.2);
+                border: 1px solid rgba(46, 204, 113, 0.3);
+                color: #2ecc71;
+                padding: 1rem;
+                border-radius: 10px;
+                margin-bottom: 1rem;
+                text-align: center;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="auth-container">
+            <div class="logo">
+                <h1>🚀 Agent Skeleton OSS</h1>
+                <p>Plateforme IA Avancée</p>
+            </div>
+            
+            <div id="message"></div>
+            
+            <form id="authForm">
+                <div class="form-group">
+                    <label for="email">Email</label>
+                    <input type="email" id="email" placeholder="votre@email.com" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="password">Mot de passe</label>
+                    <input type="password" id="password" placeholder="••••••••" required>
+                </div>
+                
+                <div class="form-group" id="nameGroup" style="display: none;">
+                    <label for="name">Nom complet</label>
+                    <input type="text" id="name" placeholder="Votre nom">
+                </div>
+                
+                <button type="submit" class="btn" id="authBtn">Se connecter</button>
+            </form>
+            
+            <div class="toggle-auth">
+                <a href="#" id="toggleAuth">Pas de compte ? S'inscrire</a>
+            </div>
+        </div>
+        
+        <script>
+            let isLogin = true;
+            
+            document.getElementById('toggleAuth').addEventListener('click', function(e) {
+                e.preventDefault();
+                isLogin = !isLogin;
+                
+                const nameGroup = document.getElementById('nameGroup');
+                const authBtn = document.getElementById('authBtn');
+                const toggleAuth = document.getElementById('toggleAuth');
+                
+                if (isLogin) {
+                    nameGroup.style.display = 'none';
+                    authBtn.textContent = 'Se connecter';
+                    toggleAuth.textContent = 'Pas de compte ? S\\'inscrire';
+                } else {
+                    nameGroup.style.display = 'block';
+                    authBtn.textContent = 'S\\'inscrire';
+                    toggleAuth.textContent = 'Déjà un compte ? Se connecter';
+                }
+                
+                document.getElementById('message').innerHTML = '';
+            });
+            
+            document.getElementById('authForm').addEventListener('submit', async function(e) {
+                e.preventDefault();
+                
+                const email = document.getElementById('email').value;
+                const password = document.getElementById('password').value;
+                const name = document.getElementById('name').value;
+                
+                const endpoint = isLogin ? '/api/login' : '/api/register';
+                const payload = isLogin ? { email, password } : { email, password, name };
+                
+                try {
+                    const response = await fetch(endpoint, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
+                    
+                    const result = await response.json();
+                    
+                    if (response.ok) {
+                        document.getElementById('message').innerHTML = 
+                            '<div class="success">✅ ' + result.message + '</div>';
+                        
+                        if (isLogin) {
+                            setTimeout(() => window.location.href = '/', 1000);
+                        } else {
+                            setTimeout(() => {
+                                isLogin = true;
+                                document.getElementById('toggleAuth').click();
+                            }, 1500);
+                        }
+                    } else {
+                        document.getElementById('message').innerHTML = 
+                            '<div class="error">❌ ' + result.error + '</div>';
+                    }
+                } catch (error) {
+                    document.getElementById('message').innerHTML = 
+                        '<div class="error">❌ Erreur de connexion</div>';
+                }
+            });
+        </script>
+    </body>
+    </html>
+    `);
+});
+
+// API de connexion
+app.post('/api/login', (req, res) => {
+    const { email, password } = req.body;
+    
+    if (!email || !password) {
+        return res.status(400).json({ error: 'Email et mot de passe requis' });
+    }
+    
+    const user = global.users[email];
+    if (!user || user.password !== password) {
+        return res.status(401).json({ error: 'Identifiants incorrects' });
+    }
+    
+    const sessionId = Date.now().toString() + Math.random().toString(36);
+    global.sessions[sessionId] = user;
+    
+    res.cookie('sessionId', sessionId, { httpOnly: true, maxAge: 24 * 60 * 60 * 1000 });
+    res.json({ success: true, message: 'Connexion réussie !', user: { email: user.email, name: user.name } });
+});
+
+// API d'inscription
+app.post('/api/register', (req, res) => {
+    const { email, password, name } = req.body;
+    
+    if (!email || !password || !name) {
+        return res.status(400).json({ error: 'Tous les champs sont requis' });
+    }
+    
+    if (global.users[email]) {
+        return res.status(409).json({ error: 'Cet email est déjà utilisé' });
+    }
+    
+    global.users[email] = {
+        email,
+        password,
+        name,
+        createdAt: new Date().toISOString()
+    };
+    
+    // Initialiser la conversation de l'utilisateur
+    global.conversations[email] = [];
+    
+    res.json({ success: true, message: 'Inscription réussie ! Vous pouvez maintenant vous connecter.' });
+});
+
+// API de déconnexion
+app.post('/api/logout', (req, res) => {
+    const sessionId = req.cookies.sessionId;
+    if (sessionId) {
+        delete global.sessions[sessionId];
+    }
+    res.clearCookie('sessionId');
+    res.redirect('/login');
+});
+global.users = {}; // Stockage des utilisateurs
+
+// Middleware d'authentification
+function requireAuth(req, res, next) {
+    const userId = req.cookies.userId;
+    if (!userId || !global.users[userId]) {
+        return res.redirect('/login');
+    }
+    req.user = global.users[userId];
+    next();
+}
+
+// Route de connexion
+app.get('/login', (req, res) => {
+    res.send(`
+    <!DOCTYPE html>
+    <html lang="fr">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Connexion - Agent Skeleton OSS</title>
+        <style>
+            * { margin: 0; padding: 0; box-sizing: border-box; }
+            
+            body {
+                font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                min-height: 100vh;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                padding: 20px;
+            }
+            
+            .auth-container {
+                background: white;
+                border-radius: 12px;
+                padding: 3rem;
+                box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+                width: 100%;
+                max-width: 400px;
+            }
+            
+            .auth-header {
+                text-align: center;
+                margin-bottom: 2rem;
+            }
+            
+            .auth-header h1 {
+                font-size: 2rem;
+                color: #2d3748;
+                margin-bottom: 0.5rem;
+            }
+            
+            .auth-header p {
+                color: #718096;
+            }
+            
+            .auth-tabs {
+                display: flex;
+                margin-bottom: 2rem;
+                background: #f7fafc;
+                border-radius: 8px;
+                padding: 4px;
+            }
+            
+            .auth-tab {
+                flex: 1;
+                padding: 0.75rem;
+                text-align: center;
+                border-radius: 6px;
+                cursor: pointer;
+                transition: all 0.2s;
+                font-weight: 500;
+            }
+            
+            .auth-tab.active {
+                background: white;
+                color: #4299e1;
+                box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            }
+            
+            .auth-form {
+                display: none;
+            }
+            
+            .auth-form.active {
+                display: block;
+            }
+            
+            .form-group {
+                margin-bottom: 1.5rem;
+            }
+            
+            .form-label {
+                display: block;
+                margin-bottom: 0.5rem;
+                font-weight: 500;
+                color: #2d3748;
+            }
+            
+            .form-input {
+                width: 100%;
+                padding: 0.75rem;
+                border: 1px solid #e2e8f0;
+                border-radius: 6px;
+                font-size: 1rem;
+                transition: border-color 0.2s;
+            }
+            
+            .form-input:focus {
+                outline: none;
+                border-color: #4299e1;
+                box-shadow: 0 0 0 3px rgba(66, 153, 225, 0.1);
+            }
+            
+            .auth-button {
+                width: 100%;
+                padding: 0.75rem;
+                background: #4299e1;
+                color: white;
+                border: none;
+                border-radius: 6px;
+                font-size: 1rem;
+                font-weight: 500;
+                cursor: pointer;
+                transition: background 0.2s;
+            }
+            
+            .auth-button:hover {
+                background: #3182ce;
+            }
+            
+            .auth-button:disabled {
+                background: #a0aec0;
+                cursor: not-allowed;
+            }
+            
+            .message {
+                margin-top: 1rem;
+                padding: 0.75rem;
+                border-radius: 6px;
+                text-align: center;
+                display: none;
+            }
+            
+            .message.success {
+                background: #f0fff4;
+                color: #38a169;
+                border: 1px solid #9ae6b4;
+            }
+            
+            .message.error {
+                background: #fed7d7;
+                color: #e53e3e;
+                border: 1px solid #feb2b2;
+            }
+            
+            .demo-info {
+                background: #ebf8ff;
+                border: 1px solid #90cdf4;
+                border-radius: 6px;
+                padding: 1rem;
+                margin-top: 1.5rem;
+                font-size: 0.9rem;
+                color: #2b6cb0;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="auth-container">
+            <div class="auth-header">
+                <h1>🚀 Agent Skeleton OSS</h1>
+                <p>Plateforme IA sécurisée</p>
+            </div>
+            
+            <div class="auth-tabs">
+                <div class="auth-tab active" onclick="switchTab('login')">Connexion</div>
+                <div class="auth-tab" onclick="switchTab('signup')">Inscription</div>
+            </div>
+            
+            <!-- Formulaire de connexion -->
+            <form class="auth-form active" id="loginForm">
+                <div class="form-group">
+                    <label class="form-label">Email</label>
+                    <input type="email" class="form-input" id="loginEmail" required placeholder="votre@email.com">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Mot de passe</label>
+                    <input type="password" class="form-input" id="loginPassword" required placeholder="••••••••">
+                </div>
+                <button type="submit" class="auth-button">Se connecter</button>
+            </form>
+            
+            <!-- Formulaire d'inscription -->
+            <form class="auth-form" id="signupForm">
+                <div class="form-group">
+                    <label class="form-label">Nom complet</label>
+                    <input type="text" class="form-input" id="signupName" required placeholder="John Doe">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Email</label>
+                    <input type="email" class="form-input" id="signupEmail" required placeholder="votre@email.com">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Mot de passe</label>
+                    <input type="password" class="form-input" id="signupPassword" required placeholder="••••••••">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Confirmer le mot de passe</label>
+                    <input type="password" class="form-input" id="signupConfirm" required placeholder="••••••••">
+                </div>
+                <button type="submit" class="auth-button">S'inscrire</button>
+            </form>
+            
+            <div class="message" id="message"></div>
+            
+            <div class="demo-info">
+                💡 <strong>Mode démo :</strong> Créez un compte pour accéder à la plateforme IA avec chat et upload de fichiers.
+            </div>
+        </div>
+        
+        <script>
+            function switchTab(tab) {
+                // Gérer les onglets
+                document.querySelectorAll('.auth-tab').forEach(t => t.classList.remove('active'));
+                document.querySelectorAll('.auth-form').forEach(f => f.classList.remove('active'));
+                
+                if (tab === 'login') {
+                    document.querySelector('.auth-tab').classList.add('active');
+                    document.getElementById('loginForm').classList.add('active');
+                } else {
+                    document.querySelectorAll('.auth-tab')[1].classList.add('active');
+                    document.getElementById('signupForm').classList.add('active');
+                }
+                
+                hideMessage();
+            }
+            
+            function showMessage(text, type) {
+                const msg = document.getElementById('message');
+                msg.textContent = text;
+                msg.className = \`message \${type}\`;
+                msg.style.display = 'block';
+            }
+            
+            function hideMessage() {
+                document.getElementById('message').style.display = 'none';
+            }
+            
+            // Gestion connexion
+            document.getElementById('loginForm').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                
+                const email = document.getElementById('loginEmail').value;
+                const password = document.getElementById('loginPassword').value;
+                
+                try {
+                    const response = await fetch('/api/auth/login', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ email, password })
+                    });
+                    
+                    const result = await response.json();
+                    
+                    if (response.ok) {
+                        showMessage('Connexion réussie !', 'success');
+                        setTimeout(() => window.location.href = '/', 1000);
+                    } else {
+                        showMessage(result.error, 'error');
+                    }
+                } catch (error) {
+                    showMessage('Erreur de connexion', 'error');
+                }
+            });
+            
+            // Gestion inscription
+            document.getElementById('signupForm').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                
+                const name = document.getElementById('signupName').value;
+                const email = document.getElementById('signupEmail').value;
+                const password = document.getElementById('signupPassword').value;
+                const confirm = document.getElementById('signupConfirm').value;
+                
+                if (password !== confirm) {
+                    showMessage('Les mots de passe ne correspondent pas', 'error');
+                    return;
+                }
+                
+                try {
+                    const response = await fetch('/api/auth/signup', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ name, email, password })
+                    });
+                    
+                    const result = await response.json();
+                    
+                    if (response.ok) {
+                        showMessage('Compte créé avec succès !', 'success');
+                        setTimeout(() => window.location.href = '/', 1000);
+                    } else {
+                        showMessage(result.error, 'error');
+                    }
+                } catch (error) {
+                    showMessage('Erreur lors de l\\'inscription', 'error');
+                }
+            });
+        </script>
+    </body>
+    </html>
+    `);
+});
+
+// APIs d'authentification
+app.post('/api/auth/signup', (req, res) => {
+    try {
+        const { name, email, password } = req.body;
+        
+        if (!name || !email || !password) {
+            return res.status(400).json({ error: 'Tous les champs sont requis' });
+        }
+        
+        // Vérifier si l'utilisateur existe déjà
+        const existingUser = Object.values(global.users).find(u => u.email === email);
+        if (existingUser) {
+            return res.status(400).json({ error: 'Cet email est déjà utilisé' });
+        }
+        
+        // Créer un nouvel utilisateur
+        const userId = Date.now().toString();
+        global.users[userId] = {
+            id: userId,
+            name: name,
+            email: email,
+            password: password, // En production, hashé bien sûr !
+            createdAt: new Date().toISOString()
+        };
+        
+        // Définir le cookie de session
+        res.cookie('userId', userId, { 
+            httpOnly: true, 
+            maxAge: 7 * 24 * 60 * 60 * 1000 // 7 jours
+        });
+        
+        console.log('🔐 Nouvel utilisateur créé:', email);
+        
+        res.json({
+            success: true,
+            message: 'Compte créé avec succès',
+            user: { id: userId, name, email }
+        });
+        
+    } catch (error) {
+        console.error('❌ Erreur inscription:', error);
+        res.status(500).json({ error: 'Erreur serveur' });
+    }
+});
+
+app.post('/api/auth/login', (req, res) => {
+    try {
+        const { email, password } = req.body;
+        
+        if (!email || !password) {
+            return res.status(400).json({ error: 'Email et mot de passe requis' });
+        }
+        
+        // Trouver l'utilisateur
+        const user = Object.values(global.users).find(u => u.email === email);
+        if (!user || user.password !== password) {
+            return res.status(401).json({ error: 'Email ou mot de passe incorrect' });
+        }
+        
+        // Définir le cookie de session
+        res.cookie('userId', user.id, { 
+            httpOnly: true, 
+            maxAge: 7 * 24 * 60 * 60 * 1000 // 7 jours
+        });
+        
+        console.log('🔐 Utilisateur connecté:', email);
+        
+        res.json({
+            success: true,
+            message: 'Connexion réussie',
+            user: { id: user.id, name: user.name, email: user.email }
+        });
+        
+    } catch (error) {
+        console.error('❌ Erreur connexion:', error);
+        res.status(500).json({ error: 'Erreur serveur' });
+    }
+});
+
+app.post('/api/auth/logout', (req, res) => {
+    res.clearCookie('userId');
+    res.json({ success: true, message: 'Déconnexion réussie' });
+});
 
 // Route principale - Interface SaaS moderne et simple
-app.get('/', (req, res) => {
+app.get('/', requireAuth, (req, res) => {
     res.send(`
     <!DOCTYPE html>
     <html lang="fr">
@@ -40,6 +741,49 @@ app.get('/', (req, res) => {
                 background: #f8fafc;
                 color: #1a202c;
                 line-height: 1.6;
+            }
+            
+            .top-bar {
+                background: white;
+                border-bottom: 1px solid #e2e8f0;
+                padding: 1rem 2rem;
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            }
+            
+            .user-info {
+                display: flex;
+                align-items: center;
+                gap: 1rem;
+            }
+            
+            .user-avatar {
+                width: 32px;
+                height: 32px;
+                background: #4299e1;
+                border-radius: 50%;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                color: white;
+                font-weight: bold;
+            }
+            
+            .logout-btn {
+                background: #e2e8f0;
+                color: #4a5568;
+                padding: 0.5rem 1rem;
+                border: none;
+                border-radius: 6px;
+                cursor: pointer;
+                font-size: 0.9rem;
+                transition: background 0.2s;
+            }
+            
+            .logout-btn:hover {
+                background: #cbd5e0;
             }
             
             .container {
@@ -63,6 +807,15 @@ app.get('/', (req, res) => {
             .header p {
                 font-size: 1.1rem;
                 color: #718096;
+            }
+            
+            .welcome-message {
+                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                color: white;
+                padding: 1.5rem;
+                border-radius: 12px;
+                text-align: center;
+                margin-bottom: 2rem;
             }
             
             .grid {
@@ -180,14 +933,28 @@ app.get('/', (req, res) => {
                 .container { padding: 1rem; }
                 .grid { grid-template-columns: 1fr; }
                 .status-bar { flex-direction: column; }
+                .top-bar { padding: 1rem; flex-direction: column; gap: 1rem; }
             }
         </style>
     </head>
     <body>
+        <div class="top-bar">
+            <div class="user-info">
+                <div class="user-avatar">${req.user.name.charAt(0).toUpperCase()}</div>
+                <span>Bonjour, <strong>${req.user.name}</strong></span>
+            </div>
+            <button class="logout-btn" onclick="logout()">🚪 Déconnexion</button>
+        </div>
+        
         <div class="container">
             <div class="header">
                 <h1>🚀 Agent Skeleton OSS</h1>
                 <p>Plateforme IA complète avec chat intelligent et upload de fichiers</p>
+            </div>
+            
+            <div class="welcome-message">
+                <h3>👋 Bienvenue ${req.user.name} !</h3>
+                <p>Votre plateforme IA sécurisée est prête. Explorez les fonctionnalités ci-dessous.</p>
             </div>
             
             <div class="grid">
@@ -234,13 +1001,26 @@ app.get('/', (req, res) => {
                 </div>
             </div>
         </div>
+        
+        <script>
+            async function logout() {
+                try {
+                    const response = await fetch('/api/auth/logout', { method: 'POST' });
+                    if (response.ok) {
+                        window.location.href = '/login';
+                    }
+                } catch (error) {
+                    console.error('Erreur déconnexion:', error);
+                }
+            }
+        </script>
     </body>
     </html>
     `);
 });
 
 // Route de test d'upload ultra-simple
-app.get('/upload-test', (req, res) => {
+app.get('/upload-test', requireAuth, (req, res) => {
     res.send(`
     <!DOCTYPE html>
     <html>
@@ -360,7 +1140,7 @@ app.get('/upload-test', (req, res) => {
 });
 
 // Route Chat IA
-app.get('/chat', (req, res) => {
+app.get('/chat', requireAuth, (req, res) => {
     res.send(`
     <!DOCTYPE html>
     <html>
@@ -585,7 +1365,7 @@ app.get('/chat', (req, res) => {
 });
 
 // API Upload ultra-simple
-app.post('/api/upload-simple', (req, res) => {
+app.post('/api/upload-simple', requireAuth, (req, res) => {
     try {
         console.log('📁 Upload reçu - Headers:', req.headers);
         
@@ -641,7 +1421,7 @@ app.get('/api/files-list', (req, res) => {
 });
 
 // API Chat IA avec 60+ modèles
-app.post('/api/chat', async (req, res) => {
+app.post('/api/chat', requireAuth, async (req, res) => {
     try {
         const { message, model } = req.body;
         
