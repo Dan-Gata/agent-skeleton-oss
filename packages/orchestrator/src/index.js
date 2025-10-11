@@ -709,8 +709,8 @@ app.post('/api/auth/logout', (req, res) => {
     res.json({ success: true, message: 'Déconnexion réussie' });
 });
 
-// Route principale - Interface SaaS moderne et simple
-app.get('/', requireAuth, (req, res) => {
+// Route principale - Interface SaaS moderne et simple (SANS requireAuth pour éviter boucle infinie)
+app.get('/', (req, res) => {
     res.send(`
     <!DOCTYPE html>
     <html lang="fr">
