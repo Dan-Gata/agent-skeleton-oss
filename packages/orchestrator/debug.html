@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>TEST DEBUG</title>
+</head>
+<body>
+    <h1>🔧 Test Debug - Agent Skeleton OSS</h1>
+    
+    <div style="margin: 20px 0;">
+        <button id="testBtn" style="padding: 10px 20px; font-size: 16px; background: blue; color: white; border: none; border-radius: 5px;">
+            CLIQUEZ ICI POUR TESTER
+        </button>
+        <div id="result" style="margin-top: 10px; padding: 10px; background: #f0f0f0;"></div>
+    </div>
+    
+    <div style="margin: 20px 0;">
+        <h3>Test Inscription</h3>
+        <button id="registerBtn" style="padding: 10px 20px; background: green; color: white; border: none; border-radius: 5px;">
+            Tester Inscription
+        </button>
+        <div id="registerResult" style="margin-top: 10px; padding: 10px; background: #f0f0f0;"></div>
+    </div>
+    
+    <div style="margin: 20px 0;">
+        <h3>Test Connexion</h3>
+        <button id="loginBtn" style="padding: 10px 20px; background: orange; color: white; border: none; border-radius: 5px;">
+            Tester Connexion
+        </button>
+        <div id="loginResult" style="margin-top: 10px; padding: 10px; background: #f0f0f0;"></div>
+    </div>
+    
+    <script>
+        // Test de base
+        document.getElementById('testBtn').addEventListener('click', function() {
+            document.getElementById('result').innerHTML = '✅ JavaScript fonctionne ! Timestamp: ' + new Date().toLocaleTimeString();
+        });
+        
+        // Test inscription
+        document.getElementById('registerBtn').addEventListener('click', async function() {
+            try {
+                document.getElementById('registerResult').innerHTML = '⏳ Test en cours...';
+                
+                const response = await fetch('/api/register', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        email: 'test' + Date.now() + '@example.com',
+                        password: 'test123',
+                        name: 'Test User'
+                    })
+                });
+                
+                const result = await response.json();
+                
+                document.getElementById('registerResult').innerHTML = 
+                    `<strong>Status:</strong> ${response.status}<br>
+                     <strong>Réponse:</strong> ${JSON.stringify(result, null, 2)}`;
+                
+            } catch (error) {
+                document.getElementById('registerResult').innerHTML = 
+                    `<span style="color: red;">❌ Erreur: ${error.message}</span>`;
+            }
+        });
+        
+        // Test connexion avec utilisateur existant
+        document.getElementById('loginBtn').addEventListener('click', async function() {
+            try {
+                document.getElementById('loginResult').innerHTML = '⏳ Test en cours...';
+                
+                const response = await fetch('/api/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        email: 'admin@example.com',
+                        password: 'admin123'
+                    })
+                });
+                
+                const result = await response.json();
+                
+                document.getElementById('loginResult').innerHTML = 
+                    `<strong>Status:</strong> ${response.status}<br>
+                     <strong>Réponse:</strong> ${JSON.stringify(result, null, 2)}`;
+                
+            } catch (error) {
+                document.getElementById('loginResult').innerHTML = 
+                    `<span style="color: red;">❌ Erreur: ${error.message}</span>`;
+            }
+        });
+        
+        // Log automatique au chargement
+        console.log('🔧 Page de test chargée');
+        console.log('📍 URL:', window.location.href);
+        console.log('🌐 User Agent:', navigator.userAgent);
+    </script>
+</body>
+</html>

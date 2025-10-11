@@ -16,7 +16,14 @@ app.use(express.json({ limit: '10mb' }));
 app.use(express.raw({ type: '*/*', limit: '10mb' }));
 
 // Stockage en mémoire (base de données temporaire)
-global.users = {};
+global.users = {
+    'admin@example.com': {
+        email: 'admin@example.com',
+        password: 'admin123',
+        name: 'Admin User',
+        createdAt: new Date().toISOString()
+    }
+};
 global.uploadedFiles = {};
 global.conversations = {};
 global.sessions = {};
@@ -168,9 +175,9 @@ app.get('/simple', (req, res) => {
     `);
 });
 
-// Page de debug avancée
-app.get('/debug-auth', (req, res) => {
-    res.sendFile(path.join(__dirname, '../debug-auth.html'));
+// Route de debug complète
+app.get('/debug-test', (req, res) => {
+    res.sendFile(path.join(__dirname, '../debug.html'));
 });
 global.users = {}; // Stockage des utilisateurs
 
