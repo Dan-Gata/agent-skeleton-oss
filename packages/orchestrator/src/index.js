@@ -36,11 +36,20 @@ app.set('views', path.join(__dirname, '../views'));
 
 // Middleware d'authentification
 function requireAuth(req, res, next) {
+    console.log('🔒 Vérification auth pour:', req.url);
+    console.log('🍪 Cookies reçus:', req.cookies);
+    
     const sessionId = req.cookies.sessionId;
+    console.log('🔑 SessionId:', sessionId);
+    
     if (!sessionId || !global.sessions[sessionId]) {
+        console.log('❌ Session non trouvée, redirection vers /login');
+        console.log('📝 Sessions disponibles:', Object.keys(global.sessions));
         return res.redirect('/login');
     }
+    
     req.user = global.sessions[sessionId];
+    console.log('✅ Utilisateur authentifié:', req.user.email);
     next();
 }
 
@@ -73,7 +82,16 @@ app.post('/api/login', (req, res) => {
     
     console.log('✅ Session créée:', sessionId);
     
-    res.cookie('sessionId', sessionId, { httpOnly: true, maxAge: 24 * 60 * 60 * 1000 });
+    // Configuration de cookie moins restrictive pour le debug
+    res.cookie('sessionId', sessionId, { 
+        httpOnly: true, 
+        maxAge: 24 * 60 * 60 * 1000,
+        sameSite: 'lax',
+        secure: false // Pour le développement local
+    });
+    
+    console.log('🍪 Cookie défini avec sessionId:', sessionId);
+    
     res.json({ success: true, message: 'Connexion réussie !', user: { email: user.email, name: user.name } });
 });
 
@@ -131,8 +149,22 @@ app.get('/debug', (req, res) => {
         sessions: Object.keys(global.sessions),
         files: Object.keys(global.uploadedFiles || {}),
         totalUsers: Object.keys(global.users).length,
-        totalSessions: Object.keys(global.sessions).length
+        totalSessions: Object.keys(global.sessions).length,
+        sessionDetails: global.sessions,
+        cookies: req.cookies
     });
+});
+
+// Route de test des cookies
+app.get('/test-cookie', (req, res) => {
+    res.send(`
+    <h1>Test Cookies</h1>
+    <p><strong>Cookies reçus:</strong> ${JSON.stringify(req.cookies)}</p>
+    <p><strong>Sessions disponibles:</strong> ${JSON.stringify(Object.keys(global.sessions))}</p>
+    <p><strong>Headers:</strong> ${JSON.stringify(req.headers, null, 2)}</p>
+    <br>
+    <a href="/login">← Retour login</a> | <a href="/">Tester homepage</a>
+    `);
 });
 
 // Route simple pour tester si le serveur fonctionne
