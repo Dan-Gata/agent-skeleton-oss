@@ -8,10 +8,18 @@ const cookieParser = require('cookie-parser');
 const app = express();
 const port = process.env.PORT || 3000;
 
-// Configuration sécurisée avec CSP désactivé temporairement pour debug
+// Configuration sécurisée avec headers complets
 app.use(helmet({
     contentSecurityPolicy: false, // Désactiver CSP temporairement
+    xssFilter: false, // Éviter x-xss-protection deprecated
 }));
+
+// Headers de sécurité additionnels
+app.use((req, res, next) => {
+    res.setHeader('X-Content-Type-Options', 'nosniff');
+    res.setHeader('Content-Type', 'text/html; charset=utf-8');
+    next();
+});
 app.use(cors({ origin: true, credentials: true }));
 app.use(cookieParser());
 app.use(express.json({ limit: '10mb' }));
@@ -55,6 +63,16 @@ function requireAuth(req, res, next) {
 
 // Route de connexion
 app.get('/login', (req, res) => {
+    console.log('📍 Accès à /login - Cookies:', req.cookies);
+    console.log('📍 User-Agent:', req.get('User-Agent'));
+    
+    // Vérifier si déjà connecté pour éviter la boucle
+    const sessionId = req.cookies.sessionId;
+    if (sessionId && global.sessions[sessionId]) {
+        console.log('👤 Utilisateur déjà connecté, redirection vers dashboard');
+        return res.redirect('/');
+    }
+    
     res.sendFile(path.join(__dirname, '../auth.html'));
 });
 
@@ -164,6 +182,84 @@ app.get('/test-cookie', (req, res) => {
     <p><strong>Headers:</strong> ${JSON.stringify(req.headers, null, 2)}</p>
     <br>
     <a href="/login">← Retour login</a> | <a href="/">Tester homepage</a>
+    `);
+});
+
+// ROUTE D'URGENCE - LOGIN DIRECT SANS BOUCLE
+app.get('/direct-login', (req, res) => {
+    res.send(`
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <meta charset="UTF-8">
+        <title>Login Direct</title>
+        <style>
+            body { font-family: Arial, sans-serif; padding: 20px; background: #f0f0f0; }
+            .container { max-width: 400px; margin: 0 auto; background: white; padding: 30px; border-radius: 10px; }
+            input { width: 100%; padding: 10px; margin: 10px 0; border: 1px solid #ddd; border-radius: 5px; }
+            button { width: 100%; padding: 15px; background: #007bff; color: white; border: none; border-radius: 5px; cursor: pointer; }
+            button:hover { background: #0056b3; }
+            .message { padding: 10px; margin: 10px 0; border-radius: 5px; }
+            .success { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+            .error { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <h2>🚨 LOGIN DIRECT (Anti-Boucle)</h2>
+            
+            <div id="message"></div>
+            
+            <form id="directLogin">
+                <input type="email" id="email" placeholder="Email" value="admin@example.com" required>
+                <input type="password" id="password" placeholder="Mot de passe" value="admin123" required>
+                <button type="submit">CONNEXION DIRECTE</button>
+            </form>
+            
+            <p><small>Compte de test pré-rempli. Cliquez juste sur "CONNEXION DIRECTE"</small></p>
+        </div>
+        
+        <script>
+            document.getElementById('directLogin').addEventListener('submit', async function(e) {
+                e.preventDefault();
+                
+                const email = document.getElementById('email').value;
+                const password = document.getElementById('password').value;
+                
+                try {
+                    console.log('Tentative de connexion:', { email, password });
+                    
+                    const response = await fetch('/api/login', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        credentials: 'same-origin', // Important pour les cookies
+                        body: JSON.stringify({ email, password })
+                    });
+                    
+                    const result = await response.json();
+                    console.log('Réponse serveur:', result);
+                    
+                    if (response.ok) {
+                        document.getElementById('message').innerHTML = 
+                            '<div class="success">✅ Connexion réussie ! Redirection...</div>';
+                        
+                        // Redirection avec recharge forcée
+                        setTimeout(() => {
+                            window.location.replace('/dashboard');
+                        }, 500);
+                    } else {
+                        document.getElementById('message').innerHTML = 
+                            '<div class="error">❌ ' + result.error + '</div>';
+                    }
+                } catch (error) {
+                    console.error('Erreur:', error);
+                    document.getElementById('message').innerHTML = 
+                        '<div class="error">❌ Erreur: ' + error.message + '</div>';
+                }
+            });
+        </script>
+    </body>
+    </html>
     `);
 });
 
