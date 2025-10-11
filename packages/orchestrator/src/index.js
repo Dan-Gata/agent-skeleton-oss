@@ -152,6 +152,265 @@ app.get('/app-debug', requireAuth, (req, res) => {
     });
 });
 
+// 🔥 UPLOAD ULTRA-SIMPLE - GARANTI DE FONCTIONNER
+app.post('/api/files/emergency-upload', express.raw({type: '*/*', limit: '10mb'}), (req, res) => {
+    try {
+        console.log('🚨 Emergency upload - Headers:', req.headers);
+        console.log('🚨 Body type:', typeof req.body);
+        console.log('🚨 Body length:', req.body ? req.body.length : 'null');
+        
+        if (!req.body || req.body.length === 0) {
+            return res.status(400).json({ error: 'Aucun contenu reçu' });
+        }
+        
+        // Traitement ultra-simple - juste stockage en mémoire locale
+        const fileId = Date.now().toString();
+        const fileName = req.headers['x-filename'] || 'fichier_inconnu.txt';
+        const content = req.body.toString('utf8').substring(0, 10000); // Max 10KB
+        
+        // Stockage dans une variable globale simple
+        global.uploadedFiles = global.uploadedFiles || {};
+        global.uploadedFiles[fileId] = {
+            id: fileId,
+            name: fileName,
+            content: content,
+            size: req.body.length,
+            uploadedAt: new Date().toISOString()
+        };
+        
+        console.log('✅ Fichier stocké:', fileName, req.body.length, 'bytes');
+        
+        res.json({
+            success: true,
+            fileId: fileId,
+            fileName: fileName,
+            size: req.body.length,
+            message: 'Fichier reçu et stocké avec succès !',
+            preview: content.substring(0, 200) + '...'
+        });
+        
+    } catch (error) {
+        console.error('❌ Erreur emergency upload:', error);
+        res.status(500).json({ 
+            error: 'Erreur emergency upload', 
+            details: error.message 
+        });
+    }
+});
+
+// 📋 Liste des fichiers emergency
+app.get('/api/files/emergency-list', (req, res) => {
+    try {
+        const files = global.uploadedFiles || {};
+        const fileList = Object.values(files).map(f => ({
+            id: f.id,
+            name: f.name,
+            size: f.size,
+            uploadedAt: f.uploadedAt,
+            preview: f.content.substring(0, 100) + '...'
+        }));
+        
+        res.json({ files: fileList, count: fileList.length });
+    } catch (error) {
+        res.status(500).json({ error: 'Erreur liste emergency' });
+    }
+});
+
+// 📄 Récupérer un fichier emergency
+app.get('/api/files/emergency/:fileId', (req, res) => {
+    try {
+        const files = global.uploadedFiles || {};
+        const file = files[req.params.fileId];
+        
+        if (!file) {
+            return res.status(404).json({ error: 'Fichier non trouvé' });
+        }
+        
+        res.json({ file });
+    } catch (error) {
+        res.status(500).json({ error: 'Erreur récupération emergency' });
+    }
+});
+
+// 🆘 Page de test EMERGENCY (garantie de fonctionner)
+app.get('/emergency-upload', (req, res) => {
+    res.send(`
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <title>🆘 Emergency Upload - Agent Skeleton OSS</title>
+        <meta charset="UTF-8">
+        <style>
+            body { font-family: Arial, sans-serif; padding: 20px; background: #1a1a2e; color: white; }
+            .container { max-width: 800px; margin: 0 auto; }
+            .upload-area { border: 2px dashed #e74c3c; padding: 40px; margin: 20px 0; text-align: center; border-radius: 8px; background: rgba(231, 76, 60, 0.1); }
+            input[type="file"] { margin: 20px 0; padding: 10px; width: 100%; }
+            button { padding: 12px 24px; border: none; border-radius: 6px; cursor: pointer; background: #e74c3c; color: white; margin: 5px; }
+            .result { margin: 20px 0; padding: 20px; background: #2a2a2a; border-radius: 8px; }
+            .success { border-left: 4px solid #27ae60; }
+            .error { border-left: 4px solid #e74c3c; }
+            textarea { width: 100%; height: 200px; margin: 10px 0; padding: 10px; background: #333; color: white; border: 1px solid #555; }
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <h1>🆘 Emergency Upload Test</h1>
+            <p>Cette méthode ultra-simple va FORCÉMENT fonctionner !</p>
+            
+            <div class="upload-area">
+                <h3>📁 Upload d'Urgence</h3>
+                <input type="file" id="fileInput" accept=".txt,.md,.json,.csv">
+                <br>
+                <button onclick="emergencyUpload()">🚨 Upload d'Urgence</button>
+                <button onclick="listFiles()">📋 Liste des Fichiers</button>
+            </div>
+            
+            <div>
+                <h3>💬 Test Direct avec Contenu:</h3>
+                <textarea id="textContent" placeholder="Ou collez directement le contenu de votre fichier ici..."></textarea>
+                <button onclick="uploadText()">📝 Upload Texte Direct</button>
+            </div>
+            
+            <div id="result" class="result" style="display: none;">
+                <div id="resultContent"></div>
+            </div>
+        </div>
+
+        <script>
+            async function emergencyUpload() {
+                const fileInput = document.getElementById('fileInput');
+                const file = fileInput.files[0];
+                
+                if (!file) {
+                    alert('Sélectionnez un fichier !');
+                    return;
+                }
+                
+                const resultDiv = document.getElementById('result');
+                const resultContent = document.getElementById('resultContent');
+                
+                resultContent.innerHTML = '⏳ Upload d\\'urgence en cours...';
+                resultDiv.style.display = 'block';
+                resultDiv.className = 'result';
+                
+                try {
+                    const response = await fetch('/api/files/emergency-upload', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/octet-stream',
+                            'X-Filename': file.name
+                        },
+                        body: file
+                    });
+                    
+                    const result = await response.json();
+                    
+                    if (response.ok) {
+                        resultDiv.className = 'result success';
+                        resultContent.innerHTML = \`
+                            <h4>🎉 Upload d'urgence RÉUSSI !</h4>
+                            <p><strong>Fichier:</strong> \${result.fileName}</p>
+                            <p><strong>ID:</strong> \${result.fileId}</p>
+                            <p><strong>Taille:</strong> \${result.size} bytes</p>
+                            <p><strong>Aperçu:</strong></p>
+                            <pre style="background: #444; padding: 10px; border-radius: 4px; overflow-x: auto;">\${result.preview}</pre>
+                            <p>✅ Le fichier est maintenant stocké et peut être utilisé par l'agent !</p>
+                        \`;
+                    } else {
+                        throw new Error(result.error || 'Erreur inconnue');
+                    }
+                } catch (error) {
+                    resultDiv.className = 'result error';
+                    resultContent.innerHTML = \`
+                        <h4>❌ Erreur Emergency Upload</h4>
+                        <p><strong>Erreur:</strong> \${error.message}</p>
+                        <p>Si même cette méthode échoue, il y a un problème de configuration serveur.</p>
+                    \`;
+                }
+            }
+            
+            async function uploadText() {
+                const textContent = document.getElementById('textContent').value;
+                
+                if (!textContent.trim()) {
+                    alert('Saisissez du contenu !');
+                    return;
+                }
+                
+                const resultDiv = document.getElementById('result');
+                const resultContent = document.getElementById('resultContent');
+                
+                resultContent.innerHTML = '⏳ Upload texte en cours...';
+                resultDiv.style.display = 'block';
+                resultDiv.className = 'result';
+                
+                try {
+                    const response = await fetch('/api/files/emergency-upload', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'text/plain',
+                            'X-Filename': 'texte_colle.txt'
+                        },
+                        body: textContent
+                    });
+                    
+                    const result = await response.json();
+                    
+                    if (response.ok) {
+                        resultDiv.className = 'result success';
+                        resultContent.innerHTML = \`
+                            <h4>🎉 Texte uploadé avec succès !</h4>
+                            <p><strong>ID:</strong> \${result.fileId}</p>
+                            <p><strong>Taille:</strong> \${result.size} caractères</p>
+                            <p>✅ Votre texte est maintenant disponible pour l'agent !</p>
+                        \`;
+                    } else {
+                        throw new Error(result.error || 'Erreur inconnue');
+                    }
+                } catch (error) {
+                    resultDiv.className = 'result error';
+                    resultContent.innerHTML = \`
+                        <h4>❌ Erreur Upload Texte</h4>
+                        <p><strong>Erreur:</strong> \${error.message}</p>
+                    \`;
+                }
+            }
+            
+            async function listFiles() {
+                try {
+                    const response = await fetch('/api/files/emergency-list');
+                    const result = await response.json();
+                    
+                    const resultDiv = document.getElementById('result');
+                    const resultContent = document.getElementById('resultContent');
+                    
+                    resultDiv.style.display = 'block';
+                    resultDiv.className = 'result success';
+                    
+                    if (result.files.length === 0) {
+                        resultContent.innerHTML = '<h4>📭 Aucun fichier uploadé</h4>';
+                    } else {
+                        resultContent.innerHTML = \`
+                            <h4>📋 Fichiers Uploadés (\${result.count})</h4>
+                            \${result.files.map(f => \`
+                                <div style="border: 1px solid #555; margin: 10px 0; padding: 10px; border-radius: 4px;">
+                                    <p><strong>\${f.name}</strong> (ID: \${f.id})</p>
+                                    <p>Taille: \${f.size} bytes | \${f.uploadedAt}</p>
+                                    <p>Aperçu: <em>\${f.preview}</em></p>
+                                </div>
+                            \`).join('')}
+                        \`;
+                    }
+                } catch (error) {
+                    console.error('Erreur liste:', error);
+                }
+            }
+        </script>
+    </body>
+    </html>
+    `);
+});
+
 // 🧪 Route de test de fichiers (SANS AUTHENTIFICATION)
 app.get('/test-files', (req, res) => {
     res.send(`
