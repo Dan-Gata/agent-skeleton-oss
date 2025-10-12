@@ -263,16 +263,6 @@ app.get('/direct-login', (req, res) => {
     `);
 });
 
-// Dashboard route (requires authentication)
-app.get('/dashboard', requireAuth, (req, res) => {
-    res.sendFile(path.join(__dirname, '../public/dashboard.html'));
-});
-
-// API endpoint to get current user info
-app.get('/api/user', requireAuth, (req, res) => {
-    res.json(req.user);
-});
-
 // Route simple pour tester si le serveur fonctionne
 app.get('/simple', (req, res) => {
     res.send(`

@@ -1,0 +1,1131 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Agent Redoutable - Dashboard</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        header {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 20px 30px;
+            border-radius: 15px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        header h1 {
+            color: #667eea;
+            font-size: 2em;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .user-info span {
+            color: #333;
+            font-weight: 500;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #5a6268;
+        }
+
+        .btn-danger {
+            background: #dc3545;
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #c82333;
+        }
+
+        .btn-success {
+            background: #28a745;
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #218838;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 25px;
+            margin-bottom: 30px;
+        }
+
+        .card {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            transition: transform 0.3s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+        }
+
+        .card h2 {
+            color: #667eea;
+            margin-bottom: 15px;
+            font-size: 1.5em;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .card-icon {
+            font-size: 1.5em;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            color: #333;
+            font-weight: 500;
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: border-color 0.3s ease;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .form-group textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+
+        .response-box {
+            margin-top: 15px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            border-left: 4px solid #667eea;
+            display: none;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .response-box.show {
+            display: block;
+        }
+
+        .response-box pre {
+            margin: 0;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            font-size: 12px;
+        }
+
+        .chat-container {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            margin-bottom: 30px;
+        }
+
+        .chat-messages {
+            height: 400px;
+            overflow-y: auto;
+            margin-bottom: 20px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+
+        .message {
+            margin-bottom: 15px;
+            padding: 12px 15px;
+            border-radius: 8px;
+            max-width: 80%;
+        }
+
+        .message.user {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            margin-left: auto;
+            text-align: right;
+        }
+
+        .message.assistant {
+            background: #e9ecef;
+            color: #333;
+        }
+
+        .message .timestamp {
+            font-size: 11px;
+            opacity: 0.7;
+            margin-top: 5px;
+        }
+
+        .chat-input-container {
+            display: flex;
+            gap: 10px;
+        }
+
+        .chat-input-container textarea {
+            flex: 1;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            resize: none;
+            height: 60px;
+        }
+
+        .file-list {
+            list-style: none;
+            margin-top: 15px;
+        }
+
+        .file-item {
+            padding: 10px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .file-item:hover {
+            background: #e9ecef;
+        }
+
+        .status-indicator {
+            display: inline-block;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+
+        .status-indicator.online {
+            background: #28a745;
+        }
+
+        .status-indicator.offline {
+            background: #dc3545;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 10px;
+            color: #667eea;
+        }
+
+        .loading.show {
+            display: block;
+        }
+
+        .analytics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+        }
+
+        .stat-card h3 {
+            font-size: 2em;
+            margin-bottom: 5px;
+        }
+
+        .stat-card p {
+            font-size: 0.9em;
+            opacity: 0.9;
+        }
+
+        .model-selector {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .model-option {
+            padding: 10px;
+            background: #f8f9fa;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            cursor: pointer;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+
+        .model-option:hover {
+            border-color: #667eea;
+            background: #e7f3ff;
+        }
+
+        .model-option.selected {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-color: #667eea;
+        }
+
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 15px 25px;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+            display: none;
+            z-index: 1000;
+        }
+
+        .notification.show {
+            display: block;
+            animation: slideIn 0.3s ease;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(400px);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        .notification.success {
+            border-left: 4px solid #28a745;
+        }
+
+        .notification.error {
+            border-left: 4px solid #dc3545;
+        }
+
+        .tab-container {
+            margin-bottom: 20px;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .tab {
+            padding: 12px 24px;
+            background: rgba(255, 255, 255, 0.3);
+            border: none;
+            border-radius: 8px 8px 0 0;
+            cursor: pointer;
+            color: white;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .tab.active {
+            background: rgba(255, 255, 255, 0.95);
+            color: #667eea;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <div class="notification" id="notification"></div>
+
+    <div class="container">
+        <header>
+            <h1>🚀 Agent Redoutable</h1>
+            <div class="user-info">
+                <span id="userEmail">Chargement...</span>
+                <button class="btn btn-danger" onclick="logout()">Déconnexion</button>
+            </div>
+        </header>
+
+        <!-- Tabs -->
+        <div class="tab-container">
+            <div class="tabs">
+                <button class="tab active" onclick="switchTab('chat')">💬 Chat IA</button>
+                <button class="tab" onclick="switchTab('files')">📁 Fichiers</button>
+                <button class="tab" onclick="switchTab('automation')">🔄 Automatisation</button>
+                <button class="tab" onclick="switchTab('analytics')">📊 Analytics</button>
+            </div>
+        </div>
+
+        <!-- Chat Tab -->
+        <div id="chatTab" class="tab-content active">
+            <div class="chat-container">
+                <h2>💬 Chat avec l'IA (60+ modèles)</h2>
+                
+                <div class="form-group">
+                    <label>Sélectionner un modèle IA :</label>
+                    <select id="aiModel" class="form-control">
+                        <option value="gpt-4">GPT-4 (OpenAI)</option>
+                        <option value="gpt-3.5-turbo">GPT-3.5 Turbo</option>
+                        <option value="claude-3-opus-20240229">Claude 3 Opus</option>
+                        <option value="claude-3-sonnet-20240229">Claude 3 Sonnet</option>
+                        <option value="gemini-pro">Gemini Pro</option>
+                        <option value="qwen/qwen-2-72b-instruct">Qwen 2 72B</option>
+                        <option value="meta-llama/llama-3-70b-instruct">Llama 3 70B</option>
+                        <option value="mistralai/mistral-large">Mistral Large</option>
+                    </select>
+                </div>
+
+                <div class="chat-messages" id="chatMessages">
+                    <p style="text-align: center; color: #999; margin-top: 150px;">
+                        Commencez une conversation avec l'IA...
+                    </p>
+                </div>
+
+                <div class="chat-input-container">
+                    <textarea id="chatInput" placeholder="Écrivez votre message ici..."></textarea>
+                    <button class="btn btn-primary" onclick="sendMessage()" style="height: 60px;">Envoyer</button>
+                </div>
+
+                <div class="loading" id="chatLoading">⏳ L'IA réfléchit...</div>
+            </div>
+        </div>
+
+        <!-- Files Tab -->
+        <div id="filesTab" class="tab-content">
+            <div class="grid">
+                <!-- Upload File -->
+                <div class="card">
+                    <h2><span class="card-icon">📤</span> Upload de Fichier</h2>
+                    <div class="form-group">
+                        <label>Sélectionner un fichier (PDF, Word, Images, CSV, JSON) :</label>
+                        <input type="file" id="fileInput" accept=".pdf,.doc,.docx,.txt,.csv,.json,.jpg,.jpeg,.png,.gif">
+                    </div>
+                    <button class="btn btn-primary" onclick="uploadFile()">📤 Upload et Analyser</button>
+                    <div class="loading" id="uploadLoading">⏳ Upload en cours...</div>
+                    <div class="response-box" id="uploadResponse"></div>
+                </div>
+
+                <!-- File List -->
+                <div class="card">
+                    <h2><span class="card-icon">📁</span> Mes Fichiers</h2>
+                    <button class="btn btn-secondary" onclick="loadFiles()">🔄 Actualiser</button>
+                    <ul class="file-list" id="fileList">
+                        <li style="text-align: center; color: #999; padding: 20px;">
+                            Cliquez sur Actualiser pour voir vos fichiers
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Automation Tab -->
+        <div id="automationTab" class="tab-content">
+            <div class="grid">
+                <!-- n8n Workflows -->
+                <div class="card">
+                    <h2><span class="card-icon">🔄</span> Trigger n8n Workflow</h2>
+                    <div class="form-group">
+                        <label>Webhook Path :</label>
+                        <input type="text" id="n8nWebhook" placeholder="content-creator">
+                    </div>
+                    <div class="form-group">
+                        <label>Data (JSON) :</label>
+                        <textarea id="n8nData" placeholder='{"topic": "AI", "platform": "youtube"}'></textarea>
+                    </div>
+                    <button class="btn btn-primary" onclick="triggerN8N()">🚀 Trigger Workflow</button>
+                    <div class="loading" id="n8nLoading">⏳ Traitement...</div>
+                    <div class="response-box" id="n8nResponse"></div>
+                </div>
+
+                <!-- Coolify Deploy -->
+                <div class="card">
+                    <h2><span class="card-icon">🚀</span> Coolify Deploy</h2>
+                    <div class="form-group">
+                        <label>Service ID :</label>
+                        <input type="text" id="coolifyServiceId" placeholder="service-123">
+                    </div>
+                    <button class="btn btn-success" onclick="deployCoolify()">🚀 Deploy</button>
+                    <div class="loading" id="coolifyLoading">⏳ Déploiement...</div>
+                    <div class="response-box" id="coolifyResponse"></div>
+                </div>
+
+                <!-- Baserow Upload -->
+                <div class="card">
+                    <h2><span class="card-icon">🗄️</span> Baserow Upload</h2>
+                    <div class="form-group">
+                        <label>Table ID :</label>
+                        <input type="text" id="baserowTableId" placeholder="12345">
+                    </div>
+                    <div class="form-group">
+                        <label>Data (JSON) :</label>
+                        <textarea id="baserowData" placeholder='{"Name": "Asset 1", "Status": "Active"}'></textarea>
+                    </div>
+                    <button class="btn btn-primary" onclick="uploadBaserow()">📤 Upload to Baserow</button>
+                    <div class="loading" id="baserowLoading">⏳ Upload...</div>
+                    <div class="response-box" id="baserowResponse"></div>
+                </div>
+
+                <!-- Social Media Publish -->
+                <div class="card">
+                    <h2><span class="card-icon">📱</span> Publication Réseaux Sociaux</h2>
+                    <div class="form-group">
+                        <label>Plateformes :</label>
+                        <select id="socialPlatforms" multiple style="height: 100px;">
+                            <option value="youtube">YouTube</option>
+                            <option value="tiktok">TikTok</option>
+                            <option value="instagram">Instagram</option>
+                            <option value="twitter">X (Twitter)</option>
+                            <option value="linkedin">LinkedIn</option>
+                            <option value="pinterest">Pinterest</option>
+                            <option value="threads">Threads</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Contenu :</label>
+                        <textarea id="socialContent" placeholder="Votre contenu à publier..."></textarea>
+                    </div>
+                    <button class="btn btn-primary" onclick="publishSocial()">📱 Publier</button>
+                    <div class="loading" id="socialLoading">⏳ Publication...</div>
+                    <div class="response-box" id="socialResponse"></div>
+                </div>
+
+                <!-- Email Service -->
+                <div class="card">
+                    <h2><span class="card-icon">✉️</span> Envoyer un Email</h2>
+                    <div class="form-group">
+                        <label>Destinataire :</label>
+                        <input type="email" id="emailTo" placeholder="user@example.com">
+                    </div>
+                    <div class="form-group">
+                        <label>Sujet :</label>
+                        <input type="text" id="emailSubject" placeholder="Sujet de l'email">
+                    </div>
+                    <div class="form-group">
+                        <label>Message :</label>
+                        <textarea id="emailBody" placeholder="Contenu de l'email..."></textarea>
+                    </div>
+                    <button class="btn btn-primary" onclick="sendEmail()">✉️ Envoyer</button>
+                    <div class="loading" id="emailLoading">⏳ Envoi...</div>
+                    <div class="response-box" id="emailResponse"></div>
+                </div>
+
+                <!-- Video Generation -->
+                <div class="card">
+                    <h2><span class="card-icon">🎬</span> Génération Vidéo</h2>
+                    <div class="form-group">
+                        <label>Prompt :</label>
+                        <textarea id="videoPrompt" placeholder="Décrivez la vidéo à générer..."></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label>Style :</label>
+                        <select id="videoStyle">
+                            <option value="cinematic">Cinématique</option>
+                            <option value="animated">Animé</option>
+                            <option value="documentary">Documentaire</option>
+                        </select>
+                    </div>
+                    <button class="btn btn-success" onclick="generateVideo()">🎬 Générer Vidéo</button>
+                    <div class="loading" id="videoLoading">⏳ Génération...</div>
+                    <div class="response-box" id="videoResponse"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Analytics Tab -->
+        <div id="analyticsTab" class="tab-content">
+            <div class="card">
+                <h2><span class="card-icon">📊</span> Statistiques d'Utilisation</h2>
+                <button class="btn btn-primary" onclick="loadAnalytics()">🔄 Actualiser Analytics</button>
+                <div class="loading" id="analyticsLoading">⏳ Chargement...</div>
+                <div class="analytics-grid" id="analyticsGrid">
+                    <!-- Analytics will be loaded here -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Global state
+        let currentUser = null;
+        let currentConversationId = null;
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', async () => {
+            await checkAuth();
+            loadHealthStatus();
+        });
+
+        // Check authentication
+        async function checkAuth() {
+            try {
+                const response = await fetch('/api/user', {
+                    credentials: 'include'
+                });
+                
+                if (response.ok) {
+                    currentUser = await response.json();
+                    document.getElementById('userEmail').textContent = currentUser.email || currentUser.name || 'Utilisateur';
+                } else {
+                    window.location.href = '/login';
+                }
+            } catch (error) {
+                console.error('Auth error:', error);
+                window.location.href = '/login';
+            }
+        }
+
+        // Logout
+        async function logout() {
+            try {
+                await fetch('/api/logout', {
+                    method: 'POST',
+                    credentials: 'include'
+                });
+                window.location.href = '/login';
+            } catch (error) {
+                console.error('Logout error:', error);
+            }
+        }
+
+        // Switch tabs
+        function switchTab(tabName) {
+            // Hide all tabs
+            document.querySelectorAll('.tab-content').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            document.querySelectorAll('.tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+
+            // Show selected tab
+            document.getElementById(tabName + 'Tab').classList.add('active');
+            event.target.classList.add('active');
+        }
+
+        // Notification
+        function showNotification(message, type = 'success') {
+            const notification = document.getElementById('notification');
+            notification.textContent = message;
+            notification.className = `notification ${type} show`;
+            setTimeout(() => {
+                notification.classList.remove('show');
+            }, 3000);
+        }
+
+        // Chat functions
+        async function sendMessage() {
+            const input = document.getElementById('chatInput');
+            const message = input.value.trim();
+            const model = document.getElementById('aiModel').value;
+
+            if (!message) return;
+
+            // Add user message to chat
+            addMessageToChat(message, 'user');
+            input.value = '';
+
+            // Show loading
+            document.getElementById('chatLoading').classList.add('show');
+
+            try {
+                const response = await fetch('/api/chat', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    credentials: 'include',
+                    body: JSON.stringify({
+                        message: message,
+                        model: model,
+                        conversationId: currentConversationId
+                    })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    currentConversationId = data.conversationId;
+                    addMessageToChat(data.response, 'assistant');
+                } else {
+                    showNotification('Erreur: ' + data.error, 'error');
+                }
+            } catch (error) {
+                showNotification('Erreur de connexion: ' + error.message, 'error');
+            } finally {
+                document.getElementById('chatLoading').classList.remove('show');
+            }
+        }
+
+        function addMessageToChat(message, type) {
+            const chatMessages = document.getElementById('chatMessages');
+            
+            // Remove placeholder if exists
+            if (chatMessages.querySelector('p')) {
+                chatMessages.innerHTML = '';
+            }
+
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${type}`;
+            messageDiv.innerHTML = `
+                <div>${message}</div>
+                <div class="timestamp">${new Date().toLocaleTimeString()}</div>
+            `;
+            chatMessages.appendChild(messageDiv);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        // File upload
+        async function uploadFile() {
+            const fileInput = document.getElementById('fileInput');
+            const file = fileInput.files[0];
+
+            if (!file) {
+                showNotification('Veuillez sélectionner un fichier', 'error');
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append('file', file);
+
+            document.getElementById('uploadLoading').classList.add('show');
+
+            try {
+                const response = await fetch('/api/upload', {
+                    method: 'POST',
+                    credentials: 'include',
+                    body: formData
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    showNotification('Fichier uploadé et analysé avec succès!');
+                    document.getElementById('uploadResponse').innerHTML = `<pre>${JSON.stringify(data, null, 2)}</pre>`;
+                    document.getElementById('uploadResponse').classList.add('show');
+                    fileInput.value = '';
+                    loadFiles();
+                } else {
+                    showNotification('Erreur: ' + data.error, 'error');
+                }
+            } catch (error) {
+                showNotification('Erreur: ' + error.message, 'error');
+            } finally {
+                document.getElementById('uploadLoading').classList.remove('show');
+            }
+        }
+
+        // Load files
+        async function loadFiles() {
+            try {
+                const response = await fetch('/api/files', {
+                    credentials: 'include'
+                });
+
+                const files = await response.json();
+                const fileList = document.getElementById('fileList');
+
+                if (files.length === 0) {
+                    fileList.innerHTML = '<li style="text-align: center; color: #999; padding: 20px;">Aucun fichier</li>';
+                    return;
+                }
+
+                fileList.innerHTML = files.map(file => `
+                    <li class="file-item">
+                        <div>
+                            <strong>${file.filename}</strong><br>
+                            <small>${file.file_type} - ${(file.file_size / 1024).toFixed(2)} KB</small>
+                        </div>
+                        <button class="btn btn-secondary" onclick="viewFile(${file.id})">Voir</button>
+                    </li>
+                `).join('');
+            } catch (error) {
+                showNotification('Erreur: ' + error.message, 'error');
+            }
+        }
+
+        async function viewFile(fileId) {
+            try {
+                const response = await fetch(`/api/files/${fileId}`, {
+                    credentials: 'include'
+                });
+                const file = await response.json();
+                alert(`Fichier: ${file.filename}\n\nContenu extrait:\n${file.extracted_content || 'Pas de contenu'}`);
+            } catch (error) {
+                showNotification('Erreur: ' + error.message, 'error');
+            }
+        }
+
+        // n8n trigger
+        async function triggerN8N() {
+            const webhook = document.getElementById('n8nWebhook').value;
+            const dataText = document.getElementById('n8nData').value;
+
+            if (!webhook) {
+                showNotification('Veuillez entrer un webhook path', 'error');
+                return;
+            }
+
+            let data = {};
+            try {
+                data = dataText ? JSON.parse(dataText) : {};
+            } catch (e) {
+                showNotification('Format JSON invalide', 'error');
+                return;
+            }
+
+            document.getElementById('n8nLoading').classList.add('show');
+
+            try {
+                const response = await fetch(`/api/n8n/trigger/${webhook}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    credentials: 'include',
+                    body: JSON.stringify(data)
+                });
+
+                const result = await response.json();
+
+                if (response.ok) {
+                    showNotification('Workflow déclenché avec succès!');
+                    document.getElementById('n8nResponse').innerHTML = `<pre>${JSON.stringify(result, null, 2)}</pre>`;
+                    document.getElementById('n8nResponse').classList.add('show');
+                } else {
+                    showNotification('Erreur: ' + result.error, 'error');
+                }
+            } catch (error) {
+                showNotification('Erreur: ' + error.message, 'error');
+            } finally {
+                document.getElementById('n8nLoading').classList.remove('show');
+            }
+        }
+
+        // Coolify deploy
+        async function deployCoolify() {
+            const serviceId = document.getElementById('coolifyServiceId').value;
+
+            if (!serviceId) {
+                showNotification('Veuillez entrer un Service ID', 'error');
+                return;
+            }
+
+            document.getElementById('coolifyLoading').classList.add('show');
+
+            try {
+                const response = await fetch(`/api/coolify/deploy/${serviceId}`, {
+                    method: 'POST',
+                    credentials: 'include'
+                });
+
+                const result = await response.json();
+
+                if (response.ok) {
+                    showNotification('Déploiement lancé avec succès!');
+                    document.getElementById('coolifyResponse').innerHTML = `<pre>${JSON.stringify(result, null, 2)}</pre>`;
+                    document.getElementById('coolifyResponse').classList.add('show');
+                } else {
+                    showNotification('Erreur: ' + result.error, 'error');
+                }
+            } catch (error) {
+                showNotification('Erreur: ' + error.message, 'error');
+            } finally {
+                document.getElementById('coolifyLoading').classList.remove('show');
+            }
+        }
+
+        // Baserow upload
+        async function uploadBaserow() {
+            const tableId = document.getElementById('baserowTableId').value;
+            const dataText = document.getElementById('baserowData').value;
+
+            if (!tableId || !dataText) {
+                showNotification('Veuillez remplir tous les champs', 'error');
+                return;
+            }
+
+            let data = {};
+            try {
+                data = JSON.parse(dataText);
+            } catch (e) {
+                showNotification('Format JSON invalide', 'error');
+                return;
+            }
+
+            document.getElementById('baserowLoading').classList.add('show');
+
+            try {
+                const response = await fetch('/api/baserow/upload', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    credentials: 'include',
+                    body: JSON.stringify({ tableId, data })
+                });
+
+                const result = await response.json();
+
+                if (response.ok) {
+                    showNotification('Données uploadées dans Baserow!');
+                    document.getElementById('baserowResponse').innerHTML = `<pre>${JSON.stringify(result, null, 2)}</pre>`;
+                    document.getElementById('baserowResponse').classList.add('show');
+                } else {
+                    showNotification('Erreur: ' + result.error, 'error');
+                }
+            } catch (error) {
+                showNotification('Erreur: ' + error.message, 'error');
+            } finally {
+                document.getElementById('baserowLoading').classList.remove('show');
+            }
+        }
+
+        // Social media publish
+        async function publishSocial() {
+            const platformSelect = document.getElementById('socialPlatforms');
+            const platforms = Array.from(platformSelect.selectedOptions).map(opt => opt.value);
+            const content = document.getElementById('socialContent').value;
+
+            if (platforms.length === 0 || !content) {
+                showNotification('Veuillez sélectionner des plateformes et entrer du contenu', 'error');
+                return;
+            }
+
+            document.getElementById('socialLoading').classList.add('show');
+
+            try {
+                const response = await fetch('/api/social/publish', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    credentials: 'include',
+                    body: JSON.stringify({ platforms, content })
+                });
+
+                const result = await response.json();
+
+                if (response.ok) {
+                    showNotification('Publication lancée sur ' + platforms.join(', ') + '!');
+                    document.getElementById('socialResponse').innerHTML = `<pre>${JSON.stringify(result, null, 2)}</pre>`;
+                    document.getElementById('socialResponse').classList.add('show');
+                } else {
+                    showNotification('Erreur: ' + result.error, 'error');
+                }
+            } catch (error) {
+                showNotification('Erreur: ' + error.message, 'error');
+            } finally {
+                document.getElementById('socialLoading').classList.remove('show');
+            }
+        }
+
+        // Send email
+        async function sendEmail() {
+            const to = document.getElementById('emailTo').value;
+            const subject = document.getElementById('emailSubject').value;
+            const body = document.getElementById('emailBody').value;
+
+            if (!to || !subject || !body) {
+                showNotification('Veuillez remplir tous les champs', 'error');
+                return;
+            }
+
+            document.getElementById('emailLoading').classList.add('show');
+
+            try {
+                const response = await fetch('/api/email/send', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    credentials: 'include',
+                    body: JSON.stringify({ to, subject, html: body })
+                });
+
+                const result = await response.json();
+
+                if (response.ok) {
+                    showNotification('Email envoyé avec succès!');
+                    document.getElementById('emailResponse').innerHTML = `<pre>${JSON.stringify(result, null, 2)}</pre>`;
+                    document.getElementById('emailResponse').classList.add('show');
+                    document.getElementById('emailTo').value = '';
+                    document.getElementById('emailSubject').value = '';
+                    document.getElementById('emailBody').value = '';
+                } else {
+                    showNotification('Erreur: ' + result.error, 'error');
+                }
+            } catch (error) {
+                showNotification('Erreur: ' + error.message, 'error');
+            } finally {
+                document.getElementById('emailLoading').classList.remove('show');
+            }
+        }
+
+        // Generate video
+        async function generateVideo() {
+            const prompt = document.getElementById('videoPrompt').value;
+            const style = document.getElementById('videoStyle').value;
+
+            if (!prompt) {
+                showNotification('Veuillez entrer un prompt', 'error');
+                return;
+            }
+
+            document.getElementById('videoLoading').classList.add('show');
+
+            try {
+                const response = await fetch('/video/generate', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    credentials: 'include',
+                    body: JSON.stringify({ prompt, style })
+                });
+
+                const result = await response.json();
+
+                if (response.ok) {
+                    showNotification('Génération vidéo lancée!');
+                    document.getElementById('videoResponse').innerHTML = `<pre>${JSON.stringify(result, null, 2)}</pre>`;
+                    document.getElementById('videoResponse').classList.add('show');
+                } else {
+                    showNotification('Erreur: ' + result.error, 'error');
+                }
+            } catch (error) {
+                showNotification('Erreur: ' + error.message, 'error');
+            } finally {
+                document.getElementById('videoLoading').classList.remove('show');
+            }
+        }
+
+        // Load analytics
+        async function loadAnalytics() {
+            document.getElementById('analyticsLoading').classList.add('show');
+
+            try {
+                const response = await fetch('/api/analytics', {
+                    credentials: 'include'
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    const grid = document.getElementById('analyticsGrid');
+                    grid.innerHTML = `
+                        <div class="stat-card">
+                            <h3>${data.totalActions || 0}</h3>
+                            <p>Actions Totales</p>
+                        </div>
+                        <div class="stat-card">
+                            <h3>${data.uploads?.totalFiles || 0}</h3>
+                            <p>Fichiers Uploadés</p>
+                        </div>
+                        <div class="stat-card">
+                            <h3>${(data.uploads?.totalSize / (1024 * 1024)).toFixed(2) || 0} MB</h3>
+                            <p>Taille Totale</p>
+                        </div>
+                        <div class="stat-card">
+                            <h3>${data.recentActions?.length || 0}</h3>
+                            <p>Actions Récentes</p>
+                        </div>
+                    `;
+                    showNotification('Analytics chargées!');
+                } else {
+                    showNotification('Erreur: ' + data.error, 'error');
+                }
+            } catch (error) {
+                showNotification('Erreur: ' + error.message, 'error');
+            } finally {
+                document.getElementById('analyticsLoading').classList.remove('show');
+            }
+        }
+
+        // Load health status
+        async function loadHealthStatus() {
+            try {
+                const response = await fetch('/health');
+                const health = await response.json();
+                console.log('Health status:', health);
+            } catch (error) {
+                console.error('Health check failed:', error);
+            }
+        }
+
+        // Enter key to send message
+        document.getElementById('chatInput')?.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                sendMessage();
+            }
+        });
+    </script>
+</body>
+</html>

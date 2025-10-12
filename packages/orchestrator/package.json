@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "axios": "^1.5.0",
+    "better-sqlite3": "^12.4.1",
     "cookie-parser": "^1.4.7",
     "cors": "^2.8.5",
     "dotenv": "^16.3.1",
@@ -18,7 +19,10 @@
     "express-rate-limit": "^8.1.0",
     "express-validator": "^7.2.1",
     "helmet": "^8.1.0",
-    "multer": "^2.0.2"
+    "mammoth": "^1.11.0",
+    "multer": "^2.0.2",
+    "nodemailer": "^7.0.9",
+    "pdf-parse": "^2.2.12"
   },
   "devDependencies": {
     "jest": "^29.7.0",

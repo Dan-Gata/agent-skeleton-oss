@@ -356,23 +356,57 @@ app.get('/health', (req, res) => {
 
 ## Récapitulatif Endpoints API
 
+### ✅ **Endpoints Implémentés (Prêts à utiliser)**
+
+#### Interface & Authentification
 ```javascript
-// Actuellement implémentés
-GET  /                                    // Info API
-GET  /health                             // État services
+GET  /                                    // Dashboard principal
+GET  /login                              // Page de connexion
+POST /api/login                          // Authentification
+POST /api/register                       // Inscription
+POST /api/logout                         // Déconnexion
+GET  /health                             // État détaillé de tous les services
+```
 
-// À implémenter (priorité haute)
-POST /trigger/n8n/:webhookPath           // Déclencher workflow n8n
-POST /run/:workflowId                    // Exécuter workflow REST
-POST /coolify/deploy/:serviceId          // Déployer service
+#### n8n - Workflows
+```javascript
+POST /trigger/n8n/:webhookPath           // ✅ Déclencher workflow via webhook
+// Body: { "data": "your workflow data" }
+// Exemple: POST /trigger/n8n/content-creator
 
-// À implémenter (workflows spécifiques)
-POST /content/create                     // Content Creator workflow
-POST /video/generate                     // Brain Rotter 5000 workflow
+POST /run/:workflowId                    // ✅ Exécuter workflow via REST API
+// Headers: X-N8N-API-KEY requis
+// Body: données d'entrée optionnelles
+```
+
+#### Coolify - Déploiements
+```javascript
+POST /coolify/deploy/:serviceId          // ✅ Déployer un service
+// Headers: Authorization Bearer requis
+// Exemple: POST /coolify/deploy/app-123
+```
+
+#### Baserow - Assets & Données
+```javascript
+POST /baserow/upload                     // ✅ Upload vers table Baserow
+// Body: { "tableId": "123", "data": {...} }
+
+GET  /baserow/assets?tableId=123         // ✅ Récupérer assets d'une table
+```
+
+#### Toolkit Vidéo
+```javascript
+POST /video/generate                     // ✅ Générer vidéo
+// Body: paramètres de génération (TTS, captions, etc.)
+```
+
+### 🔄 **Workflows Spécifiques à Implémenter**
+```javascript
+// Ces endpoints orchestrent plusieurs services
+POST /content/create                     // Content Creator workflow complet
 POST /social/publish                     // Publication multi-plateformes
 GET  /social/analytics                   // Analytics consolidées
-POST /baserow/upload                     // Upload assets
-GET  /baserow/assets                     // Liste assets
+POST /workflow/brain-rotter              // Brain Rotter 5000 complet
 ```
 
 ## Prochaines Étapes Critiques
