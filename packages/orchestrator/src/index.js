@@ -1,4 +1,6 @@
 // Version complète et professionnelle - Agent Skeleton OSS
+require('dotenv').config(); // Charger les variables d'environnement
+
 const express = require('express');
 const path = require('path');
 const helmet = require('helmet');
@@ -44,6 +46,13 @@ app.set('views', path.join(__dirname, '../views'));
 
 // Middleware d'authentification
 function requireAuth(req, res, next) {
+    // Désactiver l'auth en mode développement si DISABLE_AUTH=true
+    if (process.env.DISABLE_AUTH === 'true') {
+        console.log('⚠️ Auth désactivée (mode dev)');
+        req.user = { email: 'dev@local.com', name: 'Dev User' };
+        return next();
+    }
+    
     console.log('🔒 Vérification auth pour:', req.url);
     console.log('🍪 Cookies reçus:', req.cookies);
     
@@ -720,7 +729,13 @@ app.post('/api/auth/logout', (req, res) => {
 });
 
 // Route principale - Interface SaaS moderne et simple
-app.get('/', (req, res) => {
+app.get('/', requireAuth, (req, res) => {
+    // Redirection vers le nouveau dashboard
+    res.redirect('/dashboard');
+});
+
+// Ancienne page d'accueil (conservée pour référence)
+app.get('/old-home', (req, res) => {
     res.send(`
     <!DOCTYPE html>
     <html lang="fr">
