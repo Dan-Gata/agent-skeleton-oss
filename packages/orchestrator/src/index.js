@@ -40,6 +40,22 @@ global.uploadedFiles = {};
 global.conversations = {};
 global.sessions = {};
 
+// Helper fonction pour créer des cookies sécurisés
+function setSecureCookie(req, res, name, value, maxAge = 24 * 60 * 60 * 1000) {
+    const isProduction = process.env.NODE_ENV === 'production';
+    const isHttps = req.protocol === 'https' || req.get('x-forwarded-proto') === 'https';
+    
+    res.cookie(name, value, { 
+        httpOnly: true, 
+        maxAge: maxAge,
+        sameSite: isProduction ? 'strict' : 'lax',
+        secure: isHttps,
+        path: '/'
+    });
+    
+    console.log(`🍪 Cookie ${name} défini | secure: ${isHttps} | sameSite: ${isProduction ? 'strict' : 'lax'}`);
+}
+
 // Configuration EJS pour les vues
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, '../views'));
@@ -109,15 +125,8 @@ app.post('/api/login', (req, res) => {
     
     console.log('✅ Session créée:', sessionId);
     
-    // Configuration de cookie moins restrictive pour le debug
-    res.cookie('sessionId', sessionId, { 
-        httpOnly: true, 
-        maxAge: 24 * 60 * 60 * 1000,
-        sameSite: 'lax',
-        secure: false // Pour le développement local
-    });
-    
-    console.log('🍪 Cookie défini avec sessionId:', sessionId);
+    // Définir le cookie de session sécurisé
+    setSecureCookie(req, res, 'sessionId', sessionId, 24 * 60 * 60 * 1000);
     
     res.json({ success: true, message: 'Connexion réussie !', user: { email: user.email, name: user.name } });
 });
@@ -669,11 +678,8 @@ app.post('/api/auth/signup', (req, res) => {
             createdAt: new Date().toISOString()
         };
         
-        // Définir le cookie de session
-        res.cookie('userId', userId, { 
-            httpOnly: true, 
-            maxAge: 7 * 24 * 60 * 60 * 1000 // 7 jours
-        });
+        // Définir le cookie de session sécurisé
+        setSecureCookie(req, res, 'userId', userId, 7 * 24 * 60 * 60 * 1000); // 7 jours
         
         console.log('🔐 Nouvel utilisateur créé:', email);
         
@@ -703,11 +709,8 @@ app.post('/api/auth/login', (req, res) => {
             return res.status(401).json({ error: 'Email ou mot de passe incorrect' });
         }
         
-        // Définir le cookie de session
-        res.cookie('userId', user.id, { 
-            httpOnly: true, 
-            maxAge: 7 * 24 * 60 * 60 * 1000 // 7 jours
-        });
+        // Définir le cookie de session sécurisé
+        setSecureCookie(req, res, 'userId', user.id, 7 * 24 * 60 * 60 * 1000); // 7 jours
         
         console.log('🔐 Utilisateur connecté:', email);
         
