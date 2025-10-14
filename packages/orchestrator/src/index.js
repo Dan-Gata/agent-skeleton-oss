@@ -729,9 +729,17 @@ app.post('/api/auth/logout', (req, res) => {
 });
 
 // Route principale - Interface SaaS moderne et simple
-app.get('/', requireAuth, (req, res) => {
-    // Redirection vers le nouveau dashboard
-    res.redirect('/dashboard');
+app.get('/', (req, res) => {
+    // Vérifier si l'utilisateur est connecté
+    const sessionId = req.cookies.sessionId;
+    
+    if (sessionId && global.sessions[sessionId]) {
+        // Utilisateur connecté → dashboard
+        return res.redirect('/dashboard');
+    } else {
+        // Utilisateur non connecté → login
+        return res.redirect('/login');
+    }
 });
 
 // Ancienne page d'accueil (conservée pour référence)
