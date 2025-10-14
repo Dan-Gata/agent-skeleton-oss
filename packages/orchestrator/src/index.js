@@ -88,22 +88,33 @@ function requireAuth(req, res, next) {
 
 // Route de connexion
 app.get('/login', (req, res) => {
-    console.log('📍 Accès à /login - Cookies:', req.cookies);
-    console.log('📍 User-Agent:', req.get('User-Agent'));
+    console.log('📍 Route /login appelée');
+    console.log('🍪 Cookies reçus:', JSON.stringify(req.cookies));
+    console.log('� Sessions actives:', Object.keys(global.sessions));
+    console.log('🌐 Headers:', JSON.stringify({
+        'x-forwarded-proto': req.get('x-forwarded-proto'),
+        'protocol': req.protocol,
+        'secure': req.secure,
+        'host': req.get('host')
+    }));
     
     // Vérifier si déjà connecté pour éviter la boucle
     const sessionId = req.cookies.sessionId;
     if (sessionId && global.sessions[sessionId]) {
-        console.log('👤 Utilisateur déjà connecté, redirection vers dashboard');
+        console.log('👤 Utilisateur déjà connecté, redirection vers /dashboard');
         return res.redirect('/dashboard');
     }
     
+    console.log('📄 Envoi du formulaire auth.html');
     res.sendFile(path.join(__dirname, '../auth.html'));
 });
 
 // API de connexion
 app.post('/api/login', (req, res) => {
-    console.log('🔐 Tentative de connexion:', req.body);
+    console.log('🔐 API /api/login appelée');
+    console.log('📦 Body:', JSON.stringify(req.body));
+    console.log('🍪 Cookies avant login:', JSON.stringify(req.cookies));
+    console.log('🌐 Protocol:', req.protocol, '| x-forwarded-proto:', req.get('x-forwarded-proto'));
     
     const { email, password } = req.body;
     
@@ -283,6 +294,9 @@ app.get('/direct-login', (req, res) => {
 
 // Dashboard route (requires authentication)
 app.get('/dashboard', requireAuth, (req, res) => {
+    console.log('📊 Route /dashboard appelée');
+    console.log('👤 User:', req.user ? req.user.email : 'none');
+    console.log('🍪 Cookies:', JSON.stringify(req.cookies));
     res.sendFile(path.join(__dirname, '../public/dashboard.html'));
 });
 
@@ -733,14 +747,21 @@ app.post('/api/auth/logout', (req, res) => {
 
 // Route principale - Interface SaaS moderne et simple
 app.get('/', (req, res) => {
+    console.log('📍 Route / appelée');
+    console.log('🍪 Tous les cookies:', JSON.stringify(req.cookies));
+    console.log('📝 Sessions actives:', Object.keys(global.sessions));
+    
     // Vérifier si l'utilisateur est connecté
     const sessionId = req.cookies.sessionId;
+    console.log('🔑 SessionId trouvé:', sessionId);
     
     if (sessionId && global.sessions[sessionId]) {
         // Utilisateur connecté → dashboard
+        console.log('✅ Session valide, redirect /dashboard');
         return res.redirect('/dashboard');
     } else {
         // Utilisateur non connecté → login
+        console.log('❌ Pas de session, redirect /login');
         return res.redirect('/login');
     }
 });
