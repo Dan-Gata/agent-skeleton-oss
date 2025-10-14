@@ -229,7 +229,7 @@
                 
                 if (response.ok) {
                     showMessage('success', '✅ ' + result.message);
-                    setTimeout(() => window.location.href = '/', 1000);
+                    setTimeout(() => window.location.href = '/dashboard', 1000);
                 } else {
                     showMessage('error', '❌ ' + result.error);
                 }

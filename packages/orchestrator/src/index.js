@@ -79,7 +79,7 @@ app.get('/login', (req, res) => {
     const sessionId = req.cookies.sessionId;
     if (sessionId && global.sessions[sessionId]) {
         console.log('👤 Utilisateur déjà connecté, redirection vers dashboard');
-        return res.redirect('/');
+        return res.redirect('/dashboard');
     }
     
     res.sendFile(path.join(__dirname, '../auth.html'));
