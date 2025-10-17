@@ -6,6 +6,7 @@ const path = require('path');
 const helmet = require('helmet');
 const cors = require('cors');
 const cookieParser = require('cookie-parser');
+const { getSessionStore } = require('./sessionStore');
 
 const app = express();
 const port = process.env.PORT || 3000;
@@ -27,6 +28,9 @@ app.use(cookieParser());
 app.use(express.json({ limit: '10mb' }));
 app.use(express.raw({ type: '*/*', limit: '10mb' }));
 
+// Initialize session store with SQLite
+const sessionStore = getSessionStore();
+
 // Stockage en mémoire (base de données temporaire)
 global.users = {
     'admin@example.com': {
@@ -38,7 +42,6 @@ global.users = {
 };
 global.uploadedFiles = {};
 global.conversations = {};
-global.sessions = {};
 
 // Helper fonction pour créer des cookies sécurisés
 function setSecureCookie(req, res, name, value, maxAge = 24 * 60 * 60 * 1000) {
@@ -75,13 +78,14 @@ function requireAuth(req, res, next) {
     const sessionId = req.cookies.sessionId;
     console.log('🔑 SessionId:', sessionId);
     
-    if (!sessionId || !global.sessions[sessionId]) {
+    const session = sessionStore.getSession(sessionId);
+    if (!session) {
         console.log('❌ Session non trouvée, redirection vers /login');
-        console.log('📝 Sessions disponibles:', Object.keys(global.sessions));
+        console.log('📝 Sessions actives:', sessionStore.getSessionCount());
         return res.redirect('/login');
     }
     
-    req.user = global.sessions[sessionId];
+    req.user = session;
     console.log('✅ Utilisateur authentifié:', req.user.email);
     next();
 }
@@ -90,7 +94,7 @@ function requireAuth(req, res, next) {
 app.get('/login', (req, res) => {
     console.log('📍 Route /login appelée');
     console.log('🍪 Cookies reçus:', JSON.stringify(req.cookies));
-    console.log('� Sessions actives:', Object.keys(global.sessions));
+    console.log('📝 Sessions actives:', sessionStore.getSessionCount());
     console.log('🌐 Headers:', JSON.stringify({
         'x-forwarded-proto': req.get('x-forwarded-proto'),
         'protocol': req.protocol,
@@ -100,7 +104,8 @@ app.get('/login', (req, res) => {
     
     // Vérifier si déjà connecté pour éviter la boucle
     const sessionId = req.cookies.sessionId;
-    if (sessionId && global.sessions[sessionId]) {
+    const session = sessionStore.getSession(sessionId);
+    if (session) {
         console.log('👤 Utilisateur déjà connecté, redirection vers /dashboard');
         return res.redirect('/dashboard');
     }
@@ -131,8 +136,8 @@ app.post('/api/login', (req, res) => {
         return res.status(401).json({ error: 'Identifiants incorrects' });
     }
     
-    const sessionId = Date.now().toString() + Math.random().toString(36);
-    global.sessions[sessionId] = user;
+    // Create persistent session in SQLite
+    const sessionId = sessionStore.createSession(email, user.email, 24 * 60 * 60 * 1000);
     
     console.log('✅ Session créée:', sessionId);
     
@@ -178,7 +183,7 @@ app.post('/api/register', (req, res) => {
 app.post('/api/logout', (req, res) => {
     const sessionId = req.cookies.sessionId;
     if (sessionId) {
-        delete global.sessions[sessionId];
+        sessionStore.deleteSession(sessionId);
     }
     res.clearCookie('sessionId');
     res.redirect('/login');
@@ -191,23 +196,26 @@ app.get('/test-auth', (req, res) => {
 
 // Endpoint de débogage
 app.get('/debug', (req, res) => {
+    const sessions = sessionStore.getAllSessions();
     res.json({
         users: Object.keys(global.users),
-        sessions: Object.keys(global.sessions),
+        sessions: sessions.map(s => ({ sessionId: s.sessionId, email: s.email, expiresAt: new Date(s.expiresAt).toISOString() })),
         files: Object.keys(global.uploadedFiles || {}),
         totalUsers: Object.keys(global.users).length,
-        totalSessions: Object.keys(global.sessions).length,
-        sessionDetails: global.sessions,
+        totalSessions: sessionStore.getSessionCount(),
+        sessionDetails: sessions,
         cookies: req.cookies
     });
 });
 
 // Route de test des cookies
 app.get('/test-cookie', (req, res) => {
+    const sessions = sessionStore.getAllSessions();
     res.send(`
     <h1>Test Cookies</h1>
     <p><strong>Cookies reçus:</strong> ${JSON.stringify(req.cookies)}</p>
-    <p><strong>Sessions disponibles:</strong> ${JSON.stringify(Object.keys(global.sessions))}</p>
+    <p><strong>Sessions disponibles:</strong> ${sessionStore.getSessionCount()}</p>
+    <p><strong>Sessions détails:</strong> ${JSON.stringify(sessions, null, 2)}</p>
     <p><strong>Headers:</strong> ${JSON.stringify(req.headers, null, 2)}</p>
     <br>
     <a href="/login">← Retour login</a> | <a href="/">Tester homepage</a>
@@ -749,13 +757,14 @@ app.post('/api/auth/logout', (req, res) => {
 app.get('/', (req, res) => {
     console.log('📍 Route / appelée');
     console.log('🍪 Tous les cookies:', JSON.stringify(req.cookies));
-    console.log('📝 Sessions actives:', Object.keys(global.sessions));
+    console.log('📝 Sessions actives:', sessionStore.getSessionCount());
     
     // Vérifier si l'utilisateur est connecté
     const sessionId = req.cookies.sessionId;
     console.log('🔑 SessionId trouvé:', sessionId);
     
-    if (sessionId && global.sessions[sessionId]) {
+    const session = sessionStore.getSession(sessionId);
+    if (session) {
         // Utilisateur connecté → dashboard
         console.log('✅ Session valide, redirect /dashboard');
         return res.redirect('/dashboard');

@@ -1,0 +1,860 @@
+const express = require('express');
+const axios = require('axios');
+const path = require('path');
+const helmet = require('helmet');
+const cors = require('cors');
+const rateLimit = require('express-rate-limit');
+const { body, validationResult } = require('express-validator');
+const cookieParser = require('cookie-parser');
+const multer = require('multer');
+
+// Import des services
+const aiService = require('./services/aiService');
+const { authService, requireAuth, requireAuthAPI } = require('./middleware/auth');
+const { memoryService } = require('./services/memoryService');
+const { socialWorkflowService } = require('./services/socialWorkflowService');
+const fileService = require('./services/fileService');
+
+const app = express();
+const port = process.env.PORT || 3000;
+    
+    res.render('app', {
+        title: 'Agent Skeleton OSS - Interface Moderne',
+        version: '1.0.0',
+        user: req.user,
+        cacheBuster: Date.now() // Force le rechargement des assets
+    });
+});
+const cors = require('cors');
+const rateLimit = require('express-rate-limit');
+const { body, validationResult } = require('express-validator');
+const cookieParser = require('cookie-parser');
+const multer = require('multer');
+
+// Import des services
+const aiService = require('./services/aiService');
+const { authService, requireAuth, requireAuthAPI } = require('./middleware/auth');
+const { memoryService } = require('./services/memoryService');
+const { socialWorkflowService } = require('./services/socialWorkflowService');
+const fileService = require('./services/fileService');
+
+const app = express();
+const port = process.env.PORT || 3000;
+
+// 🔒 SÉCURITÉ : Configuration des headers de sécurité
+app.use(helmet({
+    contentSecurityPolicy: {
+        directives: {
+            defaultSrc: ["'self'"],
+            styleSrc: ["'self'", "'unsafe-inline'", "https://cdnjs.cloudflare.com", "https://fonts.googleapis.com"],
+            scriptSrc: ["'self'", "'unsafe-inline'"],
+            fontSrc: ["'self'", "https://cdnjs.cloudflare.com", "https://fonts.gstatic.com"],
+            imgSrc: ["'self'", "data:", "https:"],
+            connectSrc: ["'self'"]
+        }
+    },
+    hsts: {
+        maxAge: 31536000,
+        includeSubDomains: true,
+        preload: true
+    }
+}));
+
+// Configuration du moteur de templates
+app.set('view engine', 'ejs');
+app.set('views', path.join(__dirname, '../views'));
+
+// 🔒 CORS Configuration
+const allowedOrigins = process.env.ALLOWED_ORIGINS
+    ? process.env.ALLOWED_ORIGINS.split(',')
+    : ['http://localhost:3000'];
+
+app.use(cors({
+    origin: allowedOrigins,
+    credentials: true,
+    optionsSuccessStatus: 200
+}));
+
+// 🔒 Rate Limiting
+const limiter = rateLimit({
+    windowMs: 15 * 60 * 1000, // 15 minutes
+    max: 100, // limite chaque IP à 100 requêtes par windowMs
+    message: {
+        error: 'Trop de requêtes depuis cette IP, réessayez plus tard.',
+        retryAfter: '15 minutes'
+    },
+    legacyHeaders: false
+});
+
+const chatLimiter = rateLimit({
+    windowMs: 1 * 60 * 1000, // 1 minute
+    max: 10, // limite chaque IP à 10 requêtes de chat par minute
+    message: {
+        error: 'Trop de messages de chat, attendez avant de continuer.',
+        retryAfter: '1 minute'
+    }
+});
+
+app.use(limiter);
+
+// Middleware pour parsing JSON et URL-encoded
+app.use(cookieParser());
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+
+// 📁 Configuration Multer pour les uploads
+const upload = multer({
+    storage: multer.memoryStorage(),
+    limits: {
+        fileSize: 10 * 1024 * 1024, // 10MB
+        files: 1
+    },
+    fileFilter: (req, file, cb) => {
+        const allowedTypes = [
+            'text/plain',
+            'text/markdown',
+            'application/json',
+            'text/csv',
+            'application/pdf',
+            'image/jpeg',
+            'image/png',
+            'image/webp',
+            'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+            'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+        ];
+        
+        if (allowedTypes.includes(file.mimetype)) {
+            cb(null, true);
+        } else {
+            cb(new Error(`Type de fichier non autorisé: ${file.mimetype}`), false);
+        }
+    }
+});
+
+// Fichiers statiques
+app.use(express.static(path.join(__dirname, '../public')));
+
+// 🏠 Route principale - Interface moderne (protégée)
+app.get('/', requireAuth, (req, res) => {
+    res.render('app', {
+        title: 'Agent Skeleton OSS',
+        version: '1.0.0',
+        user: req.user
+    });
+});
+
+// � Route de connexion (non protégée)
+app.get('/login', (req, res) => {
+    res.render('login', { title: 'Connexion - Agent Skeleton OSS' });
+});
+
+// �📱 Route pour l'interface moderne (protégée)
+app.get('/app', requireAuth, (req, res) => {
+    res.render('app', {
+        title: 'Agent Skeleton OSS - Interface Moderne',
+        version: '1.0.0',
+        user: req.user
+    });
+});
+
+// 🔐 Routes d'authentification
+app.post('/api/auth/register', [
+    body('username').isLength({ min: 3 }).withMessage('Nom d\'utilisateur requis (min 3 caractères)'),
+    body('password').isLength({ min: 6 }).withMessage('Mot de passe requis (min 6 caractères)'),
+    body('email').isEmail().withMessage('Email valide requis')
+], (req, res) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+        return res.status(400).json({ errors: errors.array() });
+    }
+
+    try {
+        const { username, password, email } = req.body;
+        const result = authService.createAccount(username, password, email);
+        res.json({ success: true, message: 'Compte créé avec succès' });
+    } catch (error) {
+        res.status(400).json({ error: error.message });
+    }
+});
+
+app.post('/api/auth/login', [
+    body('username').notEmpty().withMessage('Nom d\'utilisateur requis'),
+    body('password').notEmpty().withMessage('Mot de passe requis')
+], (req, res) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+        return res.status(400).json({ errors: errors.array() });
+    }
+
+    try {
+        const { username, password } = req.body;
+        const result = authService.login(username, password);
+        
+        // Définir le cookie de session
+        res.cookie('sessionId', result.sessionId, {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === 'production',
+            maxAge: 24 * 60 * 60 * 1000 // 24 heures
+        });
+
+        res.json({ success: true, user: result.user });
+    } catch (error) {
+        res.status(401).json({ error: error.message });
+    }
+});
+
+app.post('/api/auth/logout', requireAuthAPI, (req, res) => {
+    const sessionId = req.cookies?.sessionId;
+    if (sessionId) {
+        authService.logout(sessionId);
+        res.clearCookie('sessionId');
+    }
+    res.json({ success: true, message: 'Déconnexion réussie' });
+});
+
+// 🔧 Route de debug pour tester la navigation
+app.get('/debug', (req, res) => {
+    res.render('app_debug', {
+        title: 'Agent Skeleton OSS - Debug Interface',
+        version: '1.0.0'
+    });
+});
+
+// 🔍 Health Check
+app.get('/health', (req, res) => {
+    res.status(200).json({
+        status: 'healthy',
+        timestamp: new Date().toISOString(),
+        version: '1.0.0',
+        environment: process.env.NODE_ENV || 'development'
+    });
+});
+
+// 🔑 API Keys Status Check (pour debug)
+app.get('/api/keys-status', (req, res) => {
+    const hasOpenRouter = !!process.env.OPENROUTER_API_KEY;
+    const status = {
+        openrouter: hasOpenRouter,
+        all_models_available: hasOpenRouter,
+        provider: 'OpenRouter (Unified API)',
+        models: {
+            'gpt-4o-mini': hasOpenRouter ? 'Available via OpenRouter' : 'Requires OpenRouter key',
+            'claude-3.5-sonnet': hasOpenRouter ? 'Available via OpenRouter' : 'Requires OpenRouter key',
+            'gemini-2.0-flash': hasOpenRouter ? 'Available via OpenRouter' : 'Requires OpenRouter key',
+            'grok-beta': hasOpenRouter ? 'Available via OpenRouter' : 'Requires OpenRouter key'
+        },
+        demo_mode: !hasOpenRouter
+    };
+    
+    res.json(status);
+});
+
+// 🤖 ENDPOINTS AGENT AUTONOME
+
+// 🔄 n8n Workflows Management
+app.get('/api/agent/n8n/status', async (req, res) => {
+    try {
+        if (!process.env.N8N_API_KEY || !process.env.N8N_API_URL) {
+            return res.status(400).json({ 
+                error: 'Configuration n8n manquante', 
+                configured: false,
+                message: 'Veuillez ajouter N8N_API_KEY et N8N_API_URL dans les variables d\'environnement Coolify'
+            });
+        }
+
+        // Vérifier la connexion à n8n
+        const response = await axios.get(`${process.env.N8N_API_URL}/api/v1/workflows`, {
+            headers: {
+                'X-N8N-API-KEY': process.env.N8N_API_KEY
+            }
+        });
+
+        const workflows = response.data.data || [];
+        
+        // Analyser les workflows
+        const activeWorkflows = workflows.filter(w => w.active);
+        const inactiveWorkflows = workflows.filter(w => !w.active);
+
+        res.json({
+            success: true,
+            configured: true,
+            n8n_url: process.env.N8N_API_URL,
+            status: {
+                total_workflows: workflows.length,
+                active_workflows: activeWorkflows.length,
+                inactive_workflows: inactiveWorkflows.length,
+                workflows: workflows.map(w => ({
+                    id: w.id,
+                    name: w.name,
+                    active: w.active,
+                    createdAt: w.createdAt,
+                    updatedAt: w.updatedAt
+                }))
+            }
+        });
+    } catch (error) {
+        console.error('Erreur n8n:', error.message);
+        
+        if (error.response?.status === 401) {
+            return res.status(401).json({ 
+                error: 'Clé API n8n invalide', 
+                configured: false,
+                message: 'Vérifiez votre N8N_API_KEY dans Coolify'
+            });
+        }
+        
+        res.status(500).json({ 
+            error: 'Erreur connexion n8n', 
+            details: error.message,
+            configured: !!process.env.N8N_API_KEY
+        });
+    }
+});
+
+app.get('/api/agent/n8n/workflows', async (req, res) => {
+    try {
+        if (!process.env.N8N_API_KEY || !process.env.N8N_API_URL) {
+            return res.status(400).json({ error: 'Clés n8n manquantes', configured: false });
+        }
+        
+        // Simuler la récupération des workflows (remplacer par vraie API)
+        const workflows = [
+            { id: 1, name: 'Agent Chat Automation', active: true, lastExecution: '2025-10-07T10:30:00Z' },
+            { id: 2, name: 'Baserow Sync', active: true, lastExecution: '2025-10-07T09:15:00Z' },
+            { id: 3, name: 'Deploy Monitor', active: false, lastExecution: '2025-10-06T22:00:00Z' }
+        ];
+        
+        res.json({ workflows, configured: true });
+    } catch (error) {
+        res.status(500).json({ error: 'Erreur n8n', details: error.message });
+    }
+});
+
+app.get('/api/agent/n8n/executions', async (req, res) => {
+    try {
+        if (!process.env.N8N_API_KEY || !process.env.N8N_API_URL) {
+            return res.status(400).json({ error: 'Configuration n8n manquante', configured: false });
+        }
+
+        // Récupérer les exécutions récentes
+        const response = await axios.get(`${process.env.N8N_API_URL}/api/v1/executions`, {
+            headers: {
+                'X-N8N-API-KEY': process.env.N8N_API_KEY
+            },
+            params: {
+                limit: 20,
+                includeData: false
+            }
+        });
+
+        const executions = response.data.data || [];
+        
+        // Analyser les exécutions
+        const successful = executions.filter(e => e.finished && !e.stoppedAt).length;
+        const failed = executions.filter(e => e.stoppedAt && e.stoppedAt !== e.finishedAt).length;
+        const running = executions.filter(e => !e.finished).length;
+
+        res.json({
+            success: true,
+            executions: executions.map(e => ({
+                id: e.id,
+                workflowId: e.workflowId,
+                mode: e.mode,
+                finished: e.finished,
+                startedAt: e.startedAt,
+                finishedAt: e.finishedAt,
+                stoppedAt: e.stoppedAt
+            })),
+            stats: {
+                total: executions.length,
+                successful,
+                failed,
+                running
+            }
+        });
+    } catch (error) {
+        res.status(500).json({ error: 'Erreur récupération exécutions', details: error.message });
+    }
+});
+
+app.post('/api/agent/n8n/create-workflow', async (req, res) => {
+    try {
+        const { name, description, trigger, actions } = req.body;
+        
+        // Simuler la création d'un workflow
+        const newWorkflow = {
+            id: Date.now(),
+            name: name || 'Nouveau Workflow',
+            description: description || 'Créé par Agent Skeleton OSS',
+            active: false,
+            created: new Date().toISOString()
+        };
+        
+        res.json({ 
+            success: true, 
+            workflow: newWorkflow,
+            message: `Workflow "${newWorkflow.name}" créé avec succès` 
+        });
+    } catch (error) {
+        res.status(500).json({ error: 'Erreur création workflow', details: error.message });
+    }
+});
+
+// 🚀 Coolify Deployments Management  
+app.get('/api/agent/coolify/deployments', async (req, res) => {
+    try {
+        if (!process.env.COOLIFY_API_KEY || !process.env.COOLIFY_API_URL) {
+            return res.status(400).json({ error: 'Clés Coolify manquantes', configured: false });
+        }
+        
+        // Simuler l'état des déploiements
+        const deployments = [
+            { id: 1, name: 'agent-skeleton-oss', status: 'running', lastDeploy: '2025-10-07T11:00:00Z', health: 'healthy' },
+            { id: 2, name: 'n8n-instance', status: 'running', lastDeploy: '2025-10-07T08:30:00Z', health: 'healthy' },
+            { id: 3, name: 'baserow-db', status: 'stopped', lastDeploy: '2025-10-06T20:15:00Z', health: 'warning' }
+        ];
+        
+        res.json({ deployments, configured: true });
+    } catch (error) {
+        res.status(500).json({ error: 'Erreur Coolify', details: error.message });
+    }
+});
+
+app.post('/api/agent/coolify/deploy', async (req, res) => {
+    try {
+        const { serviceId, serviceName } = req.body;
+        
+        // Simuler un déploiement
+        const deployment = {
+            id: serviceId || Date.now(),
+            name: serviceName || 'Service inconnu',
+            status: 'deploying',
+            startedAt: new Date().toISOString()
+        };
+        
+        res.json({ 
+            success: true, 
+            deployment,
+            message: `Déploiement de "${deployment.name}" initié` 
+        });
+    } catch (error) {
+        res.status(500).json({ error: 'Erreur déploiement', details: error.message });
+    }
+});
+
+// 📊 Baserow Database Management
+app.get('/api/agent/baserow/tables', async (req, res) => {
+    try {
+        if (!process.env.BASEROW_API_KEY || !process.env.BASEROW_URL) {
+            return res.status(400).json({ error: 'Clés Baserow manquantes', configured: false });
+        }
+        
+        // Simuler les tables Baserow
+        const tables = [
+            { id: 1, name: 'Conversations', rows: 156, lastUpdate: '2025-10-07T10:45:00Z' },
+            { id: 2, name: 'Workflows Status', rows: 3, lastUpdate: '2025-10-07T09:30:00Z' },
+            { id: 3, name: 'Deployments Log', rows: 42, lastUpdate: '2025-10-07T11:00:00Z' }
+        ];
+        
+        res.json({ tables, configured: true });
+    } catch (error) {
+        res.status(500).json({ error: 'Erreur Baserow', details: error.message });
+    }
+});
+
+app.post('/api/agent/baserow/sync', async (req, res) => {
+    try {
+        const { tableId, action } = req.body;
+        
+        // Simuler une synchronisation
+        const syncResult = {
+            tableId: tableId || 1,
+            action: action || 'sync',
+            recordsProcessed: Math.floor(Math.random() * 50) + 10,
+            status: 'completed',
+            timestamp: new Date().toISOString()
+        };
+        
+        res.json({ 
+            success: true, 
+            result: syncResult,
+            message: `Synchronisation réussie : ${syncResult.recordsProcessed} enregistrements traités` 
+        });
+    } catch (error) {
+        res.status(500).json({ error: 'Erreur synchronisation', details: error.message });
+    }
+});
+
+// 🎭 Routes pour les workflows de réseaux sociaux
+app.post('/api/agent/social/create-publisher', requireAuthAPI, async (req, res) => {
+    try {
+        const { platforms, autoPost } = req.body;
+        const userId = req.user.userId;
+        
+        const result = await socialWorkflowService.createSocialPublishingWorkflow(
+            userId, 
+            platforms || ['facebook', 'twitter', 'linkedin']
+        );
+        
+        if (result.success) {
+            memoryService.saveConversation(userId, 
+                `Créer un workflow de publication sociale pour ${platforms?.join(', ')}`,
+                `Workflow de publication créé avec succès pour les plateformes: ${platforms?.join(', ')}`,
+                'system',
+                { workflowId: result.workflowId, action: 'create_social_workflow' }
+            );
+        }
+        
+        res.json(result);
+    } catch (error) {
+        res.status(500).json({ error: 'Erreur création workflow social', details: error.message });
+    }
+});
+
+app.post('/api/agent/social/create-monitor', requireAuthAPI, async (req, res) => {
+    try {
+        const { keywords, platforms } = req.body;
+        const userId = req.user.userId;
+        
+        const result = await socialWorkflowService.createSocialMonitoringWorkflow(
+            userId,
+            keywords || []
+        );
+        
+        if (result.success) {
+            memoryService.saveConversation(userId,
+                `Créer un monitoring social pour: ${keywords?.join(', ')}`,
+                `Workflow de monitoring créé pour surveiller: ${keywords?.join(', ')}`,
+                'system',
+                { workflowId: result.workflowId, action: 'create_monitor_workflow' }
+            );
+        }
+        
+        res.json(result);
+    } catch (error) {
+        res.status(500).json({ error: 'Erreur création monitoring social', details: error.message });
+    }
+});
+
+// 🧠 Routes de mémoire pour l'agent
+app.get('/api/agent/memory/conversations', requireAuthAPI, (req, res) => {
+    try {
+        const userId = req.user.userId;
+        const limit = parseInt(req.query.limit) || 20;
+        
+        const conversations = memoryService.getConversationHistory(userId, limit);
+        res.json({ conversations, count: conversations.length });
+    } catch (error) {
+        res.status(500).json({ error: 'Erreur récupération mémoire', details: error.message });
+    }
+});
+
+// 💬 API Chat avec validation, rate limiting et mémoire
+app.post('/api/chat', chatLimiter, requireAuthAPI, async (req, res) => {
+    try {
+        console.log('🔍 Données reçues brutes:', req.body);
+        
+        const { message, conversationId, model } = req.body;
+        
+        // Validation simple manuelle
+        if (!message || typeof message !== 'string' || message.trim().length === 0) {
+            console.log('❌ Message invalide:', message);
+            return res.status(400).json({
+                error: 'Message requis',
+                details: 'Le message ne peut pas être vide'
+            });
+        }
+
+        console.log('✅ Message valide reçu:', { message, conversationId, model });
+        
+        // Debug des clés API (OpenRouter uniquement)
+        console.log('🔑 État OpenRouter:', {
+            OPENROUTER_KEY: !!process.env.OPENROUTER_API_KEY,
+            ALL_MODELS: !!process.env.OPENROUTER_API_KEY ? 'Available' : 'Demo Mode'
+        });
+
+        // Responses basées sur le modèle sélectionné
+        const modelResponses = {
+            'claude-3.5-sonnet': [
+                "🧠 Claude 3.5 Sonnet ici ! Je vais analyser votre demande avec attention.",
+                "🔍 Excellente question ! Avec Claude, je peux vous aider à explorer cette idée en profondeur.",
+                "💡 En tant que Claude 3.5 Sonnet, je propose une approche méthodique pour résoudre cela.",
+                "📊 Grâce aux capacités de Claude, voici une analyse détaillée de votre demande.",
+                "🎯 Claude 3.5 Sonnet est conçu pour vous fournir des réponses nuancées et pertinentes."
+            ],
+            'gpt-4': [
+                "� GPT-4 activé ! Je vais traiter votre requête avec ma compréhension avancée.",
+                "⚡ Excellent ! GPT-4 est parfait pour ce type de question complexe.",
+                "🎭 Avec GPT-4, je peux aborder votre demande sous plusieurs angles créatifs.",
+                "� Utilisant les capacités de GPT-4, voici une réponse structurée pour vous.",
+                "🌟 GPT-4 me permet de vous offrir une perspective riche et détaillée."
+            ],
+            'gemini-pro': [
+                "💎 Gemini Pro en action ! Analysons cela ensemble de manière intelligente.",
+                "🌈 Avec Gemini Pro, j'apporte une approche multimodale à votre question.",
+                "🔮 Gemini Pro me donne la flexibilité pour explorer votre demande créativement.",
+                "⭐ Grâce à Gemini Pro, je peux connecter différents concepts pour vous aider.",
+                "� Gemini Pro excelle dans la compréhension nuancée de votre demande."
+            ]
+        };
+
+        // Réponses génériques pour les autres modèles
+        const genericResponses = [
+            `🤖 ${model || 'IA'} : Votre message est bien reçu ! Comment puis-je vous aider davantage ?`,
+            `💭 Avec ${model || 'ce modèle'}, je traite votre demande avec soin.`,
+            `🔧 ${model || 'Le système'} analyse votre question et prépare une réponse adaptée.`,
+            `📝 Utilisant ${model || 'les capacités IA'}, voici ma réflexion sur votre demande.`,
+            `🎯 ${model || 'L\'assistant'} est prêt à vous accompagner dans cette tâche.`
+        ];
+
+        // Récupérer le contexte de mémoire pour l'utilisateur
+        const personalizedContext = memoryService.generatePersonalizedContext(req.user.userId);
+        
+        // Appel du service IA réel avec contexte personnalisé et accès aux fichiers
+        const aiResponse = await aiService.sendMessage(message, model, conversationId, personalizedContext, req.user.userId);
+        
+        console.log('🤖 Réponse IA reçue:', aiResponse);
+
+        // Sauvegarder la conversation dans la mémoire
+        memoryService.saveConversation(req.user.userId, message, aiResponse.response, model, {
+            simulated: aiResponse.simulated,
+            conversationId: conversationId
+        });
+
+        // Apprendre des préférences utilisateur
+        memoryService.learnFromConversation(req.user.userId, message, aiResponse.response);
+
+        // Si c'est une simulation, on ajoute un indicateur
+        let finalResponse = aiResponse.response;
+        if (aiResponse.simulated) {
+            finalResponse = `${aiResponse.response}\n\n💡 *Mode démo - Configurez vos clés API pour activer l'IA complète*`;
+        } else if (aiResponse.error) {
+            finalResponse = aiResponse.response;
+        }
+
+        res.json({
+            response: finalResponse,
+            conversationId: conversationId || `conv_${Date.now()}`,
+            timestamp: new Date().toISOString(),
+            model: model || 'assistant',
+            usage: aiResponse.usage || null,
+            simulated: aiResponse.simulated || false
+        });
+
+    } catch (error) {
+        console.error('Erreur API Chat:', error);
+        res.status(500).json({
+            error: 'Erreur interne du serveur',
+            message: 'Une erreur est survenue lors du traitement de votre message'
+        });
+    }
+});
+
+// � API Gestion des fichiers
+
+// Upload d'un fichier
+app.post('/api/files/upload', requireAuthAPI, upload.single('file'), async (req, res) => {
+    try {
+        if (!req.file) {
+            return res.status(400).json({ error: 'Aucun fichier fourni' });
+        }
+
+        const userId = req.user.id;
+        const metadata = await fileService.saveFile(req.file, userId);
+        
+        // Analyser le fichier pour l'agent
+        const analysis = await fileService.analyzeForAgent(metadata.id);
+        
+        // Stocker dans la mémoire de l'agent
+        memoryService.addUserPreference(userId, 'uploaded_files', {
+            fileId: metadata.id,
+            analysis: analysis,
+            uploadedAt: new Date().toISOString()
+        });
+
+        res.json({
+            success: true,
+            file: {
+                id: metadata.id,
+                originalName: metadata.originalName,
+                size: metadata.size,
+                type: metadata.mimeType
+            },
+            analysis: analysis.analysis,
+            message: '✅ Fichier téléchargé et analysé par l\'agent'
+        });
+    } catch (error) {
+        console.error('❌ Erreur upload:', error);
+        res.status(500).json({ 
+            error: 'Erreur lors du téléchargement', 
+            details: error.message 
+        });
+    }
+});
+
+// Lister les fichiers de l'utilisateur
+app.get('/api/files', requireAuthAPI, async (req, res) => {
+    try {
+        const userId = req.user.id;
+        const files = await fileService.listUserFiles(userId);
+        res.json({ files });
+    } catch (error) {
+        console.error('❌ Erreur listage fichiers:', error);
+        res.status(500).json({ error: 'Erreur récupération fichiers' });
+    }
+});
+
+// Récupérer le contenu d'un fichier
+app.get('/api/files/:fileId', requireAuthAPI, async (req, res) => {
+    try {
+        const userId = req.user.id;
+        const { fileId } = req.params;
+        
+        const metadata = await fileService.getFileMetadata(fileId);
+        if (!metadata || metadata.uploadedBy !== userId) {
+            return res.status(404).json({ error: 'Fichier non trouvé' });
+        }
+
+        const content = await fileService.readFileContent(fileId);
+        res.json({ content });
+    } catch (error) {
+        console.error('❌ Erreur lecture fichier:', error);
+        res.status(500).json({ error: 'Erreur lecture fichier' });
+    }
+});
+
+// Analyser un fichier pour l'agent
+app.post('/api/files/:fileId/analyze', requireAuthAPI, async (req, res) => {
+    try {
+        const userId = req.user.id;
+        const { fileId } = req.params;
+        
+        const metadata = await fileService.getFileMetadata(fileId);
+        if (!metadata || metadata.uploadedBy !== userId) {
+            return res.status(404).json({ error: 'Fichier non trouvé' });
+        }
+
+        const analysis = await fileService.analyzeForAgent(fileId);
+        
+        // Mettre à jour la mémoire
+        memoryService.addUserPreference(userId, 'file_analysis', {
+            fileId: fileId,
+            analysis: analysis,
+            analyzedAt: new Date().toISOString()
+        });
+
+        res.json({
+            analysis: analysis.analysis,
+            message: '🤖 Fichier analysé et intégré à la mémoire de l\'agent'
+        });
+    } catch (error) {
+        console.error('❌ Erreur analyse fichier:', error);
+        res.status(500).json({ error: 'Erreur analyse fichier' });
+    }
+});
+
+// Supprimer un fichier
+app.delete('/api/files/:fileId', requireAuthAPI, async (req, res) => {
+    try {
+        const userId = req.user.id;
+        const { fileId } = req.params;
+        
+        await fileService.deleteFile(fileId, userId);
+        
+        res.json({ 
+            success: true, 
+            message: '🗑️ Fichier supprimé avec succès' 
+        });
+    } catch (error) {
+        console.error('❌ Erreur suppression fichier:', error);
+        res.status(500).json({ error: 'Erreur suppression fichier' });
+    }
+});
+
+// �📝 API Instructions personnalisées
+app.get('/api/instructions', (req, res) => {
+    res.json({
+        instructions: aiService.customInstructions
+    });
+});
+
+app.post('/api/instructions', [
+    body('brand').optional().isString().trim(),
+    body('tone').optional().isString().trim(),
+    body('expertise').optional().isString().trim(),
+    body('language').optional().isString().trim(),
+    body('personality').optional().isString().trim()
+], (req, res) => {
+    try {
+        const errors = validationResult(req);
+        if (!errors.isEmpty()) {
+            return res.status(400).json({
+                error: 'Données invalides',
+                details: errors.array()
+            });
+        }
+
+        // Filtrer les champs non-null
+        const newInstructions = {};
+        ['brand', 'tone', 'expertise', 'language', 'personality'].forEach(field => {
+            if (req.body[field] !== undefined && req.body[field] !== '') {
+                newInstructions[field] = req.body[field];
+            }
+        });
+
+        // Mettre à jour les instructions
+        aiService.updateInstructions(newInstructions);
+
+        res.json({
+            success: true,
+            instructions: aiService.customInstructions,
+            message: 'Instructions mises à jour avec succès'
+        });
+
+    } catch (error) {
+        console.error('Erreur API Instructions:', error);
+        res.status(500).json({
+            error: 'Erreur interne du serveur',
+            message: 'Une erreur est survenue lors de la mise à jour'
+        });
+    }
+});
+
+// 📊 API Status
+app.get('/api/status', (req, res) => {
+    res.json({
+        status: 'online',
+        version: '1.0.0',
+        timestamp: new Date().toISOString(),
+        uptime: process.uptime(),
+        memory: process.memoryUsage(),
+        environment: process.env.NODE_ENV || 'development'
+    });
+});
+
+// 🔧 Middleware de gestion d'erreurs
+app.use((err, req, res, next) => {
+    console.error('Erreur:', err);
+    res.status(500).json({
+        error: 'Erreur interne du serveur',
+        message: process.env.NODE_ENV === 'development' ? err.message : 'Une erreur est survenue'
+    });
+});
+
+// 404 Handler
+app.use((req, res) => {
+    res.status(404).json({
+        error: 'Page non trouvée',
+        message: `La route ${req.originalUrl} n'existe pas`
+    });
+});
+
+// Démarrage du serveur
+app.listen(port, () => {
+    console.log(`🚀 Agent Skeleton OSS démarré sur le port ${port}`);
+    console.log(`🌐 Interface disponible : http://localhost:${port}/app`);
+    console.log(`💚 Health check : http://localhost:${port}/health`);
+    console.log(`📡 API Status : http://localhost:${port}/api/status`);
+});
+
+module.exports = app;

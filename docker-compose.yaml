@@ -1,0 +1,38 @@
+version: '3.8'
+
+services:
+  app:
+    build: .
+    image: qo0804cc88swgwgsogs0ks48:${SOURCE_COMMIT:-latest}
+    container_name: ${COOLIFY_CONTAINER_NAME:-agent-skeleton}
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+      - PORT=3000
+      - COOLIFY_URL=${COOLIFY_URL}
+      - COOLIFY_FQDN=${COOLIFY_FQDN}
+      - COOLIFY_BRANCH=${COOLIFY_BRANCH}
+      - OPENROUTER_API_KEY=${OPENROUTER_API_KEY}
+      - N8N_URL=${N8N_URL}
+      - N8N_API_KEY=${N8N_API_KEY}
+      - INTERNAL_API_KEY=${INTERNAL_API_KEY}
+      - COOLIFY_API_URL=${COOLIFY_API_URL}
+      - COOLIFY_API_KEY=${COOLIFY_API_KEY}
+      - BASEROW_URL=${BASEROW_URL:-https://baserow.kaussan-air.org}
+      - BASEROW_API_TOKEN=${BASEROW_API_TOKEN}
+      - AIR=${AIR}
+    volumes:
+      # Persist session database across container restarts
+      - session-data:/app/packages/orchestrator/data
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3000/health"]
+      interval: 30s
+      timeout: 10s
+      start_period: 10s
+      retries: 3
+
+volumes:
+  session-data:
+    driver: local

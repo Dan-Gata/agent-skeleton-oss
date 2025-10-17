@@ -395,37 +395,13 @@ ACTIONS DISPONIBLES:
             'mistral-small': 'mistralai/mistral-small',
             'mixtral-8x7b': 'mistralai/mixtral-8x7b-instruct',
             
-            // Alibaba Qwen
-            'qwen-2.5-72b': 'qwen/qwen-2.5-72b-instruct',
-            'qwen-2.5-32b': 'qwen/qwen-2.5-32b-instruct',
-            'qwen-2.5-14b': 'qwen/qwen-2.5-14b-instruct',
-            'qwen-2.5-7b': 'qwen/qwen-2.5-7b-instruct',
-            'qwen-2.5-coder-32b': 'qwen/qwen-2.5-coder-32b-instruct',
-            'qwen-2-vl-72b': 'qwen/qwen-2-vl-72b-instruct',
-            
             // Cohere
             'command-r-plus': 'cohere/command-r-plus',
             'command-r': 'cohere/command-r',
             
             // Perplexity
             'llama-3.1-sonar-large': 'perplexity/llama-3.1-sonar-large-128k-online',
-            'llama-3.1-sonar-small': 'perplexity/llama-3.1-sonar-small-128k-online',
-            
-            // Free Models
-            'llama-3.2-3b-free': 'meta-llama/llama-3.2-3b-instruct:free',
-            'llama-3.1-8b-free': 'meta-llama/llama-3.1-8b-instruct:free',
-            'gemma-2-9b-free': 'google/gemma-2-9b-it:free',
-            'gemma-2-2b-free': 'google/gemma-2-2b-it:free',
-            'phi-3-mini-free': 'microsoft/phi-3-mini-128k-instruct:free',
-            'mistral-7b-free': 'mistralai/mistral-7b-instruct:free',
-            'qwen-2.5-7b-free': 'qwen/qwen-2.5-7b-instruct:free',
-            
-            // Open Source
-            'deepseek-coder-33b': 'deepseek/deepseek-coder-33b-instruct',
-            'codellama-34b': 'codellama/codellama-34b-instruct',
-            'yi-34b': '01-ai/yi-34b-chat',
-            'openchat-7b': 'openchat/openchat-7b:free',
-            'zephyr-7b': 'huggingfaceh4/zephyr-7b-beta:free'
+            'llama-3.1-sonar-small': 'perplexity/llama-3.1-sonar-small-128k-online'
         };
 
         const routerModel = modelMap[model] || model;
@@ -628,99 +604,6 @@ Posez-moi une question spécifique sur le contenu de vos fichiers !`,
                 `🔍 Sonar Small de Perplexity en action ! Détection ciblée et actions rapides...`,
                 `📡 Agent Sonar Small prêt ! Je vais scanner rapidement et exécuter les actions nécessaires...`,
                 `⚡ Sonar Small activé ! Solutions de détection efficaces pour vos systèmes...`
-            ],
-            // Alibaba Qwen Models
-            'qwen-2.5-72b': [
-                `🏮 Qwen 2.5 72B d'Alibaba activé ! Intelligence chinoise de pointe pour analyser et agir sur vos systèmes...`,
-                `🐉 Agent Qwen 72B opérationnel ! Je vais traiter votre demande avec l'expertise d'Alibaba Cloud...`,
-                `⚡ Qwen 2.5 72B prêt ! Capacités étendues pour examiner et agir de manière sophistiquée...`
-            ],
-            'qwen-2.5-32b': [
-                `🏮 Qwen 2.5 32B activé ! Équilibre parfait entre performance et efficacité d'Alibaba...`,
-                `🎯 Agent Qwen 32B prêt ! Je vais traiter votre demande avec intelligence et précision...`,
-                `💡 Qwen 2.5 32B en action ! Solutions optimisées pour vos systèmes...`
-            ],
-            'qwen-2.5-14b': [
-                `🏮 Qwen 2.5 14B d'Alibaba opérationnel ! Analyse intelligente et actions ciblées...`,
-                `⚡ Agent Qwen 14B prêt ! Je vais examiner votre demande et agir efficacement...`,
-                `🎯 Qwen 2.5 14B en action ! Solutions rapides et précises...`
-            ],
-            'qwen-2.5-7b': [
-                `🏮 Qwen 2.5 7B activé ! Efficacité chinoise pour traiter votre demande...`,
-                `💨 Agent Qwen 7B prêt ! Je vais analyser rapidement et exécuter les actions nécessaires...`,
-                `🎯 Qwen 2.5 7B en action ! Solutions directes d'Alibaba...`
-            ],
-            'qwen-2.5-coder-32b': [
-                `👨‍💻 Qwen Coder 32B activé ! Spécialiste du code d'Alibaba pour analyser et développer...`,
-                `🔧 Agent Qwen Coder prêt ! Je vais examiner votre code et proposer des solutions techniques...`,
-                `💻 Qwen Coder 32B en action ! Expertise en programmation pour vos projets...`
-            ],
-            'qwen-2-vl-72b': [
-                `👁️ Qwen Vision 72B activé ! Capacités visuelles d'Alibaba pour analyser images et texte...`,
-                `🖼️ Agent Qwen Vision prêt ! Je vais traiter vos images et documents avec expertise...`,
-                `🎨 Qwen VL 72B en action ! Vision et language combinés pour vos analyses...`
-            ],
-            // Free Models
-            'llama-3.2-3b-free': [
-                `🆓 Llama 3.2 3B gratuit activé ! Petite taille, grandes capacités pour vos demandes...`,
-                `💸 Agent gratuit Llama 3B prêt ! Je vais traiter votre demande sans coût...`,
-                `⚡ Llama 3.2 3B free en action ! Solutions économiques et efficaces...`
-            ],
-            'llama-3.1-8b-free': [
-                `🆓 Llama 3.1 8B gratuit opérationnel ! Performance libre pour vos systèmes...`,
-                `💸 Agent gratuit Llama 8B prêt ! Je vais analyser et agir sans frais...`,
-                `🎯 Llama 3.1 8B free en action ! Solutions gratuites et puissantes...`
-            ],
-            'gemma-2-9b-free': [
-                `🆓 Gemma 2 9B gratuit de Google activé ! IA libre pour vos demandes...`,
-                `💸 Agent gratuit Gemma prêt ! Je vais traiter votre demande avec les technologies Google...`,
-                `⚡ Gemma 2 9B free en action ! Solutions open source et performantes...`
-            ],
-            'gemma-2-2b-free': [
-                `🆓 Gemma 2 2B gratuit activé ! Compact mais puissant pour vos besoins...`,
-                `💸 Agent gratuit Gemma 2B prêt ! Je vais analyser rapidement et gratuitement...`,
-                `🎯 Gemma 2 2B free en action ! Solutions légères et efficaces...`
-            ],
-            'phi-3-mini-free': [
-                `🆓 Phi-3 Mini gratuit de Microsoft activé ! Intelligence compacte pour vos systèmes...`,
-                `💸 Agent gratuit Phi-3 prêt ! Je vais traiter votre demande avec efficacité...`,
-                `⚡ Phi-3 Mini free en action ! Solutions Microsoft gratuites...`
-            ],
-            'mistral-7b-free': [
-                `🆓 Mistral 7B gratuit activé ! Vent français libre pour vos demandes...`,
-                `💸 Agent gratuit Mistral prêt ! Je vais analyser avec l'élégance française...`,
-                `🎯 Mistral 7B free en action ! Solutions open source de qualité...`
-            ],
-            'qwen-2.5-7b-free': [
-                `🆓 Qwen 2.5 7B gratuit d'Alibaba activé ! Intelligence chinoise libre...`,
-                `💸 Agent gratuit Qwen prêt ! Je vais traiter votre demande sans coût...`,
-                `⚡ Qwen 2.5 7B free en action ! Solutions Alibaba gratuites...`
-            ],
-            // Open Source Models
-            'deepseek-coder-33b': [
-                `👨‍💻 DeepSeek Coder 33B activé ! Spécialiste du code pour analyser et développer...`,
-                `🔧 Agent DeepSeek prêt ! Je vais examiner votre code avec expertise...`,
-                `💻 DeepSeek Coder en action ! Solutions de programmation avancées...`
-            ],
-            'codellama-34b': [
-                `🦙 CodeLlama 34B de Meta activé ! Expertise en programmation pour vos projets...`,
-                `👨‍💻 Agent CodeLlama prêt ! Je vais analyser et coder avec intelligence...`,
-                `💻 CodeLlama 34B en action ! Solutions de développement Meta...`
-            ],
-            'yi-34b': [
-                `🤖 Yi 34B de 01.AI activé ! Intelligence chinoise pour analyser et agir...`,
-                `🎯 Agent Yi prêt ! Je vais traiter votre demande avec innovation...`,
-                `⚡ Yi 34B en action ! Solutions 01.AI pour vos systèmes...`
-            ],
-            'openchat-7b': [
-                `💬 OpenChat 7B gratuit activé ! Conversation libre et intelligente...`,
-                `🗨️ Agent OpenChat prêt ! Je vais dialoguer et agir sans contraintes...`,
-                `⚡ OpenChat 7B en action ! Solutions conversationnelles ouvertes...`
-            ],
-            'zephyr-7b': [
-                `🌪️ Zephyr 7B gratuit activé ! Vent de fraîcheur open source...`,
-                `💨 Agent Zephyr prêt ! Je vais traiter votre demande avec légèreté...`,
-                `⚡ Zephyr 7B en action ! Solutions HuggingFace gratuites...`
             ]
         };
 

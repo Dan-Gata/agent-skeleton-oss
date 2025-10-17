@@ -1,20 +1,24 @@
-FROM node:20-alpine
+# Dockerfile ultra-simple pour Agent Skeleton OSS
+FROM node:18-alpine
 
 WORKDIR /app
 
-RUN apk add --no-cache python3 make g++ wget
-
+# Copier tout le projet
 COPY . .
 
+# Installer les dépendances - projet principal
 RUN npm install --omit=dev
 
-WORKDIR /app/packages/orchestrator
-RUN npm install --omit=dev
+# Installer les dépendances - orchestrator
+RUN cd packages/orchestrator && npm install --omit=dev
 
-WORKDIR /app
+# Installer wget pour le health check
+RUN apk add --no-cache wget
 
 EXPOSE 3000
 
-HEALTHCHECK --interval=30s --timeout=10s --start-period=10s --retries=3 CMD wget --no-verbose --tries=1 --spider http://localhost:3000/health || exit 1
+# Health check pour Coolify
+HEALTHCHECK --interval=30s --timeout=10s --start-period=10s --retries=3 \
+  CMD wget --no-verbose --tries=1 --spider http://localhost:3000/health || exit 1
 
 CMD ["npm", "start"]

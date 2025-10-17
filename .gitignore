@@ -16,3 +16,8 @@ yarn-error.log*
 *.key
 secrets.json
 config/production.json
+
+# Session database
+packages/orchestrator/data/*.db
+packages/orchestrator/data/*.db-shm
+packages/orchestrator/data/*.db-wal

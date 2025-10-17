@@ -1,0 +1,2 @@
+# This directory stores persistent session data
+# .db files are excluded from git but the directory structure is preserved
