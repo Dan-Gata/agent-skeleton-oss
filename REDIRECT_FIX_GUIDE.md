@@ -1,51 +1,41 @@
-# 🔧 Guide de Résolution - ERR_TOO_MANY_REDIRECTS
+﻿# 🔧 Guide de Résolution - ERR_TOO_MANY_REDIRECTS
 
 ## ✅ Problème Résolu
 
-Le problème de redirection infinie était causé par **la perte des sessions à chaque redémarrage du container Docker**. Les sessions étaient stockées en mémoire (`global.sessions`) et disparaissaient quand Coolify redéployait l'application.
+Le problème de redirection infinie était causé par **la perte des sessions à chaque redémarrage du container Docker**. Les sessions étaient stockées en mémoire (`global.sessions`) et disparaissaient quand Coolify redéployait l''application.
 
 ## 🔄 Solution Implémentée
 
+### Commits de Correction
+
+- **9a30aba** - `fix: Restore missing dependencies and Node 20 Dockerfile` (DERNIER FIX)
+- **2a400be** - `fix: Use SQLite for persistent sessions`
+- **348618f** - `debug: Add extensive logging`
+
 ### 1. **SessionStore avec SQLite** (Commit: 2a400be)
 
-Remplacement du stockage en mémoire par une base de données SQLite persistante :
+Remplacement du stockage en mémoire par une base de données SQLite persistante.
 
-```javascript
-// Avant (sessions perdues au redémarrage)
-global.sessions = {};
+### 2. **Dépendances Restaurées** (Commit: 9a30aba)
 
-// Après (sessions persistées dans SQLite)
-const sessionStore = getSessionStore();
-```
+Le module `better-sqlite3` et autres dépendances manquantes ont été restaurés dans `package.json`.
 
-**Fichiers modifiés :**
-- ✅ `packages/orchestrator/src/sessionStore.js` - Nouveau module de gestion des sessions
-- ✅ `packages/orchestrator/src/index.js` - Utilisation du SessionStore au lieu de global.sessions
-- ✅ `docker-compose.yaml` - Volume Docker pour persister la base de données
-- ✅ `packages/orchestrator/data/.gitkeep` - Dossier pour la base de données
-
-### 2. **Volume Docker pour Persistence**
-
-Le fichier `docker-compose.yaml` configure maintenant un volume persistant :
-
-```yaml
-volumes:
-  - session-data:/app/packages/orchestrator/data
-
-volumes:
-  session-data:
-    driver: local
-```
+**Fichiers corrigés :**
+- ✅ `Dockerfile` - Upgrade vers Node 20-alpine avec Python/build tools
+- ✅ `packages/orchestrator/package.json` - Toutes les dépendances restaurées
+- ✅ `packages/orchestrator/src/sessionStore.js` - Gestion des sessions SQLite
+- ✅ `docker-compose.yaml` - Volume pour persister les données
 
 ## 📋 Instructions de Déploiement sur Coolify
 
 ### Étape 1 : Redéployer sur Coolify
 
-Le commit **2a400be** contient toutes les corrections. Coolify va automatiquement :
+Le commit **9a30aba** contient TOUTES les corrections. Coolify va :
 1. Télécharger le nouveau code depuis GitHub
-2. Reconstruire l'image Docker
-3. Créer le volume `session-data` pour persister les sessions
-4. Démarrer le nouveau container
+2. Construire l''image avec Node 20 (et non Node 18)
+3. Installer toutes les dépendances incluant `better-sqlite3`
+4. Créer le volume `session-data` pour persister les sessions
+5. Démarrer le container
 
 ### Étape 2 : Effacer les Cookies du Navigateur
 
@@ -57,11 +47,6 @@ Le commit **2a400be** contient toutes les corrections. Coolify va automatiquemen
 3. Sélectionner `superairloup080448.kaussan-air.org`
 4. Clic droit → "Clear"
 
-**Firefox :**
-1. F12 → Onglet "Storage"
-2. Cookies → `superairloup080448.kaussan-air.org`
-3. Tout supprimer
-
 **Alternative rapide :** Navigation privée/incognito
 
 ### Étape 3 : Tester le Déploiement
@@ -72,7 +57,7 @@ Le commit **2a400be** contient toutes les corrections. Coolify va automatiquemen
    - Email: `admin@example.com`
    - Mot de passe: `admin123`
 4. Après connexion → redirection vers `/dashboard`
-5. Vous devriez voir l'interface avec 4 onglets :
+5. Dashboard avec 4 onglets :
    - 💬 Chat IA
    - 📁 Fichiers
    - 🤖 Automation
@@ -80,7 +65,7 @@ Le commit **2a400be** contient toutes les corrections. Coolify va automatiquemen
 
 ## 🔍 Vérification des Logs de Production
 
-Sur Coolify, regardez les logs du container. Vous devriez voir :
+Sur Coolify, regardez les logs. Vous devriez voir :
 
 ```
 ✅ Session store initialized with SQLite
@@ -89,7 +74,7 @@ Sur Coolify, regardez les logs du container. Vous devriez voir :
 🍪 Cookie sessionId défini | secure: true | sameSite: strict
 ```
 
-Si tout fonctionne correctement :
+Si tout fonctionne :
 ```
 📍 Route / appelée
 🔑 SessionId trouvé: [sessionId]
@@ -97,127 +82,32 @@ Si tout fonctionne correctement :
 ✅ Session valide, redirect /dashboard
 ```
 
-## 🎯 Avantages de la Solution
+## 🐛 Historique des Problèmes Résolus
 
-### ✅ Sessions Persistantes
-- Les sessions survivent aux redémarrages du container
-- Pas besoin de se reconnecter après chaque déploiement
-- Base de données SQLite légère et rapide
+### 1. Node 18 au lieu de Node 20
+- **Erreur :** `better-sqlite3` nécessite Node 20+
+- **Solution :** Dockerfile mis à jour vers `FROM node:20-alpine`
 
-### ✅ Nettoyage Automatique
-- Les sessions expirées sont supprimées automatiquement
-- Méthode `cleanupExpiredSessions()` au démarrage
-- Pas d'accumulation de données obsolètes
+### 2. Module manquant better-sqlite3
+- **Erreur :** `Error: Cannot find module ''better-sqlite3''`
+- **Solution :** Dépendance restaurée dans `package.json`
 
-### ✅ Production-Ready
-- Cookie `secure` auto-détecté pour HTTPS
-- Cookie `httpOnly` pour sécurité
-- `sameSite: strict` en production
-
-## 🐛 Si le Problème Persiste
-
-### 1. Vérifier que le Volume est Créé
-
-Sur le serveur Coolify, vérifiez que le volume Docker existe :
-
-```bash
-docker volume ls | grep session-data
-```
-
-### 2. Vérifier les Permissions
-
-Le dossier `data/` doit être accessible en écriture :
-
-```bash
-docker exec [container-name] ls -la /app/packages/orchestrator/data
-```
-
-### 3. Vérifier la Base de Données
-
-Si la base de données ne se crée pas :
-
-```bash
-docker exec [container-name] ls -la /app/packages/orchestrator/data/sessions.db
-```
-
-### 4. Logs de Debug
-
-Les logs montrent maintenant :
-- ✅ Nombre de sessions actives
-- ✅ Création/suppression de sessions
-- ✅ Détection HTTPS
-- ✅ Cookies envoyés/reçus
-
-## 📊 Endpoint de Debug
-
-Accédez à `https://superairloup080448.kaussan-air.org/debug` pour voir :
-
-```json
-{
-  "users": ["admin@example.com"],
-  "sessions": [
-    {
-      "sessionId": "abc123...",
-      "email": "admin@example.com",
-      "expiresAt": "2025-10-15T..."
-    }
-  ],
-  "totalSessions": 1,
-  "cookies": { "sessionId": "abc123..." }
-}
-```
-
-## 🚀 Prochaines Étapes Recommandées
-
-### 1. Tester Complètement le Dashboard
-
-- [ ] Tab Chat IA : Sélectionner un modèle et envoyer un message
-- [ ] Tab Fichiers : Uploader un fichier PDF
-- [ ] Tab Automation : Créer un workflow
-- [ ] Tab Analytics : Voir les statistiques
-
-### 2. Nettoyer les Logs de Debug (Optionnel)
-
-Une fois que tout fonctionne, vous pouvez retirer les `console.log` de debug dans :
-- `packages/orchestrator/src/index.js` (lignes avec 📍 🍪 🔑 etc.)
-
-### 3. Configurer un Utilisateur Admin Permanent
-
-Actuellement, l'utilisateur admin est en dur dans le code :
-
-```javascript
-global.users = {
-    'admin@example.com': {
-        email: 'admin@example.com',
-        password: 'admin123', // ⚠️ À changer !
-        name: 'Admin User'
-    }
-};
-```
-
-**Recommandation :** Migrer vers une base de données SQLite pour les utilisateurs aussi.
-
-## 📝 Commits Liés
-
-- **2a400be** - `fix: Use SQLite for persistent sessions` (CETTE FIX)
-- 348618f - Debug: Add extensive logging
-- b7e0c6e - Fix: Cookie security for HTTPS
-- 1eec78f - Fix: Redirect to /dashboard after login
-- 11a0915 - Fix: Route '/' session check
-- 6966953 - Fix: Route restructure
+### 3. Sessions perdues au redémarrage
+- **Erreur :** `ERR_TOO_MANY_REDIRECTS`
+- **Solution :** SQLite avec volume Docker persistant
 
 ## ✨ Résultat Attendu
 
 Après ce déploiement :
 1. ✅ Plus de redirection infinie
 2. ✅ Les sessions survivent aux redémarrages
-3. ✅ L'interface dashboard s'affiche correctement
-4. ✅ Les 60+ modèles d'IA sont disponibles
+3. ✅ L''interface dashboard s''affiche correctement
+4. ✅ Les 60+ modèles d''IA sont disponibles
 5. ✅ Tous les onglets fonctionnent
 
 ---
 
-**📅 Date :** 14 Octobre 2025  
-**🔄 Commit :** 2a400be  
+**📅 Date :** 17 Octobre 2025  
+**🔄 Commit :** 9a30aba  
 **👨‍💻 Auteur :** GitHub Copilot  
 **🎯 Status :** ✅ RÉSOLU
