@@ -63,6 +63,9 @@ function setSecureCookie(req, res, name, value, maxAge = 24 * 60 * 60 * 1000) {
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, '../views'));
 
+// Servir les fichiers statiques depuis /public
+app.use(express.static(path.join(__dirname, '../public')));
+
 // Middleware d'authentification
 function requireAuth(req, res, next) {
     // Désactiver l'auth en mode développement si DISABLE_AUTH=true
@@ -1078,6 +1081,86 @@ app.get('/api/files-list', (req, res) => {
     }
 });
 
+// Route /api/files (alias de /api/files-list pour le dashboard)
+app.get('/api/files', (req, res) => {
+    try {
+        const files = Object.values(global.uploadedFiles || {});
+        res.json({ 
+            success: true,
+            files: files.map(f => ({ 
+                id: f.id, 
+                name: f.name, 
+                size: f.size, 
+                uploadedAt: f.uploadedAt,
+                type: f.name.split('.').pop()
+            })), 
+            count: files.length 
+        });
+    } catch (error) {
+        res.status(500).json({ success: false, error: 'Erreur liste fichiers' });
+    }
+});
+
+// Route /api/upload (alias de /api/upload-simple)
+app.post('/api/upload', requireAuth, (req, res) => {
+    try {
+        console.log('📁 API /api/upload appelée');
+        
+        if (!req.body || req.body.length === 0) {
+            return res.status(400).json({ success: false, error: 'Aucun contenu reçu' });
+        }
+        
+        const fileId = Date.now().toString();
+        const fileName = req.headers['x-filename'] || req.headers['filename'] || 'fichier_inconnu.txt';
+        const content = req.body.toString('utf8').substring(0, 50000);
+        
+        global.uploadedFiles[fileId] = {
+            id: fileId,
+            name: fileName,
+            content: content,
+            size: req.body.length,
+            uploadedAt: new Date().toISOString()
+        };
+        
+        console.log('✅ Fichier uploadé:', fileName);
+        
+        res.json({
+            success: true,
+            fileId: fileId,
+            fileName: fileName,
+            size: req.body.length
+        });
+    } catch (error) {
+        console.error('❌ Erreur upload:', error);
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+// Route /api/analytics (statistiques d'utilisation)
+app.get('/api/analytics', (req, res) => {
+    res.json({
+        success: true,
+        stats: {
+            totalUsers: Object.keys(global.users).length,
+            totalFiles: Object.keys(global.uploadedFiles || {}).length,
+            totalSessions: sessionStore.getSessionCount(),
+            uptime: process.uptime(),
+            timestamp: new Date().toISOString()
+        }
+    });
+});
+
+// Route /api/email/send (simulation d'envoi d'email)
+app.post('/api/email/send', requireAuth, (req, res) => {
+    console.log('📧 Email send request:', req.body);
+    // Simulation d'envoi d'email
+    res.json({
+        success: true,
+        message: 'Email envoyé avec succès (simulation)',
+        data: req.body
+    });
+});
+
 // API Chat IA avec 60+ modèles
 app.post('/api/chat', requireAuth, async (req, res) => {
     try {
@@ -1094,8 +1177,8 @@ app.post('/api/chat', requireAuth, async (req, res) => {
         let contextFiles = '';
         
         if (uploadedFiles.length > 0) {
-            contextFiles = '\\n\\n📁 FICHIERS DISPONIBLES:\\n' + 
-                uploadedFiles.map(f => `- ${f.name} (${f.size} bytes): ${f.content.substring(0, 500)}...`).join('\\n');
+            contextFiles = '\n\n📁 FICHIERS DISPONIBLES:\n' + 
+                uploadedFiles.map(f => `- ${f.name} (${f.size} bytes): ${f.content.substring(0, 500)}...`).join('\n');
         }
         
         // Construction du prompt avec contexte des fichiers
@@ -1154,11 +1237,11 @@ async function simulateAIResponse(prompt, model) {
     
     // Ajout d'informations sur les fichiers si présents
     if (prompt.includes('📁 FICHIERS DISPONIBLES:')) {
-        response += `\\n\\n📄 J'ai également analysé vos fichiers uploadés et je peux vous aider avec leur contenu !`;
+        response += `\n\n📄 J'ai également analysé vos fichiers uploadés et je peux vous aider avec leur contenu !`;
     }
     
     // Ajout d'éléments dynamiques
-    response += `\\n\\n💡 *Réponse générée par ${modelName} à ${new Date().toLocaleTimeString()}*`;
+    response += `\n\n💡 *Réponse générée par ${modelName} à ${new Date().toLocaleTimeString()}*`;
     
     return response;
 }
