@@ -63,8 +63,17 @@ function setSecureCookie(req, res, name, value, maxAge = 24 * 60 * 60 * 1000) {
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, '../views'));
 
-// Servir les fichiers statiques depuis /public
-app.use(express.static(path.join(__dirname, '../public')));
+// Servir les fichiers statiques depuis /public avec configuration MIME correcte
+app.use(express.static(path.join(__dirname, '../public'), {
+    setHeaders: (res, filePath) => {
+        if (filePath.endsWith('.js')) {
+            res.setHeader('Content-Type', 'application/javascript; charset=utf-8');
+        }
+    }
+}));
+
+// Debug: Log du chemin public
+console.log('📁 Dossier public:', path.join(__dirname, '../public'));
 
 // Middleware d'authentification
 function requireAuth(req, res, next) {
@@ -1220,28 +1229,80 @@ async function simulateAIResponse(prompt, model) {
     
     const modelName = modelNames[model] || model.split('/')[1] || 'Assistant IA';
     
-    // Réponses simulées basées sur le modèle
-    const responses = {
-        'alibaba/qwen-turbo': `🇨🇳 Salutations ! Je suis Qwen de Alibaba Cloud. Votre message: "${prompt.substring(0, 100)}..." a été analysé avec mes capacités multilingues avancées. Comment puis-je vous aider davantage ?`,
-        
-        'anthropic/claude-3.5-sonnet': `🧠 Bonjour ! Claude 3.5 Sonnet ici. J'ai analysé votre demande avec attention. Voici ma réflexion structurée sur votre question...`,
-        
-        'openai/gpt-4o': `🚀 GPT-4o à votre service ! J'ai traité votre demande avec mes capacités multimodales avancées. Voici une réponse optimisée...`,
-        
-        'google/gemini-pro': `💎 Gemini Pro activé ! J'ai analysé votre requête avec mes algorithmes Google avancés. Voici ma réponse enrichie...`,
-        
-        'meta-llama/llama-3.1-70b-instruct': `🦙 Llama 3.1 70B en action ! Avec 70 milliards de paramètres, j'ai traité votre demande de manière approfondie...`
-    };
+    // Analyse du prompt pour générer une réponse contextuelle
+    const promptLower = prompt.toLowerCase();
+    let response = '';
     
-    let response = responses[model] || `🤖 ${modelName} répond: J'ai bien reçu votre message et l'ai analysé avec attention.`;
+    // Détection de questions spécifiques
+    if (promptLower.includes('bonjour') || promptLower.includes('salut') || promptLower.includes('hello')) {
+        response = `👋 Bonjour ! Je suis ${modelName}, comment puis-je vous aider aujourd'hui ? Je peux répondre à vos questions, analyser des documents, ou discuter de n'importe quel sujet.`;
+    } else if (promptLower.includes('comment') && promptLower.includes('?')) {
+        response = `🤔 ${modelName} analyse votre question "${prompt.substring(0, 100)}..."
+
+Pour répondre à votre question, voici quelques points clés :
+• Point 1 : Analyse contextuelle de votre demande
+• Point 2 : Considérations pratiques
+• Point 3 : Recommandations basées sur votre cas
+
+N'hésitez pas à demander plus de détails !`;
+    } else if (promptLower.includes('pourquoi') || promptLower.includes('pourquoi')) {
+        response = `💡 ${modelName} répond :
+
+La raison principale est que chaque situation est unique. Dans votre cas spécifique concernant "${prompt.substring(0, 80)}...", plusieurs facteurs entrent en jeu.
+
+Voici mon analyse approfondie :
+1. Contexte général
+2. Facteurs spécifiques à votre cas
+3. Implications pratiques
+
+Souhaitez-vous que je développe un aspect particulier ?`;
+    } else if (promptLower.includes('merci') || promptLower.includes('thank')) {
+        response = `� Je vous en prie ! C'est un plaisir de vous aider. Si vous avez d'autres questions, n'hésitez pas !
+
+${modelName} est toujours à votre disposition.`;
+    } else if (promptLower.includes('problème') || promptLower.includes('erreur') || promptLower.includes('bug')) {
+        response = `🔧 ${modelName} diagnostique votre problème...
+
+Concernant "${prompt.substring(0, 100)}...", voici mon analyse :
+
+**Diagnostic** : J'ai identifié plusieurs pistes possibles
+**Solutions proposées** :
+1. Vérification des configurations
+2. Analyse des logs
+3. Tests des composants
+
+Pouvez-vous me donner plus de détails sur les symptômes ?`;
+    } else {
+        // Réponse générique mais contextuelle
+        const snippets = [
+            `J'ai analysé votre message concernant "${prompt.substring(0, 80)}..." et voici ma réponse détaillée.`,
+            `Excellente question ! Concernant "${prompt.substring(0, 80)}...", permettez-moi de vous expliquer.`,
+            `Intéressant ! Pour répondre à "${prompt.substring(0, 80)}...", voici ce que je peux vous dire.`,
+            `Merci pour votre message. À propos de "${prompt.substring(0, 80)}...", laissez-moi vous aider.`
+        ];
+        
+        const randomSnippet = snippets[Math.floor(Math.random() * snippets.length)];
+        
+        response = `🤖 ${modelName} répond :
+
+${randomSnippet}
+
+**Analyse contextuelle** :
+${prompt.length > 100 ? 'Votre message est détaillé, ce qui me permet de mieux comprendre votre besoin.' : 'Votre message est concis. N\'hésitez pas à préciser si besoin.'}
+
+**Ma réponse** :
+Basé sur votre demande, voici mon analyse et mes recommandations. Chaque cas est unique, et je suis là pour vous accompagner dans votre réflexion.
+
+Voulez-vous que j'approfondisse un aspect particulier ?`;
+    }
     
     // Ajout d'informations sur les fichiers si présents
     if (prompt.includes('📁 FICHIERS DISPONIBLES:')) {
-        response += `\n\n📄 J'ai également analysé vos fichiers uploadés et je peux vous aider avec leur contenu !`;
+        response += `\n\n📄 **Fichiers détectés** : J'ai accès à vos documents uploadés et je peux les analyser pour vous fournir des réponses plus précises !`;
     }
     
     // Ajout d'éléments dynamiques
-    response += `\n\n💡 *Réponse générée par ${modelName} à ${new Date().toLocaleTimeString()}*`;
+    response += `\n\n💡 *Réponse générée par ${modelName} à ${new Date().toLocaleTimeString('fr-FR')}*`;
     
     return response;
 }
@@ -1423,6 +1484,46 @@ app.post('/coolify/deploy/:serviceId', async (req, res) => {
     }
 });
 
+// Alias pour le dashboard qui appelle /api/coolify/deploy
+app.post('/api/coolify/deploy/:serviceId', async (req, res) => {
+    const { serviceId } = req.params;
+    
+    console.log(`[${new Date().toISOString()}] [coolify-api-alias] Déploiement service: ${serviceId}`);
+    
+    if (!process.env.COOLIFY_API_KEY) {
+        return res.status(500).json({
+            success: false,
+            error: 'COOLIFY_API_KEY non configurée',
+            timestamp: new Date().toISOString()
+        });
+    }
+    
+    try {
+        const response = await coolifyClient.post(`/api/v1/deploy/${serviceId}`);
+        
+        console.log(`[${new Date().toISOString()}] [coolify-api-alias] ✅ Déploiement lancé`);
+        
+        res.json({
+            success: true,
+            message: 'Déploiement Coolify déclenché avec succès',
+            serviceId,
+            data: response.data,
+            timestamp: new Date().toISOString()
+        });
+    } catch (error) {
+        console.error(`[${new Date().toISOString()}] [coolify-api-alias] ❌ Erreur:`, error.message);
+        
+        res.status(500).json({
+            success: false,
+            error: 'Échec du déploiement Coolify',
+            service: 'coolify',
+            serviceId,
+            message: error.response?.data?.message || error.message,
+            timestamp: new Date().toISOString()
+        });
+    }
+});
+
 // ============================================================================
 // 3. ENDPOINTS BASEROW - GESTION DONNÉES & ASSETS
 // ============================================================================
@@ -1539,6 +1640,36 @@ app.post('/video/generate', async (req, res) => {
         });
     } catch (error) {
         console.error(`[${new Date().toISOString()}] [video-toolkit] ❌ Erreur:`, error.message);
+        
+        res.status(500).json({
+            success: false,
+            error: 'Échec de la génération vidéo',
+            service: 'video-toolkit',
+            message: error.response?.data?.message || error.message,
+            timestamp: new Date().toISOString()
+        });
+    }
+});
+
+// Alias pour le dashboard qui appelle /api/video/generate
+app.post('/api/video/generate', async (req, res) => {
+    const videoParams = req.body;
+    
+    console.log(`[${new Date().toISOString()}] [video-toolkit-api-alias] Génération vidéo`);
+    
+    try {
+        const response = await videoToolkitClient.post('/generate', videoParams);
+        
+        console.log(`[${new Date().toISOString()}] [video-toolkit-api-alias] ✅ Vidéo générée`);
+        
+        res.json({
+            success: true,
+            message: 'Vidéo générée avec succès',
+            data: response.data,
+            timestamp: new Date().toISOString()
+        });
+    } catch (error) {
+        console.error(`[${new Date().toISOString()}] [video-toolkit-api-alias] ❌ Erreur:`, error.message);
         
         res.status(500).json({
             success: false,
