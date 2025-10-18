@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
@@ -130,8 +130,8 @@
 <body>
     <div class="auth-container">
         <div class="logo">
-            <h1>🚀 Agent Skeleton OSS</h1>
-            <p>Plateforme IA Avancée</p>
+            <h1>ðŸš€ Agent Skeleton OSS</h1>
+            <p>Plateforme IA AvancÃ©e</p>
         </div>
         
         <div id="message"></div>
@@ -148,7 +148,7 @@
                 
                 <div class="form-group">
                     <label for="loginPassword">Mot de passe</label>
-                    <input type="password" id="loginPassword" placeholder="••••••••" required>
+                    <input type="password" id="loginPassword" placeholder="â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢" required>
                 </div>
                 
                 <button type="submit" class="btn">Se connecter</button>
@@ -176,14 +176,14 @@
                 
                 <div class="form-group">
                     <label for="registerPassword">Mot de passe</label>
-                    <input type="password" id="registerPassword" placeholder="••••••••" required>
+                    <input type="password" id="registerPassword" placeholder="â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢" required>
                 </div>
                 
                 <button type="submit" class="btn">S'inscrire</button>
             </form>
             
             <div class="toggle-auth">
-                <a href="javascript:void(0)" onclick="showLogin()" style="cursor: pointer;">Déjà un compte ? Se connecter</a>
+                <a href="javascript:void(0)" onclick="showLogin()" style="cursor: pointer;">DÃ©jÃ  un compte ? Se connecter</a>
             </div>
         </div>
     </div>
@@ -214,7 +214,7 @@
             const password = document.getElementById('loginPassword').value;
             
             if (!email || !password) {
-                showMessage('error', '❌ Veuillez remplir tous les champs');
+                showMessage('error', 'âŒ Veuillez remplir tous les champs');
                 return;
             }
             
@@ -231,14 +231,15 @@
                     // Stocker le token dans localStorage
                     if (result.token) {
                         localStorage.setItem('authToken', result.token);
-                        console.log('Token stock�:', result.token.substring(0,15) + '...');
+                        console.log('Token stocké:', result.token.substring(0,15) + '...');
                     }
-                    showMessage('success', '? Connexion r�ussie!');
-                    setTimeout(() => window.location.href = '/dashboard', 1000); else {
-                    showMessage('error', '❌ ' + result.error);
+                    showMessage('success', '? Connexion réussie!');
+                    setTimeout(() => window.location.href = '/dashboard', 1000);
+                } else {
+                    showMessage('error', 'âŒ ' + result.error);
                 }
             } catch (error) {
-                showMessage('error', '❌ Erreur de connexion: ' + error.message);
+                showMessage('error', 'âŒ Erreur de connexion: ' + error.message);
             }
         });
         
@@ -251,7 +252,7 @@
             const password = document.getElementById('registerPassword').value;
             
             if (!name || !email || !password) {
-                showMessage('error', '❌ Veuillez remplir tous les champs');
+                showMessage('error', 'âŒ Veuillez remplir tous les champs');
                 return;
             }
             
@@ -268,18 +269,20 @@
                     // Stocker le token dans localStorage
                     if (result.token) {
                         localStorage.setItem('authToken', result.token);
-                        console.log('Token stock�:', result.token.substring(0,15) + '...');
+                        console.log('Token stocké:', result.token.substring(0,15) + '...');
                     }
-                    showMessage('success', '? Connexion r�ussie!');
-                    setTimeout(() => window.location.href = '/dashboard', 1000); else {
-                    showMessage('error', '❌ ' + result.error);
+                    showMessage('success', '? Connexion réussie!');
+                    setTimeout(() => window.location.href = '/dashboard', 1000);
+                } else {
+                    showMessage('error', 'âŒ ' + result.error);
                 }
             } catch (error) {
-                showMessage('error', '❌ Erreur d\'inscription: ' + error.message);
+                showMessage('error', 'âŒ Erreur d\'inscription: ' + error.message);
             }
         });
     </script>
 </body>
 </html>
+
 
 
