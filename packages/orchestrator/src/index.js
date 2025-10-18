@@ -1170,7 +1170,36 @@ app.post('/api/email/send', requireAuth, (req, res) => {
     });
 });
 
-// API Chat IA avec 60+ modèles
+// Route /api/social/publish (publication sur réseaux sociaux)
+app.post('/api/social/publish', requireAuth, async (req, res) => {
+    console.log('📱 Social publish request:', req.body);
+    
+    const { platform, content, media } = req.body;
+    
+    if (!platform || !content) {
+        return res.status(400).json({
+            success: false,
+            error: 'Platform et content requis'
+        });
+    }
+    
+    // Simulation de publication sur réseaux sociaux
+    // TODO: Intégrer vraies APIs (Twitter, Facebook, LinkedIn, etc.)
+    
+    res.json({
+        success: true,
+        message: `Publication sur ${platform} réussie (simulation)`,
+        data: {
+            platform,
+            content: content.substring(0, 100) + '...',
+            publishedAt: new Date().toISOString(),
+            postId: `sim_${Date.now()}`,
+            url: `https://${platform}.com/post/sim_${Date.now()}`
+        }
+    });
+});
+
+// API Chat IA avec 60+ modèles ET AGENT AUTONOME
 app.post('/api/chat', requireAuth, async (req, res) => {
     try {
         const { message, model } = req.body;
@@ -1183,24 +1212,30 @@ app.post('/api/chat', requireAuth, async (req, res) => {
         
         // Récupération des fichiers uploadés
         const uploadedFiles = Object.values(global.uploadedFiles || {});
-        let contextFiles = '';
         
-        if (uploadedFiles.length > 0) {
-            contextFiles = '\n\n📁 FICHIERS DISPONIBLES:\n' + 
-                uploadedFiles.map(f => `- ${f.name} (${f.size} bytes): ${f.content.substring(0, 500)}...`).join('\n');
+        // 🤖 NOUVEAU : Utiliser l'agent autonome pour exécuter la tâche
+        const agentResult = await agentExecutor.execute(message, {
+            files: uploadedFiles,
+            user: req.user
+        });
+        
+        console.log('🎯 Agent result:', agentResult);
+        
+        // Générer une réponse contextualisée basée sur le résultat de l'agent
+        let response = '';
+        
+        if (agentResult.success) {
+            response = formatAgentSuccessResponse(agentResult, model);
+        } else {
+            response = formatAgentErrorResponse(agentResult, model);
         }
-        
-        // Construction du prompt avec contexte des fichiers
-        const fullPrompt = `${message}${contextFiles}`;
-        
-        // Simulation de réponse IA (à remplacer par OpenRouter)
-        const response = await simulateAIResponse(fullPrompt, model);
         
         res.json({
             success: true,
             response: response,
             model: model,
-            filesUsed: uploadedFiles.length
+            filesUsed: uploadedFiles.length,
+            agentExecution: agentResult // Inclure le résultat de l'agent
         });
         
     } catch (error) {
@@ -1208,6 +1243,87 @@ app.post('/api/chat', requireAuth, async (req, res) => {
         res.status(500).json({ error: 'Erreur chat: ' + error.message });
     }
 });
+
+// Fonction pour formatter la réponse en cas de succès
+function formatAgentSuccessResponse(agentResult, model) {
+    const modelName = getModelName(model);
+    let response = `🤖 ${modelName} - Tâche exécutée avec succès\n\n`;
+    
+    response += `**Type d'action** : ${agentResult.intent}\n\n`;
+    
+    if (agentResult.result.message) {
+        response += `**Résultat** : ${agentResult.result.message}\n\n`;
+    }
+    
+    if (agentResult.result.details) {
+        response += `**Détails** :\n`;
+        response += formatDetails(agentResult.result.details);
+    }
+    
+    if (agentResult.result.suggestion) {
+        response += `\n💡 **Suggestion** : ${agentResult.result.suggestion}`;
+    }
+    
+    response += `\n\n✅ *Exécuté par Agent Autonome à ${new Date().toLocaleTimeString('fr-FR')}*`;
+    
+    return response;
+}
+
+// Fonction pour formatter la réponse en cas d'erreur
+function formatAgentErrorResponse(agentResult, model) {
+    const modelName = getModelName(model);
+    let response = `🤖 ${modelName} - Problème rencontré\n\n`;
+    
+    response += `**Type d'action** : ${agentResult.intent}\n\n`;
+    response += `**Erreur** : ${agentResult.error}\n\n`;
+    
+    if (agentResult.result && agentResult.result.suggestion) {
+        response += `💡 **Suggestion** : ${agentResult.result.suggestion}\n\n`;
+    }
+    
+    response += `**Que puis-je faire ?**\n`;
+    response += `- Vérifier la configuration (clés API, URLs)\n`;
+    response += `- Essayer une commande différente\n`;
+    response += `- Consulter les logs pour plus de détails\n\n`;
+    
+    response += `⚠️ *Tenté à ${new Date().toLocaleTimeString('fr-FR')}*`;
+    
+    return response;
+}
+
+// Fonction pour formater les détails
+function formatDetails(details) {
+    if (typeof details !== 'object') return details;
+    
+    let formatted = '';
+    for (const [key, value] of Object.entries(details)) {
+        if (typeof value === 'object' && value !== null) {
+            formatted += `  • **${key}** :\n`;
+            formatted += `    ${JSON.stringify(value, null, 2)}\n`;
+        } else {
+            formatted += `  • **${key}** : ${value}\n`;
+        }
+    }
+    return formatted;
+}
+
+// Fonction helper pour récupérer le nom du modèle
+function getModelName(model) {
+    const modelNames = {
+        'openai/gpt-4o': 'GPT-4o',
+        'openai/gpt-3.5-turbo': 'GPT-3.5 Turbo',
+        'anthropic/claude-3.5-sonnet': 'Claude 3.5 Sonnet',
+        'google/gemini-pro': 'Gemini Pro',
+        'alibaba/qwen-turbo': 'Alibaba Qwen Turbo',
+        'alibaba/qwen-plus': 'Alibaba Qwen Plus',
+        'alibaba/qwen-max': 'Alibaba Qwen Max',
+        'meta-llama/llama-3.1-70b-instruct': 'Llama 3.1 70B',
+        'mistralai/mistral-large': 'Mistral Large',
+        'perplexity/llama-3.1-sonar-large-128k-online': 'Perplexity Sonar'
+    };
+    
+    return modelNames[model] || model.split('/')[1] || 'Assistant IA';
+}
 
 // Simulation de réponse IA (version simplifiée)
 async function simulateAIResponse(prompt, model) {
@@ -1314,6 +1430,10 @@ Voulez-vous que j'approfondisse un aspect particulier ?`;
 // Configuration des clients API avec variables d'environnement
 require('dotenv').config();
 const axios = require('axios');
+const AgentExecutor = require('./agentExecutor');
+
+// Initialiser l'agent autonome
+const agentExecutor = new AgentExecutor();
 
 // Client n8n
 const n8nClient = axios.create({
