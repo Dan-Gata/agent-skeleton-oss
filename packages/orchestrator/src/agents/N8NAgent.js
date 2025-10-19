@@ -173,6 +173,95 @@ class N8NAgent {
     }
 
     /**
+     * Supprimer plusieurs workflows en une seule opération
+     */
+    async deleteMultipleWorkflows(workflowIds) {
+        console.log(`🗑️ [N8NAgent] Suppression de ${workflowIds.length} workflows...`);
+        
+        if (!this.config.apiKey) {
+            throw new Error('N8N_API_KEY non configurée');
+        }
+        
+        const results = {
+            deleted: [],
+            failed: [],
+            deletedCount: 0,
+            failedCount: 0
+        };
+        
+        for (const workflowId of workflowIds) {
+            try {
+                const deleteResult = await this.deleteWorkflow(workflowId);
+                results.deleted.push({
+                    id: workflowId,
+                    name: deleteResult.workflowName
+                });
+                results.deletedCount++;
+            } catch (error) {
+                console.error(`❌ [N8NAgent] Erreur suppression ${workflowId}:`, error.message);
+                results.failed.push({
+                    id: workflowId,
+                    error: error.message
+                });
+                results.failedCount++;
+            }
+        }
+        
+        console.log(`✅ [N8NAgent] ${results.deletedCount} supprimés, ${results.failedCount} échecs`);
+        
+        return {
+            status: 'completed',
+            ...results,
+            message: `${results.deletedCount} workflow(s) supprimé(s) avec succès`
+        };
+    }
+
+    /**
+     * Supprimer tous les workflows inactifs
+     */
+    async deleteAllInactiveWorkflows() {
+        console.log(`🗑️ [N8NAgent] Suppression de tous les workflows inactifs...`);
+        
+        if (!this.config.apiKey) {
+            throw new Error('N8N_API_KEY non configurée');
+        }
+        
+        try {
+            // Récupérer tous les workflows
+            const accountInfo = await this.checkAccount();
+            const workflows = accountInfo.workflows;
+            
+            // Filtrer les inactifs
+            const inactiveWorkflows = workflows.filter(w => !w.active);
+            
+            console.log(`📋 [N8NAgent] ${inactiveWorkflows.length} workflows inactifs détectés`);
+            
+            if (inactiveWorkflows.length === 0) {
+                return {
+                    status: 'completed',
+                    deletedCount: 0,
+                    deleted: [],
+                    keptCount: workflows.length,
+                    message: 'Aucun workflow inactif à supprimer'
+                };
+            }
+            
+            const workflowIds = inactiveWorkflows.map(w => w.id);
+            const deleteResult = await this.deleteMultipleWorkflows(workflowIds);
+            
+            return {
+                status: 'completed',
+                ...deleteResult,
+                keptCount: workflows.length - deleteResult.deletedCount,
+                message: `${deleteResult.deletedCount} workflow(s) inactif(s) supprimé(s)`
+            };
+            
+        } catch (error) {
+            throw new Error(`Erreur suppression workflows inactifs: ${error.message}`);
+        }
+    }
+
+    /**
      * Activer/Désactiver un workflow
      */
     async toggleWorkflow(workflowId, active) {

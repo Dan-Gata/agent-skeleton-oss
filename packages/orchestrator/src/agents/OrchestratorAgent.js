@@ -80,7 +80,27 @@ class OrchestratorAgent {
         if (msg.match(/(workflow|n8n|automation|automatisation)/i)) {
             // Suppression de workflow
             if (msg.match(/(supprim|efface|delete|retire)/i)) {
-                const workflowId = this.extractWorkflowId(userMessage);
+                // Détecter "TOUT" ou "TOUS" ou "CES"
+                if (msg.match(/(tout|tous|ces|ces workflow|all)/i)) {
+                    return {
+                        type: 'n8n_delete_all_inactive_workflows',
+                        params: {},
+                        confidence: 0.98
+                    };
+                }
+                
+                // Extraire tous les IDs de la commande
+                const workflowIds = this.extractAllWorkflowIds(userMessage);
+                
+                if (workflowIds.length > 1) {
+                    return {
+                        type: 'n8n_delete_multiple_workflows',
+                        params: { workflowIds },
+                        confidence: 0.95
+                    };
+                }
+                
+                const workflowId = workflowIds[0] || this.extractWorkflowId(userMessage);
                 return {
                     type: 'n8n_delete_workflow',
                     params: { workflowId },
@@ -251,6 +271,16 @@ class OrchestratorAgent {
                     result = await this.agents.n8n.deleteWorkflow(intent.params.workflowId);
                     break;
                 
+                case 'n8n_delete_multiple_workflows':
+                    agentsUsed.push('N8NAgent');
+                    result = await this.agents.n8n.deleteMultipleWorkflows(intent.params.workflowIds);
+                    break;
+                
+                case 'n8n_delete_all_inactive_workflows':
+                    agentsUsed.push('N8NAgent');
+                    result = await this.agents.n8n.deleteAllInactiveWorkflows();
+                    break;
+                
                 // ===== FILE AGENT =====
                 case 'files_list':
                     agentsUsed.push('FileAgent');
@@ -360,6 +390,35 @@ class OrchestratorAgent {
                 message += `ID: \`${intent.params.workflowId}\``;
                 break;
             
+            case 'n8n_delete_multiple_workflows':
+                message = `✅ **${details.deletedCount} Workflows supprimés avec succès**\n\n`;
+                message += `🗑️ Workflows supprimés:\n`;
+                details.deleted.forEach(w => {
+                    message += `• **${w.name}** (ID: \`${w.id}\`)\n`;
+                });
+                if (details.failed && details.failed.length > 0) {
+                    message += `\n⚠️ Erreurs (${details.failed.length}):\n`;
+                    details.failed.forEach(f => {
+                        message += `• ${f.id}: ${f.error}\n`;
+                    });
+                }
+                break;
+            
+            case 'n8n_delete_all_inactive_workflows':
+                message = `✅ **${details.deletedCount} Workflows inactifs supprimés**\n\n`;
+                if (details.deletedCount > 0) {
+                    message += `🗑️ Workflows supprimés:\n`;
+                    details.deleted.forEach(w => {
+                        message += `• **${w.name}** (ID: \`${w.id}\`)\n`;
+                    });
+                } else {
+                    message += `Aucun workflow inactif à supprimer.`;
+                }
+                if (details.keptCount > 0) {
+                    message += `\n\n✅ ${details.keptCount} workflow(s) actif(s) conservé(s)`;
+                }
+                break;
+            
             case 'files_list':
                 message = `📂 **Fichiers uploadés** (${details.count})\n\n`;
                 if (details.files && details.files.length > 0) {
@@ -464,6 +523,12 @@ Que puis-je faire pour vous ? 😊`
         // Chercher ID dans format: yKMSHULhJtpfTzDY ou "workflow 123"
         const idMatch = text.match(/[a-zA-Z0-9]{10,}/);
         return idMatch ? idMatch[0] : null;
+    }
+    
+    extractAllWorkflowIds(text) {
+        // Extraire tous les IDs de workflows (format: 16 caractères alphanumériques)
+        const idMatches = text.match(/[a-zA-Z0-9]{16}/g);
+        return idMatches || [];
     }
     
     extractServiceId(text) {
