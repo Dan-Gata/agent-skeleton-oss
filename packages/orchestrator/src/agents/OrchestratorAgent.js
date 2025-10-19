@@ -520,15 +520,37 @@ Que puis-je faire pour vous ? 😊`
     // ========== HELPERS ==========
     
     extractWorkflowId(text) {
-        // Chercher ID dans format: yKMSHULhJtpfTzDY ou "workflow 123"
-        const idMatch = text.match(/[a-zA-Z0-9]{10,}/);
-        return idMatch ? idMatch[0] : null;
+        // Patterns plus robustes pour extraction d'ID - ORDRE DE PRIORITÉ
+        const patterns = [
+            /\(ID[:\s]*[`'"]*([a-zA-Z0-9]{16})[`'"]*\)/i,  // (ID: `3wnBU3rbhJATJfYW`)
+            /ID[:\s]+[`'"]*([a-zA-Z0-9]{16})[`'"]*/i,  // ID: 3wnBU3rbhJATJfYW
+            /[`'"]([a-zA-Z0-9]{16})[`'"]/,  // `3wnBU3rbhJATJfYW`
+            /workflow[:\s]+[`'"]*([a-zA-Z0-9]{16})[`'"]*/i,  // workflow: 3wnBU3rbhJATJfYW
+            /\b([a-zA-Z0-9]{16})\b/  // 3wnBU3rbhJATJfYW (seul, 16 caractères exactement)
+        ];
+        
+        for (const pattern of patterns) {
+            const match = text.match(pattern);
+            if (match && match[1]) {
+                console.log(`🎯 [OrchestratorAgent] ID workflow extrait: ${match[1]} via pattern: ${pattern}`);
+                return match[1];
+            }
+        }
+        
+        console.warn(`⚠️ [OrchestratorAgent] Aucun ID workflow trouvé dans: "${text.substring(0, 100)}..."`);
+        return null;
     }
     
     extractAllWorkflowIds(text) {
-        // Extraire tous les IDs de workflows (format: 16 caractères alphanumériques)
-        const idMatches = text.match(/[a-zA-Z0-9]{16}/g);
-        return idMatches || [];
+        // Extraire tous les IDs de workflows (format: EXACTEMENT 16 caractères alphanumériques)
+        const idMatches = text.match(/\b[a-zA-Z0-9]{16}\b/g);
+        
+        if (idMatches && idMatches.length > 0) {
+            console.log(`🎯 [OrchestratorAgent] ${idMatches.length} IDs workflow extraits: ${idMatches.join(', ')}`);
+            return idMatches;
+        }
+        
+        return [];
     }
     
     extractServiceId(text) {

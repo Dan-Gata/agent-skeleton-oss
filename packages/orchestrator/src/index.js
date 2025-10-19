@@ -8,6 +8,7 @@ const cors = require('cors');
 const cookieParser = require('cookie-parser');
 const { getSessionStore } = require('./sessionStore');
 const FilePersistence = require('./utils/FilePersistence');
+const ConversationMemory = require('./utils/ConversationMemory');
 
 const app = express();
 const port = process.env.PORT || 3000;
@@ -34,6 +35,9 @@ const sessionStore = getSessionStore();
 
 // NOUVELLE PERSISTANCE DES FICHIERS avec SQLite
 const filePersistence = new FilePersistence();
+
+// NOUVELLE MÉMOIRE DES CONVERSATIONS avec SQLite
+const conversationMemory = new ConversationMemory();
 
 // Migrer les anciens fichiers en mémoire s'ils existent
 if (global.uploadedFiles && Object.keys(global.uploadedFiles).length > 0) {
@@ -1216,6 +1220,210 @@ app.get('/api/analytics', (req, res) => {
     });
 });
 
+// ============================================================================
+// NOUVELLES API - HISTORIQUE CONVERSATIONS & INSTRUCTIONS SYSTÈME
+// ============================================================================
+
+/**
+ * GET /api/conversation/history
+ * Récupère l'historique des conversations de l'utilisateur
+ */
+app.get('/api/conversation/history', requireAuth, (req, res) => {
+    try {
+        const userId = req.session?.user?.email || 'anonymous';
+        const limit = parseInt(req.query.limit) || 50;
+        
+        const history = conversationMemory.getHistory(userId, limit);
+        const stats = conversationMemory.getStats(userId);
+        
+        res.json({
+            success: true,
+            history: history,
+            stats: stats,
+            count: history.length
+        });
+    } catch (error) {
+        console.error('❌ Erreur récupération historique:', error);
+        res.status(500).json({
+            success: false,
+            error: error.message
+        });
+    }
+});
+
+/**
+ * POST /api/conversation/search
+ * Recherche dans l'historique des conversations
+ */
+app.post('/api/conversation/search', requireAuth, (req, res) => {
+    try {
+        const userId = req.session?.user?.email || 'anonymous';
+        const { query, limit } = req.body;
+        
+        if (!query) {
+            return res.status(400).json({
+                success: false,
+                error: 'Query requis'
+            });
+        }
+        
+        const results = conversationMemory.searchHistory(userId, query, limit || 20);
+        
+        res.json({
+            success: true,
+            results: results,
+            count: results.length,
+            query: query
+        });
+    } catch (error) {
+        console.error('❌ Erreur recherche historique:', error);
+        res.status(500).json({
+            success: false,
+            error: error.message
+        });
+    }
+});
+
+/**
+ * DELETE /api/conversation/clear
+ * Nettoie l'historique ancien
+ */
+app.delete('/api/conversation/clear', requireAuth, (req, res) => {
+    try {
+        const userId = req.session?.user?.email || 'anonymous';
+        const daysOld = parseInt(req.query.days) || 90;
+        
+        const deletedCount = conversationMemory.cleanOldHistory(userId, daysOld);
+        
+        res.json({
+            success: true,
+            message: `${deletedCount} messages anciens supprimés`,
+            deletedCount: deletedCount
+        });
+    } catch (error) {
+        console.error('❌ Erreur nettoyage historique:', error);
+        res.status(500).json({
+            success: false,
+            error: error.message
+        });
+    }
+});
+
+/**
+ * POST /api/instructions/add
+ * Ajouter une instruction système pour l'agent
+ */
+app.post('/api/instructions/add', requireAuth, (req, res) => {
+    try {
+        const userId = req.session?.user?.email || 'anonymous';
+        const { instruction, category, priority } = req.body;
+        
+        if (!instruction) {
+            return res.status(400).json({
+                success: false,
+                error: 'Instruction requise'
+            });
+        }
+        
+        const instructionId = conversationMemory.addInstruction(
+            userId,
+            instruction,
+            category || 'general',
+            priority || 5
+        );
+        
+        res.json({
+            success: true,
+            message: 'Instruction ajoutée avec succès',
+            instructionId: instructionId
+        });
+    } catch (error) {
+        console.error('❌ Erreur ajout instruction:', error);
+        res.status(500).json({
+            success: false,
+            error: error.message
+        });
+    }
+});
+
+/**
+ * GET /api/instructions/list
+ * Liste toutes les instructions actives
+ */
+app.get('/api/instructions/list', requireAuth, (req, res) => {
+    try {
+        const userId = req.session?.user?.email || 'anonymous';
+        const instructions = conversationMemory.getInstructions(userId);
+        
+        res.json({
+            success: true,
+            instructions: instructions,
+            count: instructions.length
+        });
+    } catch (error) {
+        console.error('❌ Erreur liste instructions:', error);
+        res.status(500).json({
+            success: false,
+            error: error.message
+        });
+    }
+});
+
+/**
+ * DELETE /api/instructions/:id
+ * Désactive une instruction système
+ */
+app.delete('/api/instructions/:id', requireAuth, (req, res) => {
+    try {
+        const instructionId = parseInt(req.params.id);
+        const success = conversationMemory.deactivateInstruction(instructionId);
+        
+        if (success) {
+            res.json({
+                success: true,
+                message: 'Instruction désactivée'
+            });
+        } else {
+            res.status(404).json({
+                success: false,
+                error: 'Instruction non trouvée'
+            });
+        }
+    } catch (error) {
+        console.error('❌ Erreur désactivation instruction:', error);
+        res.status(500).json({
+            success: false,
+            error: error.message
+        });
+    }
+});
+
+/**
+ * GET /api/memory/stats
+ * Statistiques de la mémoire conversationnelle
+ */
+app.get('/api/memory/stats', requireAuth, (req, res) => {
+    try {
+        const userId = req.session?.user?.email || 'anonymous';
+        const stats = conversationMemory.getStats(userId);
+        
+        res.json({
+            success: true,
+            stats: stats
+        });
+    } catch (error) {
+        console.error('❌ Erreur stats mémoire:', error);
+        res.status(500).json({
+            success: false,
+            error: error.message
+        });
+    }
+});
+
+// ============================================================================
+// FIN NOUVELLES API MÉMOIRE & INSTRUCTIONS
+// ============================================================================
+
 // Route /api/file/:fileId (récupérer un fichier spécifique)
 app.get('/api/file/:fileId', requireAuth, (req, res) => {
     const { fileId } = req.params;
@@ -1291,16 +1499,29 @@ app.post('/api/chat', requireAuth, async (req, res) => {
             return res.status(400).json({ error: 'Message et modèle requis' });
         }
         
-        console.log('💬 Chat reçu:', { model, messageLength: message.length });
+        const userId = req.session?.user?.email || 'anonymous';
+        
+        console.log('💬 Chat reçu:', { model, messageLength: message.length, userId });
+        
+        // SAUVEGARDER LE MESSAGE UTILISATEUR DANS L'HISTORIQUE
+        conversationMemory.saveMessage(userId, message, 'user', { model });
+        
+        // Récupérer l'historique récent pour le contexte
+        const recentHistory = conversationMemory.getRecentContext(userId, 5);
+        
+        // Récupérer les instructions système
+        const systemInstructions = conversationMemory.formatInstructions(userId);
         
         // Récupération des fichiers uploadés pour le contexte
         const uploadedFiles = Object.values(global.uploadedFiles || {});
         
-        // 🤖 NOUVEAU : Utiliser l'orchestrateur conversationnel
+        // 🤖 NOUVEAU : Utiliser l'orchestrateur conversationnel AVEC CONTEXTE
         const context = {
             files: uploadedFiles,
             user: req.user,
-            model: model
+            model: model,
+            history: recentHistory,
+            instructions: systemInstructions
         };
         
         const orchestratorResponse = await orchestrator.chat(message, context);
@@ -1311,11 +1532,23 @@ app.post('/api/chat', requireAuth, async (req, res) => {
         const modelName = getModelName(model);
         let finalResponse = '';
         
-        if (orchestratorResponse.success) {
-            finalResponse = `🤖 **${modelName}** via Orchestrateur\n\n${orchestratorResponse.message}`;
-        } else {
-            finalResponse = `⚠️ **${modelName}** - Problème rencontré\n\n${orchestratorResponse.message}`;
+        // Ajouter les instructions système en préfixe si elles existent
+        if (systemInstructions) {
+            finalResponse = systemInstructions + '\n\n';
         }
+        
+        if (orchestratorResponse.success) {
+            finalResponse += `🤖 **${modelName}** via Orchestrateur\n\n${orchestratorResponse.message}`;
+        } else {
+            finalResponse += `⚠️ **${modelName}** - Problème rencontré\n\n${orchestratorResponse.message}`;
+        }
+        
+        // SAUVEGARDER LA RÉPONSE DANS L'HISTORIQUE
+        conversationMemory.saveMessage(userId, finalResponse, 'assistant', {
+            model,
+            intent: orchestratorResponse.intent,
+            response: orchestratorResponse.message
+        });
         
         res.json({
             success: orchestratorResponse.success,
@@ -1326,6 +1559,10 @@ app.post('/api/chat', requireAuth, async (req, res) => {
                 intent: orchestratorResponse.intent,
                 agentsUsed: orchestratorResponse.agentsUsed || [],
                 details: orchestratorResponse.details
+            },
+            memory: {
+                historyUsed: recentHistory.length > 0,
+                instructionsActive: systemInstructions.length > 0
             }
         });
         
