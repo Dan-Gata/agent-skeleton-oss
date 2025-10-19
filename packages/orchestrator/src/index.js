@@ -1236,7 +1236,7 @@ app.post('/api/social/publish', requireAuth, async (req, res) => {
     });
 });
 
-// API Chat IA avec 60+ modèles ET AGENT AUTONOME
+// API Chat IA avec 60+ modèles ET AGENT ORCHESTRATEUR CONVERSATIONNEL
 app.post('/api/chat', requireAuth, async (req, res) => {
     try {
         const { message, model } = req.body;
@@ -1247,37 +1247,49 @@ app.post('/api/chat', requireAuth, async (req, res) => {
         
         console.log('💬 Chat reçu:', { model, messageLength: message.length });
         
-        // Récupération des fichiers uploadés
+        // Récupération des fichiers uploadés pour le contexte
         const uploadedFiles = Object.values(global.uploadedFiles || {});
         
-        // 🤖 NOUVEAU : Utiliser l'agent autonome pour exécuter la tâche
-        const agentResult = await agentExecutor.execute(message, {
+        // 🤖 NOUVEAU : Utiliser l'orchestrateur conversationnel
+        const context = {
             files: uploadedFiles,
-            user: req.user
-        });
+            user: req.user,
+            model: model
+        };
         
-        console.log('🎯 Agent result:', agentResult);
+        const orchestratorResponse = await orchestrator.chat(message, context);
         
-        // Générer une réponse contextualisée basée sur le résultat de l'agent
-        let response = '';
+        console.log('🎯 Orchestrator response:', orchestratorResponse.success ? 'Success' : 'Error');
         
-        if (agentResult.success) {
-            response = formatAgentSuccessResponse(agentResult, model);
+        // Formater la réponse finale
+        const modelName = getModelName(model);
+        let finalResponse = '';
+        
+        if (orchestratorResponse.success) {
+            finalResponse = `🤖 **${modelName}** via Orchestrateur\n\n${orchestratorResponse.message}`;
         } else {
-            response = formatAgentErrorResponse(agentResult, model);
+            finalResponse = `⚠️ **${modelName}** - Problème rencontré\n\n${orchestratorResponse.message}`;
         }
         
         res.json({
-            success: true,
-            response: response,
+            success: orchestratorResponse.success,
+            response: finalResponse,
             model: model,
             filesUsed: uploadedFiles.length,
-            agentExecution: agentResult // Inclure le résultat de l'agent
+            orchestration: {
+                intent: orchestratorResponse.intent,
+                agentsUsed: orchestratorResponse.agentsUsed || [],
+                details: orchestratorResponse.details
+            }
         });
         
     } catch (error) {
         console.error('❌ Erreur chat:', error);
-        res.status(500).json({ error: 'Erreur chat: ' + error.message });
+        res.status(500).json({ 
+            success: false,
+            error: 'Erreur chat: ' + error.message,
+            response: `❌ Désolé, une erreur s'est produite: ${error.message}\n\nRéessayez ou demandez "aide" pour voir mes capacités.`
+        });
     }
 });
 
@@ -1467,10 +1479,17 @@ Voulez-vous que j'approfondisse un aspect particulier ?`;
 // Configuration des clients API avec variables d'environnement
 require('dotenv').config();
 const axios = require('axios');
-const AgentExecutor = require('./agentExecutor');
+const OrchestratorAgent = require('./agents/OrchestratorAgent');
 
-// Initialiser l'agent autonome
-const agentExecutor = new AgentExecutor();
+// Initialiser l'agent orchestrateur avec sous-agents
+const orchestrator = new OrchestratorAgent({
+    n8nUrl: process.env.N8N_API_URL,
+    n8nApiKey: process.env.N8N_API_KEY,
+    coolifyUrl: process.env.COOLIFY_API_URL,
+    coolifyApiKey: process.env.COOLIFY_API_KEY,
+    baserowUrl: process.env.BASEROW_URL,
+    baserowApiToken: process.env.BASEROW_API_TOKEN
+});
 
 // Client n8n
 const n8nClient = axios.create({
