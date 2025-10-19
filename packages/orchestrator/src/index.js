@@ -1114,13 +1114,23 @@ app.get('/api/files', (req, res) => {
 app.post('/api/upload', requireAuth, (req, res) => {
     try {
         console.log('📁 API /api/upload appelée');
+        console.log('📋 Headers reçus:', JSON.stringify(req.headers, null, 2));
         
         if (!req.body || req.body.length === 0) {
             return res.status(400).json({ success: false, error: 'Aucun contenu reçu' });
         }
         
         const fileId = Date.now().toString();
-        const fileName = req.headers['x-filename'] || req.headers['filename'] || 'fichier_inconnu.txt';
+        
+        // Essayer plusieurs façons de récupérer le nom du fichier
+        const fileName = req.headers['x-filename'] || 
+                        req.headers['filename'] || 
+                        req.headers['x-file-name'] ||
+                        req.headers['content-disposition']?.match(/filename="?([^"]+)"?/)?.[1] ||
+                        `fichier_${fileId}.txt`;
+        
+        console.log('📝 Nom de fichier détecté:', fileName);
+        
         const content = req.body.toString('utf8').substring(0, 50000);
         
         global.uploadedFiles[fileId] = {
@@ -1131,13 +1141,14 @@ app.post('/api/upload', requireAuth, (req, res) => {
             uploadedAt: new Date().toISOString()
         };
         
-        console.log('✅ Fichier uploadé:', fileName);
+        console.log('✅ Fichier uploadé:', fileName, 'Taille:', req.body.length, 'bytes');
         
         res.json({
             success: true,
             fileId: fileId,
             fileName: fileName,
-            size: req.body.length
+            size: req.body.length,
+            message: `Fichier "${fileName}" uploadé avec succès !`
         });
     } catch (error) {
         console.error('❌ Erreur upload:', error);
@@ -1155,6 +1166,32 @@ app.get('/api/analytics', (req, res) => {
             totalSessions: sessionStore.getSessionCount(),
             uptime: process.uptime(),
             timestamp: new Date().toISOString()
+        }
+    });
+});
+
+// Route /api/file/:fileId (récupérer un fichier spécifique)
+app.get('/api/file/:fileId', requireAuth, (req, res) => {
+    const { fileId } = req.params;
+    const file = global.uploadedFiles[fileId];
+    
+    if (!file) {
+        return res.status(404).json({
+            success: false,
+            error: 'Fichier non trouvé',
+            fileId: fileId
+        });
+    }
+    
+    res.json({
+        success: true,
+        file: {
+            id: file.id,
+            name: file.name,
+            size: file.size,
+            uploadedAt: file.uploadedAt,
+            contentPreview: file.content.substring(0, 200) + '...',
+            type: file.name.split('.').pop()
         }
     });
 });
