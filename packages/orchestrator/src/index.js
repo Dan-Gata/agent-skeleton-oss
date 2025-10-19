@@ -7,6 +7,7 @@ const helmet = require('helmet');
 const cors = require('cors');
 const cookieParser = require('cookie-parser');
 const { getSessionStore } = require('./sessionStore');
+const FilePersistence = require('./utils/FilePersistence');
 
 const app = express();
 const port = process.env.PORT || 3000;
@@ -31,6 +32,15 @@ app.use(express.raw({ type: '*/*', limit: '10mb' }));
 // Initialize session store with SQLite
 const sessionStore = getSessionStore();
 
+// NOUVELLE PERSISTANCE DES FICHIERS avec SQLite
+const filePersistence = new FilePersistence();
+
+// Migrer les anciens fichiers en mémoire s'ils existent
+if (global.uploadedFiles && Object.keys(global.uploadedFiles).length > 0) {
+    console.log('🔄 Migration des fichiers en mémoire vers SQLite...');
+    filePersistence.migrateFromMemory(global.uploadedFiles);
+}
+
 // Stockage en mémoire (base de données temporaire)
 global.users = {
     'admin@example.com': {
@@ -40,7 +50,8 @@ global.users = {
         createdAt: new Date().toISOString()
     }
 };
-global.uploadedFiles = {};
+// DÉPRÉCIÉ: global.uploadedFiles est remplacé par filePersistence
+global.uploadedFiles = {}; // Gardé pour compatibilité temporaire
 global.conversations = {};
 
 // Helper fonction pour créer des cookies sécurisés
@@ -1090,10 +1101,14 @@ app.get('/api/files-list', (req, res) => {
     }
 });
 
-// Route /api/files (alias de /api/files-list pour le dashboard)
+// Route /api/files - AVEC PERSISTANCE SQLite
 app.get('/api/files', (req, res) => {
     try {
-        const files = Object.values(global.uploadedFiles || {});
+        const userId = req.session?.user?.email || null;
+        
+        // Récupérer depuis SQLite au lieu de global.uploadedFiles
+        const files = filePersistence.listFiles(userId, 100);
+        
         res.json({ 
             success: true,
             files: files.map(f => ({ 
@@ -1101,16 +1116,19 @@ app.get('/api/files', (req, res) => {
                 name: f.name, 
                 size: f.size, 
                 uploadedAt: f.uploadedAt,
-                type: f.name.split('.').pop()
+                type: f.name.split('.').pop(),
+                mimeType: f.mimeType
             })), 
-            count: files.length 
+            count: files.length,
+            source: 'sqlite-persistent'
         });
     } catch (error) {
+        console.error('❌ Erreur liste fichiers:', error.message);
         res.status(500).json({ success: false, error: 'Erreur liste fichiers' });
     }
 });
 
-// Route /api/upload (alias de /api/upload-simple)
+// Route /api/upload - AVEC PERSISTANCE SQLite
 app.post('/api/upload', requireAuth, (req, res) => {
     try {
         console.log('📁 API /api/upload appelée');
@@ -1132,21 +1150,49 @@ app.post('/api/upload', requireAuth, (req, res) => {
         console.log('📝 Nom de fichier détecté:', fileName);
         
         const content = req.body.toString('utf8').substring(0, 50000);
+        const size = req.body.length;
+        const mimeType = req.headers['content-type'] || 'text/plain';
+        const userId = req.session?.user?.email || null;
         
-        global.uploadedFiles[fileId] = {
+        // SAUVEGARDER DANS LA BASE DE DONNÉES SQLite
+        const fileData = {
             id: fileId,
             name: fileName,
             content: content,
-            size: req.body.length,
+            size: size,
+            mimeType: mimeType,
+            userId: userId,
             uploadedAt: new Date().toISOString()
         };
         
-        console.log('✅ Fichier uploadé:', fileName, 'Taille:', req.body.length, 'bytes');
+        const saved = filePersistence.saveFile(fileData);
+        
+        if (!saved) {
+            console.error('❌ Échec sauvegarde fichier dans SQLite');
+            return res.status(500).json({ 
+                success: false, 
+                error: 'Échec sauvegarde du fichier' 
+            });
+        }
+        
+        // VÉRIFICATION: Le fichier est-il vraiment sauvegardé?
+        const verifyFile = filePersistence.getFile(fileId);
+        if (!verifyFile) {
+            console.error('❌ VÉRIFICATION ÉCHEC: Fichier non trouvé après sauvegarde!');
+            return res.status(500).json({ 
+                success: false, 
+                error: 'Fichier non persisté (vérification échouée)' 
+            });
+        }
+        
+        console.log('✅ Fichier uploadé ET VÉRIFIÉ:', fileName, 'Taille:', size, 'bytes');
+        console.log('✅ ID:', fileId, 'User:', userId);
         
         res.json({
             success: true,
             fileId: fileId,
             fileName: fileName,
+            verified: true,
             size: req.body.length,
             message: `Fichier "${fileName}" uploadé avec succès !`
         });
@@ -1481,14 +1527,15 @@ require('dotenv').config();
 const axios = require('axios');
 const OrchestratorAgent = require('./agents/OrchestratorAgent');
 
-// Initialiser l'agent orchestrateur avec sous-agents
+// Initialiser l'agent orchestrateur avec sous-agents ET PERSISTANCE
 const orchestrator = new OrchestratorAgent({
     n8nUrl: process.env.N8N_API_URL,
     n8nApiKey: process.env.N8N_API_KEY,
     coolifyUrl: process.env.COOLIFY_API_URL,
     coolifyApiKey: process.env.COOLIFY_API_KEY,
     baserowUrl: process.env.BASEROW_URL,
-    baserowApiToken: process.env.BASEROW_API_TOKEN
+    baserowApiToken: process.env.BASEROW_API_TOKEN,
+    filePersistence: filePersistence  // Passer la persistance aux agents
 });
 
 // Client n8n

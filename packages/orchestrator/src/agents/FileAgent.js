@@ -5,7 +5,12 @@
 class FileAgent {
     constructor(config = {}) {
         this.config = config;
+        this.filePersistence = config.filePersistence || null;
         console.log('📁 [FileAgent] Initialisé');
+        
+        if (!this.filePersistence) {
+            console.warn('⚠️ [FileAgent] Aucune persistance configurée - utilisation de global.uploadedFiles (DÉPRÉCIÉ)');
+        }
     }
 
     /**
@@ -14,7 +19,24 @@ class FileAgent {
     async listFiles() {
         console.log('📋 [FileAgent] Liste des fichiers...');
         
-        const files = Object.values(global.uploadedFiles || {});
+        // Utiliser la persistance SQLite si disponible
+        let files;
+        if (this.filePersistence) {
+            const dbFiles = this.filePersistence.listFiles(null, 100);
+            files = dbFiles.map(f => ({
+                id: f.id,
+                name: f.name,
+                size: f.size,
+                uploadedAt: f.uploadedAt,
+                content: f.content, // Pour analyse
+                type: this.detectFileType(f.name)
+            }));
+            console.log('✅ [FileAgent] Fichiers chargés depuis SQLite');
+        } else {
+            // Fallback sur global.uploadedFiles (déprécié)
+            files = Object.values(global.uploadedFiles || {});
+            console.warn('⚠️ [FileAgent] Fichiers chargés depuis mémoire (NON PERSISTANT)');
+        }
         
         return {
             status: 'success',
@@ -24,8 +46,9 @@ class FileAgent {
                 name: f.name,
                 size: f.size,
                 uploadedAt: f.uploadedAt,
-                type: this.detectFileType(f.name)
-            }))
+                type: f.type || this.detectFileType(f.name)
+            })),
+            source: this.filePersistence ? 'sqlite-persistent' : 'memory-ephemeral'
         };
     }
 

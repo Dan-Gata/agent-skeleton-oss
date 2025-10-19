@@ -15,14 +15,14 @@ class OrchestratorAgent {
         this.config = config;
         this.conversationHistory = [];
         
-        // Initialiser tous les sous-agents spécialisés
+        // Initialiser tous les sous-agents spécialisés AVEC PERSISTANCE
         this.agents = {
             n8n: new N8NAgent(config),
             coolify: new CoolifyAgent(config),
             baserow: new BaserowAgent(config),
             email: new EmailAgent(config),
             security: new SecurityAgent(config),
-            files: new FileAgent(config)
+            files: new FileAgent({ ...config, filePersistence: config.filePersistence })
         };
         
         console.log('🎯 [OrchestratorAgent] Orchestrateur initialisé avec', Object.keys(this.agents).length, 'sous-agents');

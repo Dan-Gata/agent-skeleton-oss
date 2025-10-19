@@ -146,21 +146,47 @@ class N8NAgent {
             const workflowName = listResponse.data.name;
             
             // Supprimer le workflow
-            await axios.delete(`${this.config.url}/api/v1/workflows/${workflowId}`, {
+            const deleteResponse = await axios.delete(`${this.config.url}/api/v1/workflows/${workflowId}`, {
                 headers: {
                     'X-N8N-API-KEY': this.config.apiKey
                 },
                 timeout: 10000
             });
             
-            console.log(`✅ [N8NAgent] Workflow "${workflowName}" supprimé`);
+            console.log(`🗑️ [N8NAgent] Réponse DELETE: Status ${deleteResponse.status}`);
             
-            return {
-                status: 'deleted',
-                workflowId,
-                workflowName,
-                message: `Workflow "${workflowName}" supprimé avec succès`
-            };
+            // VÉRIFICATION CRITIQUE: Confirmer que le workflow est vraiment supprimé
+            console.log(`🔍 [N8NAgent] Vérification suppression de ${workflowId}...`);
+            try {
+                await axios.get(`${this.config.url}/api/v1/workflows/${workflowId}`, {
+                    headers: {
+                        'X-N8N-API-KEY': this.config.apiKey
+                    },
+                    timeout: 10000
+                });
+                
+                // Si on arrive ici, le workflow existe encore - ÉCHEC
+                console.error(`❌ [N8NAgent] ÉCHEC: Workflow ${workflowId} existe toujours après suppression!`);
+                throw new Error(`La suppression a échoué - le workflow "${workflowName}" existe toujours`);
+                
+            } catch (verifyError) {
+                if (verifyError.response?.status === 404) {
+                    // 404 = workflow n'existe plus = SUCCÈS CONFIRMÉ
+                    console.log(`✅ [N8NAgent] VÉRIFIÉ: Workflow "${workflowName}" vraiment supprimé (404)`);
+                    
+                    return {
+                        status: 'deleted',
+                        workflowId,
+                        workflowName,
+                        verified: true,
+                        message: `Workflow "${workflowName}" supprimé et vérifié avec succès`
+                    };
+                } else {
+                    // Autre erreur pendant la vérification
+                    console.error(`⚠️ [N8NAgent] Erreur vérification: ${verifyError.message}`);
+                    throw verifyError;
+                }
+            }
             
         } catch (error) {
             console.error('❌ [N8NAgent] Erreur suppression:', error.message);
