@@ -327,12 +327,828 @@ app.get('/direct-login', (req, res) => {
     `);
 });
 
-// Dashboard route (requires authentication)
+// Dashboard route (requires authentication) - NOUVEAU DASHBOARD COMPLET
 app.get('/dashboard', requireAuth, (req, res) => {
     console.log('📊 Route /dashboard appelée');
     console.log('👤 User:', req.user ? req.user.email : 'none');
     console.log('🍪 Cookies:', JSON.stringify(req.cookies));
-    res.sendFile(path.join(__dirname, '../public/dashboard.html'));
+    
+    res.send(`
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <title>🎛️ Agent Skeleton OSS - Dashboard Complet</title>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <style>
+            * { margin: 0; padding: 0; box-sizing: border-box; }
+            body { 
+                font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+                background: linear-gradient(135deg, #0f0f23 0%, #1a1a2e 100%);
+                color: #ffffff;
+                line-height: 1.6;
+            }
+            
+            /* Header */
+            .header {
+                background: linear-gradient(135deg, #16213e 0%, #0f3460 100%);
+                padding: 20px 40px;
+                box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+            }
+            .header h1 {
+                font-size: 28px;
+                display: flex;
+                align-items: center;
+                gap: 12px;
+            }
+            .header-actions {
+                display: flex;
+                gap: 15px;
+            }
+            .btn {
+                padding: 10px 20px;
+                border: none;
+                border-radius: 8px;
+                cursor: pointer;
+                font-size: 14px;
+                font-weight: 600;
+                transition: all 0.3s;
+                text-decoration: none;
+                display: inline-flex;
+                align-items: center;
+                gap: 8px;
+            }
+            .btn-primary { background: #3498db; color: white; }
+            .btn-primary:hover { background: #2980b9; transform: translateY(-2px); }
+            .btn-success { background: #2ecc71; color: white; }
+            .btn-success:hover { background: #27ae60; transform: translateY(-2px); }
+            .btn-danger { background: #e74c3c; color: white; }
+            .btn-danger:hover { background: #c0392b; transform: translateY(-2px); }
+            
+            /* Container */
+            .container {
+                max-width: 1600px;
+                margin: 0 auto;
+                padding: 30px;
+            }
+            
+            /* Grid Layout */
+            .grid {
+                display: grid;
+                grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+                gap: 25px;
+                margin-bottom: 30px;
+            }
+            
+            /* Cards */
+            .card {
+                background: linear-gradient(135deg, #1e2a3a 0%, #263849 100%);
+                border-radius: 12px;
+                padding: 25px;
+                box-shadow: 0 8px 30px rgba(0,0,0,0.4);
+                transition: all 0.3s;
+            }
+            .card:hover {
+                transform: translateY(-5px);
+                box-shadow: 0 12px 40px rgba(52, 152, 219, 0.3);
+            }
+            .card-header {
+                display: flex;
+                align-items: center;
+                gap: 12px;
+                margin-bottom: 20px;
+                padding-bottom: 15px;
+                border-bottom: 2px solid rgba(52, 152, 219, 0.3);
+            }
+            .card-header h3 {
+                font-size: 20px;
+                flex: 1;
+            }
+            .card-icon {
+                font-size: 28px;
+            }
+            
+            /* Stats */
+            .stats-grid {
+                display: grid;
+                grid-template-columns: repeat(2, 1fr);
+                gap: 15px;
+            }
+            .stat-item {
+                background: rgba(255,255,255,0.05);
+                padding: 15px;
+                border-radius: 8px;
+                text-align: center;
+            }
+            .stat-value {
+                font-size: 32px;
+                font-weight: bold;
+                color: #3498db;
+                margin-bottom: 5px;
+            }
+            .stat-label {
+                font-size: 13px;
+                color: #bdc3c7;
+                text-transform: uppercase;
+            }
+            
+            /* Agents Grid */
+            .agents-grid {
+                display: grid;
+                grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+                gap: 15px;
+            }
+            .agent-card {
+                background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+                padding: 20px;
+                border-radius: 10px;
+                text-align: center;
+                cursor: pointer;
+                transition: all 0.3s;
+                border: 2px solid transparent;
+            }
+            .agent-card:hover {
+                border-color: #3498db;
+                transform: scale(1.05);
+            }
+            .agent-card.active {
+                border-color: #2ecc71;
+                background: linear-gradient(135deg, #27ae60 0%, #2ecc71 100%);
+            }
+            .agent-icon {
+                font-size: 42px;
+                margin-bottom: 10px;
+            }
+            .agent-name {
+                font-size: 14px;
+                font-weight: 600;
+                margin-bottom: 5px;
+            }
+            .agent-status {
+                font-size: 11px;
+                color: #95a5a6;
+            }
+            
+            /* History List */
+            .history-list {
+                max-height: 400px;
+                overflow-y: auto;
+            }
+            .history-item {
+                background: rgba(255,255,255,0.05);
+                padding: 15px;
+                border-radius: 8px;
+                margin-bottom: 12px;
+                border-left: 4px solid #3498db;
+                transition: all 0.3s;
+            }
+            .history-item:hover {
+                background: rgba(255,255,255,0.1);
+                transform: translateX(5px);
+            }
+            .history-item.assistant {
+                border-left-color: #2ecc71;
+            }
+            .history-item.user {
+                border-left-color: #e74c3c;
+            }
+            .history-meta {
+                display: flex;
+                justify-content: space-between;
+                margin-bottom: 8px;
+                font-size: 12px;
+                color: #95a5a6;
+            }
+            .history-content {
+                font-size: 14px;
+                line-height: 1.5;
+            }
+            
+            /* Instructions */
+            .instruction-item {
+                background: rgba(46, 204, 113, 0.1);
+                border: 1px solid #2ecc71;
+                padding: 15px;
+                border-radius: 8px;
+                margin-bottom: 12px;
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+            }
+            .instruction-content {
+                flex: 1;
+            }
+            .instruction-category {
+                display: inline-block;
+                background: #3498db;
+                color: white;
+                padding: 3px 10px;
+                border-radius: 4px;
+                font-size: 11px;
+                margin-right: 10px;
+            }
+            .instruction-text {
+                margin-top: 8px;
+                font-size: 14px;
+            }
+            
+            /* Workflows */
+            .workflow-item {
+                background: rgba(255,255,255,0.05);
+                padding: 15px;
+                border-radius: 8px;
+                margin-bottom: 12px;
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+            }
+            .workflow-info {
+                flex: 1;
+            }
+            .workflow-name {
+                font-size: 16px;
+                font-weight: 600;
+                margin-bottom: 5px;
+            }
+            .workflow-id {
+                font-size: 12px;
+                color: #95a5a6;
+                font-family: monospace;
+            }
+            .workflow-actions {
+                display: flex;
+                gap: 8px;
+            }
+            .btn-small {
+                padding: 6px 12px;
+                font-size: 12px;
+            }
+            
+            /* Loading */
+            .loading {
+                text-align: center;
+                padding: 40px;
+                font-size: 16px;
+                color: #95a5a6;
+            }
+            .spinner {
+                border: 3px solid rgba(255,255,255,0.1);
+                border-top: 3px solid #3498db;
+                border-radius: 50%;
+                width: 40px;
+                height: 40px;
+                animation: spin 1s linear infinite;
+                margin: 0 auto 15px;
+            }
+            @keyframes spin {
+                0% { transform: rotate(0deg); }
+                100% { transform: rotate(360deg); }
+            }
+            
+            /* Scrollbar */
+            ::-webkit-scrollbar {
+                width: 8px;
+                height: 8px;
+            }
+            ::-webkit-scrollbar-track {
+                background: rgba(255,255,255,0.05);
+                border-radius: 4px;
+            }
+            ::-webkit-scrollbar-thumb {
+                background: #3498db;
+                border-radius: 4px;
+            }
+            ::-webkit-scrollbar-thumb:hover {
+                background: #2980b9;
+            }
+            
+            /* Modal */
+            .modal {
+                display: none;
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: rgba(0,0,0,0.8);
+                z-index: 1000;
+                justify-content: center;
+                align-items: center;
+            }
+            .modal.active {
+                display: flex;
+            }
+            .modal-content {
+                background: linear-gradient(135deg, #1e2a3a 0%, #263849 100%);
+                padding: 30px;
+                border-radius: 12px;
+                max-width: 600px;
+                width: 90%;
+                max-height: 80vh;
+                overflow-y: auto;
+            }
+            .modal-header {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                margin-bottom: 20px;
+            }
+            .modal-close {
+                background: #e74c3c;
+                color: white;
+                border: none;
+                padding: 8px 15px;
+                border-radius: 6px;
+                cursor: pointer;
+                font-size: 14px;
+            }
+            
+            /* Form */
+            .form-group {
+                margin-bottom: 20px;
+            }
+            .form-label {
+                display: block;
+                margin-bottom: 8px;
+                font-weight: 600;
+                font-size: 14px;
+            }
+            .form-input, .form-textarea, .form-select {
+                width: 100%;
+                padding: 12px;
+                background: rgba(255,255,255,0.1);
+                border: 1px solid rgba(255,255,255,0.2);
+                border-radius: 6px;
+                color: white;
+                font-size: 14px;
+            }
+            .form-textarea {
+                min-height: 100px;
+                resize: vertical;
+            }
+            
+            /* Badge */
+            .badge {
+                display: inline-block;
+                padding: 4px 10px;
+                border-radius: 12px;
+                font-size: 11px;
+                font-weight: 600;
+                text-transform: uppercase;
+            }
+            .badge-success { background: #2ecc71; color: white; }
+            .badge-warning { background: #f39c12; color: white; }
+            .badge-danger { background: #e74c3c; color: white; }
+            .badge-info { background: #3498db; color: white; }
+        </style>
+    </head>
+    <body>
+        <!-- Header -->
+        <div class="header">
+            <h1>
+                <span>🎛️</span>
+                Agent Skeleton OSS - Dashboard Central
+            </h1>
+            <div class="header-actions">
+                <a href="/chat" class="btn btn-primary">💬 Chat IA</a>
+                <a href="/upload-test" class="btn btn-success">📁 Upload</a>
+                <button onclick="openInstructionModal()" class="btn btn-primary">➕ Instruction</button>
+                <button onclick="refreshAll()" class="btn btn-success">🔄 Actualiser</button>
+            </div>
+        </div>
+
+        <div class="container">
+            <!-- Stats Grid -->
+            <div class="grid">
+                <!-- Statistiques Générales -->
+                <div class="card">
+                    <div class="card-header">
+                        <span class="card-icon">📊</span>
+                        <h3>Statistiques Système</h3>
+                    </div>
+                    <div class="stats-grid">
+                        <div class="stat-item">
+                            <div class="stat-value" id="totalMessages">-</div>
+                            <div class="stat-label">Messages Total</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-value" id="totalInstructions">-</div>
+                            <div class="stat-label">Instructions</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-value" id="recentMessages">-</div>
+                            <div class="stat-label">Récents (24h)</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-value" id="totalFiles">-</div>
+                            <div class="stat-label">Fichiers</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Agent Orchestrateur -->
+                <div class="card">
+                    <div class="card-header">
+                        <span class="card-icon">🎯</span>
+                        <h3>Orchestrateur Central</h3>
+                        <span class="badge badge-success">ACTIF</span>
+                    </div>
+                    <div style="text-align: center; padding: 20px;">
+                        <div style="font-size: 64px; margin-bottom: 15px;">🧠</div>
+                        <h4 style="font-size: 18px; margin-bottom: 10px;">Agent Orchestrateur</h4>
+                        <p style="color: #95a5a6; font-size: 14px;">
+                            Coordonne tous les sous-agents<br>
+                            Analyse les intentions<br>
+                            Route les requêtes intelligemment
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Man in the Loop -->
+                <div class="card">
+                    <div class="card-header">
+                        <span class="card-icon">👤</span>
+                        <h3>Man in the Loop (Vous)</h3>
+                        <span class="badge badge-info">CONTRÔLE</span>
+                    </div>
+                    <div style="text-align: center; padding: 20px;">
+                        <div style="font-size: 64px; margin-bottom: 15px;">👨‍💼</div>
+                        <h4 style="font-size: 18px; margin-bottom: 10px;">Contrôle Humain</h4>
+                        <p style="color: #95a5a6; font-size: 14px;">
+                            Supervision en temps réel<br>
+                            Validation des actions critiques<br>
+                            Override des décisions
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Agents Grid -->
+            <div class="card">
+                <div class="card-header">
+                    <span class="card-icon">🤖</span>
+                    <h3>Sous-Agents Spécialisés</h3>
+                </div>
+                <div class="agents-grid" id="agentsGrid">
+                    <div class="agent-card" data-agent="n8n">
+                        <div class="agent-icon">⚡</div>
+                        <div class="agent-name">N8N Agent</div>
+                        <div class="agent-status">Workflows & Automatisation</div>
+                    </div>
+                    <div class="agent-card" data-agent="file">
+                        <div class="agent-icon">📁</div>
+                        <div class="agent-name">File Agent</div>
+                        <div class="agent-status">Gestion Fichiers</div>
+                    </div>
+                    <div class="agent-card" data-agent="coolify">
+                        <div class="agent-icon">🚀</div>
+                        <div class="agent-name">Coolify Agent</div>
+                        <div class="agent-status">Déploiements</div>
+                    </div>
+                    <div class="agent-card" data-agent="baserow">
+                        <div class="agent-icon">📊</div>
+                        <div class="agent-name">Baserow Agent</div>
+                        <div class="agent-status">Base de Données</div>
+                    </div>
+                    <div class="agent-card" data-agent="email">
+                        <div class="agent-icon">📧</div>
+                        <div class="agent-name">Email Agent</div>
+                        <div class="agent-status">Communication</div>
+                    </div>
+                    <div class="agent-card" data-agent="security">
+                        <div class="agent-icon">🔒</div>
+                        <div class="agent-name">Security Agent</div>
+                        <div class="agent-status">Sécurité</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Two Column Layout -->
+            <div class="grid">
+                <!-- Historique des Conversations -->
+                <div class="card">
+                    <div class="card-header">
+                        <span class="card-icon">💬</span>
+                        <h3>Historique Conversations</h3>
+                        <button class="btn btn-small btn-danger" onclick="clearHistory()">🗑️ Effacer</button>
+                    </div>
+                    <div class="history-list" id="historyList">
+                        <div class="loading">
+                            <div class="spinner"></div>
+                            Chargement de l'historique...
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Instructions Système -->
+                <div class="card">
+                    <div class="card-header">
+                        <span class="card-icon">📝</span>
+                        <h3>Instructions Système</h3>
+                        <button class="btn btn-small btn-primary" onclick="openInstructionModal()">➕ Ajouter</button>
+                    </div>
+                    <div id="instructionsList">
+                        <div class="loading">
+                            <div class="spinner"></div>
+                            Chargement des instructions...
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Workflows N8N -->
+            <div class="card">
+                <div class="card-header">
+                    <span class="card-icon">⚡</span>
+                    <h3>Workflows N8N Actifs</h3>
+                    <button class="btn btn-small btn-success" onclick="loadWorkflows()">🔄 Actualiser</button>
+                </div>
+                <div id="workflowsList">
+                    <div class="loading">
+                        <div class="spinner"></div>
+                        Chargement des workflows...
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Modal Instruction -->
+        <div class="modal" id="instructionModal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3>➕ Ajouter une Instruction Système</h3>
+                    <button class="modal-close" onclick="closeInstructionModal()">✖ Fermer</button>
+                </div>
+                <form onsubmit="addInstruction(event)">
+                    <div class="form-group">
+                        <label class="form-label">Instruction *</label>
+                        <textarea class="form-textarea" id="instructionText" required placeholder="Ex: Réponds toujours en français avec des émojis"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Catégorie</label>
+                        <select class="form-select" id="instructionCategory">
+                            <option value="general">Général</option>
+                            <option value="style">Style de Réponse</option>
+                            <option value="language">Langue</option>
+                            <option value="behavior">Comportement</option>
+                            <option value="formatting">Formatage</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Priorité (1-10)</label>
+                        <input type="number" class="form-input" id="instructionPriority" min="1" max="10" value="5">
+                    </div>
+                    <button type="submit" class="btn btn-success" style="width: 100%;">✅ Ajouter l'Instruction</button>
+                </form>
+            </div>
+        </div>
+
+        <script>
+            // Variables globales
+            let refreshInterval;
+
+            // Initialisation
+            document.addEventListener('DOMContentLoaded', function() {
+                console.log('🚀 Dashboard chargé');
+                loadAll();
+                
+                // Auto-refresh toutes les 30 secondes
+                refreshInterval = setInterval(loadAll, 30000);
+            });
+
+            // Charger toutes les données
+            async function loadAll() {
+                await Promise.all([
+                    loadStats(),
+                    loadHistory(),
+                    loadInstructions(),
+                    loadWorkflows()
+                ]);
+            }
+
+            // Charger les statistiques
+            async function loadStats() {
+                try {
+                    const response = await fetch('/api/memory/stats');
+                    const data = await response.json();
+                    
+                    if (data.success && data.stats) {
+                        document.getElementById('totalMessages').textContent = data.stats.totalMessages || 0;
+                        document.getElementById('totalInstructions').textContent = data.stats.totalInstructions || 0;
+                        document.getElementById('recentMessages').textContent = data.stats.recentMessages || 0;
+                    }
+                } catch (error) {
+                    console.error('❌ Erreur stats:', error);
+                }
+                
+                // Charger aussi le nombre de fichiers
+                try {
+                    const response = await fetch('/api/files');
+                    const data = await response.json();
+                    document.getElementById('totalFiles').textContent = data.count || 0;
+                } catch (error) {
+                    document.getElementById('totalFiles').textContent = '0';
+                }
+            }
+
+            // Charger l'historique
+            async function loadHistory() {
+                try {
+                    const response = await fetch('/api/conversation/history?limit=10');
+                    const data = await response.json();
+                    
+                    const container = document.getElementById('historyList');
+                    
+                    if (data.success && data.history && data.history.length > 0) {
+                        container.innerHTML = data.history.map(item => \`
+                            <div class="history-item \${item.role}">
+                                <div class="history-meta">
+                                    <span><strong>\${item.role === 'user' ? '👤 Utilisateur' : '🤖 Assistant'}</strong></span>
+                                    <span>\${new Date(item.createdAt).toLocaleString('fr-FR')}</span>
+                                </div>
+                                <div class="history-content">\${item.message.substring(0, 150)}\${item.message.length > 150 ? '...' : ''}</div>
+                            </div>
+                        \`).join('');
+                    } else {
+                        container.innerHTML = '<div class="loading">Aucun historique disponible</div>';
+                    }
+                } catch (error) {
+                    console.error('❌ Erreur historique:', error);
+                    document.getElementById('historyList').innerHTML = '<div class="loading">❌ Erreur de chargement</div>';
+                }
+            }
+
+            // Charger les instructions
+            async function loadInstructions() {
+                try {
+                    const response = await fetch('/api/instructions/list');
+                    const data = await response.json();
+                    
+                    const container = document.getElementById('instructionsList');
+                    
+                    if (data.success && data.instructions && data.instructions.length > 0) {
+                        container.innerHTML = data.instructions.map(item => \`
+                            <div class="instruction-item">
+                                <div class="instruction-content">
+                                    <span class="instruction-category">\${item.category || 'general'}</span>
+                                    <span class="badge badge-info">Priorité: \${item.priority || 5}</span>
+                                    <div class="instruction-text">\${item.instruction}</div>
+                                </div>
+                                <button class="btn btn-small btn-danger" onclick="deleteInstruction(\${item.id})">🗑️</button>
+                            </div>
+                        \`).join('');
+                    } else {
+                        container.innerHTML = '<div class="loading">Aucune instruction configurée</div>';
+                    }
+                } catch (error) {
+                    console.error('❌ Erreur instructions:', error);
+                    document.getElementById('instructionsList').innerHTML = '<div class="loading">❌ Erreur de chargement</div>';
+                }
+            }
+
+            // Charger les workflows (simulation)
+            async function loadWorkflows() {
+                const container = document.getElementById('workflowsList');
+                
+                // Simulation de workflows (à remplacer par vraie API N8N)
+                const mockWorkflows = [
+                    { id: '3wnBU3rbhJATJfYW', name: '🔴 Inactif **Demo: My first AI Agent in n8n**', status: 'inactive' },
+                    { id: 'abc123def456ghi7', name: '✅ Publication Automatique Réseaux Sociaux', status: 'active' },
+                    { id: 'xyz789uvw321rst4', name: '📧 Envoi Email Notifications', status: 'active' }
+                ];
+                
+                container.innerHTML = mockWorkflows.map(wf => \`
+                    <div class="workflow-item">
+                        <div class="workflow-info">
+                            <div class="workflow-name">\${wf.name}</div>
+                            <div class="workflow-id">ID: \${wf.id}</div>
+                        </div>
+                        <div class="workflow-actions">
+                            <button class="btn btn-small btn-primary" onclick="triggerWorkflow('\${wf.id}')">▶️ Lancer</button>
+                            <button class="btn btn-small btn-danger" onclick="deleteWorkflow('\${wf.id}')">🗑️ Supprimer</button>
+                        </div>
+                    </div>
+                \`).join('');
+            }
+
+            // Ajouter une instruction
+            async function addInstruction(event) {
+                event.preventDefault();
+                
+                const instruction = document.getElementById('instructionText').value;
+                const category = document.getElementById('instructionCategory').value;
+                const priority = parseInt(document.getElementById('instructionPriority').value);
+                
+                try {
+                    const response = await fetch('/api/instructions/add', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ instruction, category, priority })
+                    });
+                    
+                    const data = await response.json();
+                    
+                    if (data.success) {
+                        alert('✅ Instruction ajoutée avec succès !');
+                        closeInstructionModal();
+                        loadInstructions();
+                        
+                        // Reset form
+                        document.getElementById('instructionText').value = '';
+                        document.getElementById('instructionPriority').value = '5';
+                    } else {
+                        alert('❌ Erreur: ' + data.error);
+                    }
+                } catch (error) {
+                    console.error('❌ Erreur ajout instruction:', error);
+                    alert('❌ Erreur: ' + error.message);
+                }
+            }
+
+            // Supprimer une instruction
+            async function deleteInstruction(id) {
+                if (!confirm('Voulez-vous vraiment désactiver cette instruction ?')) return;
+                
+                try {
+                    const response = await fetch(\`/api/instructions/\${id}\`, {
+                        method: 'DELETE'
+                    });
+                    
+                    const data = await response.json();
+                    
+                    if (data.success) {
+                        alert('✅ Instruction désactivée');
+                        loadInstructions();
+                    } else {
+                        alert('❌ Erreur: ' + data.error);
+                    }
+                } catch (error) {
+                    alert('❌ Erreur: ' + error.message);
+                }
+            }
+
+            // Effacer l'historique
+            async function clearHistory() {
+                if (!confirm('Voulez-vous vraiment effacer l\\'historique de plus de 90 jours ?')) return;
+                
+                try {
+                    const response = await fetch('/api/conversation/clear?days=90', {
+                        method: 'DELETE'
+                    });
+                    
+                    const data = await response.json();
+                    
+                    if (data.success) {
+                        alert(\`✅ \${data.deletedCount} messages supprimés\`);
+                        loadHistory();
+                    } else {
+                        alert('❌ Erreur: ' + data.error);
+                    }
+                } catch (error) {
+                    alert('❌ Erreur: ' + error.message);
+                }
+            }
+
+            // Déclencher un workflow
+            function triggerWorkflow(id) {
+                alert(\`⚡ Déclenchement du workflow \${id}...\\n\\nCette fonctionnalité sera implémentée avec l'API N8N.\`);
+            }
+
+            // Supprimer un workflow
+            function deleteWorkflow(id) {
+                if (!confirm(\`Voulez-vous vraiment supprimer le workflow \${id} ?\`)) return;
+                alert(\`🗑️ Suppression du workflow \${id}...\\n\\nCette fonctionnalité sera implémentée avec l'API N8N.\`);
+            }
+
+            // Modal
+            function openInstructionModal() {
+                document.getElementById('instructionModal').classList.add('active');
+            }
+
+            function closeInstructionModal() {
+                document.getElementById('instructionModal').classList.remove('active');
+            }
+
+            // Actualiser tout
+            function refreshAll() {
+                loadAll();
+                alert('🔄 Données actualisées !');
+            }
+
+            // Cliquer sur un agent pour voir les détails
+            document.querySelectorAll('.agent-card').forEach(card => {
+                card.addEventListener('click', function() {
+                    const agent = this.dataset.agent;
+                    alert(\`🤖 Agent: \${agent}\\n\\nDétails de l'agent seront affichés ici avec ses statistiques d'utilisation.\`);
+                });
+            });
+        </script>
+    </body>
+    </html>
+    `);
 });
 
 // API endpoint to get current user info
