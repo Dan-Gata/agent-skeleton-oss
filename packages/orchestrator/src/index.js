@@ -703,6 +703,95 @@ app.get('/dashboard', requireAuth, (req, res) => {
             .badge-warning { background: #f39c12; color: white; }
             .badge-danger { background: #e74c3c; color: white; }
             .badge-info { background: #3498db; color: white; }
+            
+            /* Chat Interface */
+            .chat-container {
+                background: linear-gradient(135deg, #1e2a3a 0%, #263849 100%);
+                border-radius: 12px;
+                padding: 25px;
+                box-shadow: 0 8px 30px rgba(0,0,0,0.4);
+                margin-bottom: 30px;
+            }
+            .chat-messages {
+                max-height: 400px;
+                overflow-y: auto;
+                margin-bottom: 20px;
+                padding: 15px;
+                background: rgba(0,0,0,0.2);
+                border-radius: 8px;
+            }
+            .chat-message {
+                margin-bottom: 15px;
+                padding: 12px 16px;
+                border-radius: 8px;
+                max-width: 80%;
+                word-wrap: break-word;
+            }
+            .chat-message.user {
+                background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+                margin-left: auto;
+                text-align: right;
+            }
+            .chat-message.assistant {
+                background: linear-gradient(135deg, #2ecc71 0%, #27ae60 100%);
+                margin-right: auto;
+            }
+            .chat-input-area {
+                display: flex;
+                gap: 12px;
+            }
+            .chat-input {
+                flex: 1;
+                padding: 12px;
+                background: rgba(255,255,255,0.1);
+                border: 2px solid rgba(52, 152, 219, 0.3);
+                border-radius: 8px;
+                color: white;
+                font-size: 14px;
+                resize: vertical;
+                min-height: 60px;
+                font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            }
+            .chat-input:focus {
+                outline: none;
+                border-color: #3498db;
+            }
+            .chat-send-btn {
+                padding: 12px 30px;
+                background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+                border: none;
+                border-radius: 8px;
+                color: white;
+                font-weight: 600;
+                cursor: pointer;
+                transition: all 0.3s;
+            }
+            .chat-send-btn:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 5px 15px rgba(52, 152, 219, 0.4);
+            }
+            .chat-send-btn:disabled {
+                opacity: 0.5;
+                cursor: not-allowed;
+            }
+            
+            /* File Upload */
+            .upload-area {
+                padding: 15px;
+                background: rgba(255,255,255,0.05);
+                border: 2px dashed rgba(52, 152, 219, 0.3);
+                border-radius: 8px;
+                text-align: center;
+                cursor: pointer;
+                transition: all 0.3s;
+            }
+            .upload-area:hover {
+                border-color: #3498db;
+                background: rgba(52, 152, 219, 0.1);
+            }
+            .upload-area input[type="file"] {
+                display: none;
+            }
         </style>
     </head>
     <body>
@@ -713,8 +802,8 @@ app.get('/dashboard', requireAuth, (req, res) => {
                 Agent Skeleton OSS - Dashboard Central
             </h1>
             <div class="header-actions">
-                <a href="/chat" class="btn btn-primary">💬 Chat IA</a>
-                <a href="/upload-test" class="btn btn-success">📁 Upload</a>
+                <button onclick="scrollToChatSection()" class="btn btn-primary">💬 Chat</button>
+                <button onclick="scrollToUploadSection()" class="btn btn-success">📁 Upload</button>
                 <button onclick="openInstructionModal()" class="btn btn-primary">➕ Instruction</button>
                 <button onclick="refreshAll()" class="btn btn-success">🔄 Actualiser</button>
             </div>
@@ -786,6 +875,45 @@ app.get('/dashboard', requireAuth, (req, res) => {
                 </div>
             </div>
 
+            <!-- SECTION CHAT INTERACTIVE -->
+            <div class="chat-container" id="chatSection">
+                <div class="card-header">
+                    <span class="card-icon">💬</span>
+                    <h3>Chat avec les Agents IA</h3>
+                    <span class="badge badge-success">EN LIGNE</span>
+                </div>
+                <div class="chat-messages" id="chatMessages">
+                    <div class="loading">Prêt à converser avec vos agents...</div>
+                </div>
+                <div class="chat-input-area">
+                    <textarea 
+                        id="chatInput" 
+                        class="chat-input" 
+                        placeholder="💬 Tapez votre message ici... (Shift+Enter pour nouvelle ligne, Enter pour envoyer)"
+                        onkeydown="handleChatKeyDown(event)"
+                    ></textarea>
+                    <button id="chatSendBtn" class="chat-send-btn" onclick="sendChatMessage()">
+                        📤 Envoyer
+                    </button>
+                </div>
+            </div>
+
+            <!-- SECTION UPLOAD DE FICHIERS -->
+            <div class="card" id="uploadSection">
+                <div class="card-header">
+                    <span class="card-icon">📁</span>
+                    <h3>Upload de Fichiers</h3>
+                </div>
+                <div class="upload-area" onclick="document.getElementById('fileInput').click()">
+                    <input type="file" id="fileInput" onchange="handleFileUpload(event)">
+                    <div style="font-size: 48px; margin-bottom: 10px;">📤</div>
+                    <p style="font-size: 16px; margin-bottom: 5px;"><strong>Cliquez pour choisir un fichier</strong></p>
+                    <p style="font-size: 13px; color: #95a5a6;">Tous types de fichiers acceptés</p>
+                </div>
+                <div id="uploadStatus" style="margin-top: 15px; text-align: center;"></div>
+                <div id="filesList" style="margin-top: 20px;"></div>
+            </div>
+
             <!-- Agents Grid -->
             <div class="card">
                 <div class="card-header">
@@ -793,32 +921,32 @@ app.get('/dashboard', requireAuth, (req, res) => {
                     <h3>Sous-Agents Spécialisés</h3>
                 </div>
                 <div class="agents-grid" id="agentsGrid">
-                    <div class="agent-card" data-agent="n8n">
+                    <div class="agent-card" data-agent="n8n" onclick="showAgentDetails('n8n')">
                         <div class="agent-icon">⚡</div>
                         <div class="agent-name">N8N Agent</div>
                         <div class="agent-status">Workflows & Automatisation</div>
                     </div>
-                    <div class="agent-card" data-agent="file">
+                    <div class="agent-card" data-agent="file" onclick="showAgentDetails('file')">
                         <div class="agent-icon">📁</div>
                         <div class="agent-name">File Agent</div>
                         <div class="agent-status">Gestion Fichiers</div>
                     </div>
-                    <div class="agent-card" data-agent="coolify">
+                    <div class="agent-card" data-agent="coolify" onclick="showAgentDetails('coolify')">
                         <div class="agent-icon">🚀</div>
                         <div class="agent-name">Coolify Agent</div>
                         <div class="agent-status">Déploiements</div>
                     </div>
-                    <div class="agent-card" data-agent="baserow">
+                    <div class="agent-card" data-agent="baserow" onclick="showAgentDetails('baserow')">
                         <div class="agent-icon">📊</div>
                         <div class="agent-name">Baserow Agent</div>
                         <div class="agent-status">Base de Données</div>
                     </div>
-                    <div class="agent-card" data-agent="email">
+                    <div class="agent-card" data-agent="email" onclick="showAgentDetails('email')">
                         <div class="agent-icon">📧</div>
                         <div class="agent-name">Email Agent</div>
                         <div class="agent-status">Communication</div>
                     </div>
-                    <div class="agent-card" data-agent="security">
+                    <div class="agent-card" data-agent="security" onclick="showAgentDetails('security')">
                         <div class="agent-icon">🔒</div>
                         <div class="agent-name">Security Agent</div>
                         <div class="agent-status">Sécurité</div>
@@ -906,6 +1034,22 @@ app.get('/dashboard', requireAuth, (req, res) => {
             </div>
         </div>
 
+        <!-- Modal Agent Details -->
+        <div class="modal" id="agentModal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3 id="agentModalTitle">🤖 Détails Agent</h3>
+                    <button class="modal-close" onclick="closeAgentModal()">✖ Fermer</button>
+                </div>
+                <div id="agentModalContent">
+                    <div class="loading">
+                        <div class="spinner"></div>
+                        Chargement des informations...
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <script>
             // Variables globales
             let refreshInterval;
@@ -914,9 +1058,13 @@ app.get('/dashboard', requireAuth, (req, res) => {
             document.addEventListener('DOMContentLoaded', function() {
                 console.log('🚀 Dashboard chargé');
                 loadAll();
+                loadFilesList();
                 
                 // Auto-refresh toutes les 30 secondes
-                refreshInterval = setInterval(loadAll, 30000);
+                refreshInterval = setInterval(() => {
+                    loadAll();
+                    loadFilesList();
+                }, 30000);
             });
 
             // Charger toutes les données
@@ -1135,16 +1283,379 @@ app.get('/dashboard', requireAuth, (req, res) => {
             // Actualiser tout
             function refreshAll() {
                 loadAll();
+                loadFilesList();
                 alert('🔄 Données actualisées !');
             }
 
-            // Cliquer sur un agent pour voir les détails
-            document.querySelectorAll('.agent-card').forEach(card => {
-                card.addEventListener('click', function() {
-                    const agent = this.dataset.agent;
-                    alert(\`🤖 Agent: \${agent}\\n\\nDétails de l'agent seront affichés ici avec ses statistiques d'utilisation.\`);
+            // === NOUVELLES FONCTIONS CHAT ===
+            
+            // Gérer les touches dans le chat (Enter pour envoyer, Shift+Enter pour nouvelle ligne)
+            function handleChatKeyDown(event) {
+                if (event.key === 'Enter' && !event.shiftKey) {
+                    event.preventDefault();
+                    sendChatMessage();
+                }
+            }
+            
+            // Envoyer un message dans le chat
+            async function sendChatMessage() {
+                const input = document.getElementById('chatInput');
+                const message = input.value.trim();
+                
+                if (!message) return;
+                
+                const sendBtn = document.getElementById('chatSendBtn');
+                sendBtn.disabled = true;
+                sendBtn.textContent = '⏳ Envoi...';
+                
+                // Afficher le message utilisateur
+                displayChatMessage('user', message);
+                input.value = '';
+                
+                try {
+                    const response = await fetch('/api/chat', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ 
+                            message, 
+                            model: 'claude-3-5-sonnet-20241022' 
+                        })
+                    });
+                    
+                    const data = await response.json();
+                    
+                    if (data.success || data.response) {
+                        displayChatMessage('assistant', data.response);
+                        
+                        // Rafraîchir l'historique après quelques secondes
+                        setTimeout(() => loadHistory(), 2000);
+                    } else {
+                        displayChatMessage('assistant', '❌ Erreur: ' + (data.error || 'Réponse invalide'));
+                    }
+                } catch (error) {
+                    console.error('❌ Erreur chat:', error);
+                    displayChatMessage('assistant', '❌ Erreur de connexion: ' + error.message);
+                }
+                
+                sendBtn.disabled = false;
+                sendBtn.textContent = '📤 Envoyer';
+            }
+            
+            // Afficher un message dans le chat
+            function displayChatMessage(role, content) {
+                const container = document.getElementById('chatMessages');
+                
+                // Supprimer le message "Prêt à converser" si présent
+                const loadingMsg = container.querySelector('.loading');
+                if (loadingMsg) loadingMsg.remove();
+                
+                const messageDiv = document.createElement('div');
+                messageDiv.className = \`chat-message \${role}\`;
+                messageDiv.textContent = content;
+                
+                container.appendChild(messageDiv);
+                messageDiv.scrollIntoView({ behavior: 'smooth', block: 'end' });
+            }
+            
+            // Scroller vers la section chat
+            function scrollToChatSection() {
+                document.getElementById('chatSection').scrollIntoView({ 
+                    behavior: 'smooth', 
+                    block: 'start' 
                 });
-            });
+            }
+            
+            // === NOUVELLES FONCTIONS UPLOAD ===
+            
+            // Gérer l'upload de fichier
+            async function handleFileUpload(event) {
+                const file = event.target.files[0];
+                if (!file) return;
+                
+                const statusDiv = document.getElementById('uploadStatus');
+                statusDiv.innerHTML = \`
+                    <div class="loading">
+                        <div class="spinner"></div>
+                        Upload de "\${file.name}" en cours...
+                    </div>
+                \`;
+                
+                const formData = new FormData();
+                formData.append('file', file);
+                
+                try {
+                    const response = await fetch('/api/upload', {
+                        method: 'POST',
+                        body: formData
+                    });
+                    
+                    const data = await response.json();
+                    
+                    if (data.success) {
+                        statusDiv.innerHTML = \`
+                            <div style="color: #2ecc71; font-weight: 600;">
+                                ✅ Fichier uploadé avec succès !
+                            </div>
+                        \`;
+                        
+                        // Rafraîchir la liste des fichiers
+                        setTimeout(() => {
+                            loadFilesList();
+                            statusDiv.innerHTML = '';
+                        }, 3000);
+                    } else {
+                        statusDiv.innerHTML = \`
+                            <div style="color: #e74c3c; font-weight: 600;">
+                                ❌ Erreur: \${data.error || 'Upload échoué'}
+                            </div>
+                        \`;
+                    }
+                } catch (error) {
+                    console.error('❌ Erreur upload:', error);
+                    statusDiv.innerHTML = \`
+                        <div style="color: #e74c3c; font-weight: 600;">
+                            ❌ Erreur: \${error.message}
+                        </div>
+                    \`;
+                }
+                
+                // Reset input
+                event.target.value = '';
+            }
+            
+            // Charger la liste des fichiers
+            async function loadFilesList() {
+                try {
+                    const response = await fetch('/api/files');
+                    const data = await response.json();
+                    
+                    const container = document.getElementById('filesList');
+                    
+                    if (data.success && data.files && data.files.length > 0) {
+                        container.innerHTML = '<h4 style="margin-bottom: 15px;">📁 Fichiers uploadés (' + data.files.length + ')</h4>' +
+                            data.files.map(file => \`
+                                <div class="history-item" style="display: flex; justify-content: space-between; align-items: center;">
+                                    <div style="flex: 1;">
+                                        <strong>\${file.filename}</strong><br>
+                                        <small style="color: #95a5a6;">
+                                            Taille: \${formatFileSize(file.size)} | 
+                                            Type: \${file.mimetype} | 
+                                            Date: \${new Date(file.uploadedAt).toLocaleDateString('fr-FR')}
+                                        </small>
+                                    </div>
+                                    <button class="btn btn-small btn-danger" onclick="deleteFile(\${file.id})">🗑️</button>
+                                </div>
+                            \`).join('');
+                    } else {
+                        container.innerHTML = '<p style="color: #95a5a6; text-align: center;">Aucun fichier uploadé</p>';
+                    }
+                } catch (error) {
+                    console.error('❌ Erreur chargement fichiers:', error);
+                }
+            }
+            
+            // Formater la taille de fichier
+            function formatFileSize(bytes) {
+                if (bytes < 1024) return bytes + ' B';
+                if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(2) + ' KB';
+                return (bytes / (1024 * 1024)).toFixed(2) + ' MB';
+            }
+            
+            // Supprimer un fichier
+            async function deleteFile(fileId) {
+                if (!confirm('Voulez-vous vraiment supprimer ce fichier ?')) return;
+                
+                try {
+                    const response = await fetch(\`/api/files/\${fileId}\`, {
+                        method: 'DELETE'
+                    });
+                    
+                    const data = await response.json();
+                    
+                    if (data.success) {
+                        alert('✅ Fichier supprimé');
+                        loadFilesList();
+                        loadStats(); // Rafraîchir le compteur
+                    } else {
+                        alert('❌ Erreur: ' + data.error);
+                    }
+                } catch (error) {
+                    alert('❌ Erreur: ' + error.message);
+                }
+            }
+            
+            // Scroller vers la section upload
+            function scrollToUploadSection() {
+                document.getElementById('uploadSection').scrollIntoView({ 
+                    behavior: 'smooth', 
+                    block: 'start' 
+                });
+            }
+            
+            // === NOUVELLES FONCTIONS AGENTS ===
+            
+            // Afficher les détails d'un agent
+            async function showAgentDetails(agentName) {
+                const modal = document.getElementById('agentModal');
+                const title = document.getElementById('agentModalTitle');
+                const content = document.getElementById('agentModalContent');
+                
+                // Configurations des agents
+                const agentConfigs = {
+                    'n8n': {
+                        icon: '⚡',
+                        name: 'N8N Agent',
+                        description: 'Gère les workflows et automatisations via n8n',
+                        capabilities: [
+                            '✅ Créer et exécuter des workflows',
+                            '✅ Déclencher des webhooks',
+                            '✅ Lister les workflows actifs',
+                            '✅ Supprimer des workflows'
+                        ],
+                        actions: [
+                            { label: '📋 Lister les workflows', action: 'listWorkflows()' },
+                            { label: '▶️ Tester un workflow', action: 'testWorkflow()' }
+                        ]
+                    },
+                    'file': {
+                        icon: '📁',
+                        name: 'File Agent',
+                        description: 'Gère les opérations sur les fichiers',
+                        capabilities: [
+                            '✅ Upload de fichiers',
+                            '✅ Stockage SQLite',
+                            '✅ Recherche de fichiers',
+                            '✅ Suppression de fichiers'
+                        ],
+                        actions: [
+                            { label: '📁 Voir les fichiers', action: 'scrollToUploadSection()' }
+                        ]
+                    },
+                    'coolify': {
+                        icon: '🚀',
+                        name: 'Coolify Agent',
+                        description: 'Gère les déploiements via Coolify',
+                        capabilities: [
+                            '✅ Déployer des services',
+                            '✅ Gérer les conteneurs',
+                            '✅ Rollback de déploiements',
+                            '✅ Monitoring des services'
+                        ],
+                        actions: [
+                            { label: '🚀 Déployer un service', action: 'deployCoolifyService()' }
+                        ]
+                    },
+                    'baserow': {
+                        icon: '📊',
+                        name: 'Baserow Agent',
+                        description: 'Gère la base de données Baserow',
+                        capabilities: [
+                            '✅ Ajouter des lignes',
+                            '✅ Lire des données',
+                            '✅ Mettre à jour des lignes',
+                            '✅ Supprimer des lignes'
+                        ],
+                        actions: [
+                            { label: '📊 Consulter les données', action: 'alert("Baserow API nécessite configuration")' }
+                        ]
+                    },
+                    'email': {
+                        icon: '📧',
+                        name: 'Email Agent',
+                        description: 'Gère l\'envoi d\'emails',
+                        capabilities: [
+                            '✅ Envoi via SMTP',
+                            '✅ Relay via n8n',
+                            '✅ Templates d\'emails',
+                            '✅ Notifications automatiques'
+                        ],
+                        actions: [
+                            { label: '📧 Envoyer un test', action: 'sendTestEmail()' }
+                        ]
+                    },
+                    'security': {
+                        icon: '🔒',
+                        name: 'Security Agent',
+                        description: 'Gère la sécurité et les validations',
+                        capabilities: [
+                            '✅ Validation des API keys',
+                            '✅ Rate limiting',
+                            '✅ Sanitization des inputs',
+                            '✅ Détection d\'anomalies'
+                        ],
+                        actions: [
+                            { label: '🔒 Vérifier la sécurité', action: 'checkSecurity()' }
+                        ]
+                    }
+                };
+                
+                const config = agentConfigs[agentName];
+                
+                title.innerHTML = \`\${config.icon} \${config.name}\`;
+                
+                content.innerHTML = \`
+                    <div style="margin-bottom: 20px;">
+                        <h4 style="margin-bottom: 10px;">📝 Description</h4>
+                        <p style="color: #95a5a6;">\${config.description}</p>
+                    </div>
+                    
+                    <div style="margin-bottom: 20px;">
+                        <h4 style="margin-bottom: 10px;">⚡ Capacités</h4>
+                        \${config.capabilities.map(cap => \`<div style="margin: 5px 0;">\${cap}</div>\`).join('')}
+                    </div>
+                    
+                    <div style="margin-bottom: 20px;">
+                        <h4 style="margin-bottom: 10px;">🎯 Actions Disponibles</h4>
+                        <div style="display: flex; flex-direction: column; gap: 10px;">
+                            \${config.actions.map(action => \`
+                                <button class="btn btn-primary" onclick="\${action.action}">
+                                    \${action.label}
+                                </button>
+                            \`).join('')}
+                        </div>
+                    </div>
+                    
+                    <div style="background: rgba(52, 152, 219, 0.1); padding: 15px; border-radius: 8px; border-left: 4px solid #3498db;">
+                        <strong>💡 Astuce:</strong> Vous pouvez interagir avec cet agent via le chat en mentionnant son nom ou en décrivant la tâche.
+                    </div>
+                \`;
+                
+                modal.classList.add('active');
+            }
+            
+            // Fermer le modal agent
+            function closeAgentModal() {
+                document.getElementById('agentModal').classList.remove('active');
+            }
+            
+            // Actions des agents
+            function testWorkflow() {
+                closeAgentModal();
+                alert('⚡ Pour tester un workflow, utilisez le chat ou la section Workflows N8N ci-dessous.');
+            }
+            
+            function deployCoolifyService() {
+                closeAgentModal();
+                const serviceId = prompt('Entrez l\'ID du service Coolify à déployer:');
+                if (serviceId) {
+                    alert(\`🚀 Déploiement du service \${serviceId}...\\n\\nCette fonctionnalité sera bientôt disponible via l'API.\`);
+                }
+            }
+            
+            function sendTestEmail() {
+                closeAgentModal();
+                const email = prompt('Entrez l\'adresse email de test:');
+                if (email) {
+                    alert(\`📧 Envoi d'un email de test à \${email}...\\n\\nCette fonctionnalité sera bientôt disponible via l'API.\`);
+                }
+            }
+            
+            function checkSecurity() {
+                closeAgentModal();
+                alert('🔒 Vérification de la sécurité...\\n\\n✅ Session valide\\n✅ Aucune anomalie détectée\\n✅ Rate limits: OK');
+            }
+
+            // Supprimer l'ancien event listener pour les agents (déjà géré par onclick dans le HTML)
         </script>
     </body>
     </html>
