@@ -895,6 +895,23 @@ app.get('/dashboard', requireAuth, (req, res) => {
                     <h3>Chat avec les Agents IA</h3>
                     <span class="badge badge-success">EN LIGNE</span>
                 </div>
+                
+                <!-- Sélecteur de Modèle IA -->
+                <div style="margin-bottom: 15px; padding: 15px; background: rgba(52, 152, 219, 0.1); border-radius: 8px; border-left: 4px solid #3498db;">
+                    <label style="display: block; margin-bottom: 8px; font-weight: 600; font-size: 14px;">
+                        🤖 Modèle IA :
+                    </label>
+                    <select id="modelSelect" style="width: 100%; padding: 10px; background: rgba(255,255,255,0.1); border: 1px solid rgba(52, 152, 219, 0.3); border-radius: 6px; color: white; font-size: 14px;">
+                        <option value="claude-3-5-sonnet-20241022" selected>Claude 3.5 Sonnet (Recommandé)</option>
+                        <option value="claude-3-opus-20240229">Claude 3 Opus (Plus puissant)</option>
+                        <option value="claude-3-sonnet-20240229">Claude 3 Sonnet</option>
+                        <option value="claude-3-haiku-20240307">Claude 3 Haiku (Plus rapide)</option>
+                    </select>
+                    <div style="margin-top: 8px; font-size: 12px; color: #95a5a6;">
+                        💡 Claude 3.5 Sonnet offre le meilleur équilibre performance/coût
+                    </div>
+                </div>
+                
                 <div class="chat-messages" id="chatMessages">
                     <div class="loading">Prêt à converser avec vos agents...</div>
                 </div>
@@ -1253,7 +1270,7 @@ app.get('/dashboard', requireAuth, (req, res) => {
 
             // Effacer l'historique
             async function clearHistory() {
-                if (!confirm('Voulez-vous vraiment effacer l\'historique de plus de 90 jours ?')) return;
+                if (!confirm('Voulez-vous vraiment effacer l\\'historique de plus de 90 jours ?')) return;
                 
                 try {
                     const response = await fetch('/api/conversation/clear?days=90', {
@@ -1317,6 +1334,9 @@ app.get('/dashboard', requireAuth, (req, res) => {
                 
                 if (!message) return;
                 
+                // Récupérer le modèle sélectionné
+                const selectedModel = document.getElementById('modelSelect').value;
+                
                 const sendBtn = document.getElementById('chatSendBtn');
                 sendBtn.disabled = true;
                 sendBtn.textContent = '⏳ Envoi...';
@@ -1331,7 +1351,7 @@ app.get('/dashboard', requireAuth, (req, res) => {
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({ 
                             message, 
-                            model: 'claude-3-5-sonnet-20241022' 
+                            model: selectedModel
                         })
                     });
                     
