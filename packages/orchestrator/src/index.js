@@ -1253,7 +1253,7 @@ app.get('/dashboard', requireAuth, (req, res) => {
 
             // Effacer l'historique
             async function clearHistory() {
-                if (!confirm('Voulez-vous vraiment effacer l\\'historique de plus de 90 jours ?')) return;
+                if (!confirm('Voulez-vous vraiment effacer l\'historique de plus de 90 jours ?')) return;
                 
                 try {
                     const response = await fetch('/api/conversation/clear?days=90', {
