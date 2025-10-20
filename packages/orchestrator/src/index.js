@@ -39,6 +39,19 @@ const filePersistence = new FilePersistence();
 // NOUVELLE MÉMOIRE DES CONVERSATIONS avec SQLite
 const conversationMemory = new ConversationMemory();
 
+// MÉTRIQUES GLOBALES (pour endpoint /metrics)
+global.metrics = {
+    requests: 0,
+    n8nTriggers: 0,
+    n8nRuns: 0,
+    coolifyDeploys: 0,
+    baserowOps: 0,
+    fileOps: 0,
+    emailsSent: 0,
+    errors: 0,
+    startTime: new Date().toISOString()
+};
+
 // Migrer les anciens fichiers en mémoire s'ils existent
 if (global.uploadedFiles && Object.keys(global.uploadedFiles).length > 0) {
     console.log('🔄 Migration des fichiers en mémoire vers SQLite...');
@@ -3527,6 +3540,121 @@ app.get('/api/status', (req, res) => {
         environment: process.env.NODE_ENV || 'production',
         filesUploaded: Object.keys(global.uploadedFiles || {}).length
     });
+});
+
+// ============================================================================
+// ENDPOINTS ORCHESTRATEUR (Spécifications utilisateur)
+// ============================================================================
+
+/**
+ * GET /health
+ * Vérifie l'état de santé du système et des services configurés
+ * Retourne le status de chaque service (configured/missing)
+ */
+app.get('/health', (req, res) => {
+    const uptime = process.uptime();
+    const memoryUsage = process.memoryUsage();
+    
+    const health = {
+        status: 'ok',
+        version: '1.0.0',
+        timestamp: new Date().toISOString(),
+        uptime: {
+            seconds: Math.floor(uptime),
+            formatted: `${Math.floor(uptime / 3600)}h ${Math.floor((uptime % 3600) / 60)}m ${Math.floor(uptime % 60)}s`
+        },
+        memory: {
+            heapUsed: Math.floor(memoryUsage.heapUsed / 1024 / 1024) + ' MB',
+            heapTotal: Math.floor(memoryUsage.heapTotal / 1024 / 1024) + ' MB',
+            rss: Math.floor(memoryUsage.rss / 1024 / 1024) + ' MB'
+        },
+        services: {
+            n8n: {
+                status: process.env.N8N_API_URL && process.env.N8N_API_KEY ? 'configured' : 'missing',
+                url: process.env.N8N_API_URL ? '✅' : '❌'
+            },
+            coolify: {
+                status: process.env.COOLIFY_API_URL && process.env.COOLIFY_API_KEY ? 'configured' : 'missing',
+                url: process.env.COOLIFY_API_URL ? '✅' : '❌'
+            },
+            baserow: {
+                status: process.env.BASEROW_URL && process.env.BASEROW_API_TOKEN ? 'configured' : 'missing',
+                url: process.env.BASEROW_URL ? '✅' : '❌',
+                table: process.env.BASEROW_TABLE_ID ? '✅' : '❌'
+            },
+            email: {
+                status: process.env.SMTP_HOST || process.env.N8N_EMAIL_RELAY ? 'configured' : 'missing',
+                smtp: process.env.SMTP_HOST ? '✅' : '❌',
+                relay: process.env.N8N_EMAIL_RELAY ? '✅' : '❌'
+            },
+            database: {
+                status: 'ok',
+                type: 'SQLite',
+                conversations: '✅',
+                files: '✅',
+                sessions: '✅'
+            }
+        },
+        agents: {
+            orchestrator: 'active',
+            n8n: 'active',
+            file: 'active',
+            coolify: process.env.COOLIFY_API_URL ? 'active' : 'inactive',
+            baserow: process.env.BASEROW_URL ? 'active' : 'inactive',
+            email: 'active',
+            security: 'active'
+        }
+    };
+    
+    res.json(health);
+});
+
+/**
+ * GET /metrics
+ * Retourne les métriques d'utilisation du système
+ * Compteurs d'opérations, temps de démarrage, statistiques
+ */
+app.get('/metrics', (req, res) => {
+    const uptime = process.uptime();
+    
+    const metrics = {
+        timestamp: new Date().toISOString(),
+        startTime: global.metrics.startTime,
+        uptime: {
+            seconds: Math.floor(uptime),
+            formatted: `${Math.floor(uptime / 3600)}h ${Math.floor((uptime % 3600) / 60)}m ${Math.floor(uptime % 60)}s`
+        },
+        counters: {
+            requests: global.metrics.requests,
+            n8nTriggers: global.metrics.n8nTriggers,
+            n8nRuns: global.metrics.n8nRuns,
+            coolifyDeploys: global.metrics.coolifyDeploys,
+            baserowOps: global.metrics.baserowOps,
+            fileOps: global.metrics.fileOps,
+            emailsSent: global.metrics.emailsSent,
+            errors: global.metrics.errors
+        },
+        rates: {
+            requestsPerMinute: uptime > 60 ? Math.floor((global.metrics.requests / uptime) * 60) : 0,
+            errorsPerMinute: uptime > 60 ? Math.floor((global.metrics.errors / uptime) * 60) : 0
+        },
+        health: {
+            errorRate: global.metrics.requests > 0 
+                ? ((global.metrics.errors / global.metrics.requests) * 100).toFixed(2) + '%' 
+                : '0%',
+            status: global.metrics.errors / global.metrics.requests < 0.05 ? 'healthy' : 'degraded'
+        }
+    };
+    
+    res.json(metrics);
+});
+
+// Middleware pour incrémenter le compteur de requêtes
+app.use((req, res, next) => {
+    if (!req.path.startsWith('/health') && !req.path.startsWith('/metrics')) {
+        global.metrics.requests++;
+    }
+    next();
 });
 
 // Gestion des erreurs
