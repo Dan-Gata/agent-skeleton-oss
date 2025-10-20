@@ -896,19 +896,91 @@ app.get('/dashboard', requireAuth, (req, res) => {
                     <span class="badge badge-success">EN LIGNE</span>
                 </div>
                 
-                <!-- Sélecteur de Modèle IA -->
+                <!-- Sélecteur de Modèle IA - 60+ Modèles OpenRouter -->
                 <div style="margin-bottom: 15px; padding: 15px; background: rgba(52, 152, 219, 0.1); border-radius: 8px; border-left: 4px solid #3498db;">
                     <label style="display: block; margin-bottom: 8px; font-weight: 600; font-size: 14px;">
-                        🤖 Modèle IA :
+                        🤖 Modèle IA (60+ disponibles) :
                     </label>
                     <select id="modelSelect" style="width: 100%; padding: 10px; background: rgba(255,255,255,0.1); border: 1px solid rgba(52, 152, 219, 0.3); border-radius: 6px; color: white; font-size: 14px;">
-                        <option value="claude-3-5-sonnet-20241022" selected>Claude 3.5 Sonnet (Recommandé)</option>
-                        <option value="claude-3-opus-20240229">Claude 3 Opus (Plus puissant)</option>
-                        <option value="claude-3-sonnet-20240229">Claude 3 Sonnet</option>
-                        <option value="claude-3-haiku-20240307">Claude 3 Haiku (Plus rapide)</option>
+                        <!-- 🌟 MODÈLES RECOMMANDÉS -->
+                        <optgroup label="⭐ RECOMMANDÉS">
+                            <option value="anthropic/claude-3.5-sonnet" selected>Claude 3.5 Sonnet (Meilleur)</option>
+                            <option value="openai/gpt-4o">GPT-4o (Multimodal)</option>
+                            <option value="google/gemini-pro-1.5">Gemini Pro 1.5</option>
+                            <option value="meta-llama/llama-3.1-70b-instruct">Llama 3.1 70B</option>
+                        </optgroup>
+                        
+                        <!-- 🆓 MODÈLES GRATUITS -->
+                        <optgroup label="🆓 GRATUITS">
+                            <option value="meta-llama/llama-3-8b-instruct:free">Llama 3 8B (Gratuit)</option>
+                            <option value="microsoft/phi-3-medium-128k-instruct:free">Phi-3 Medium (Gratuit)</option>
+                            <option value="google/gemma-7b-it:free">Gemma 7B (Gratuit)</option>
+                            <option value="qwen/qwen-2-7b-instruct:free">Qwen 2 7B (Gratuit)</option>
+                        </optgroup>
+                        
+                        <!-- 🧠 ANTHROPIC CLAUDE -->
+                        <optgroup label="🧠 ANTHROPIC CLAUDE">
+                            <option value="anthropic/claude-3-opus">Claude 3 Opus (Le plus puissant)</option>
+                            <option value="anthropic/claude-3-sonnet">Claude 3 Sonnet</option>
+                            <option value="anthropic/claude-3-haiku">Claude 3 Haiku (Rapide)</option>
+                        </optgroup>
+                        
+                        <!-- 🤖 OPENAI GPT -->
+                        <optgroup label="🤖 OPENAI GPT">
+                            <option value="openai/gpt-4-turbo">GPT-4 Turbo</option>
+                            <option value="openai/gpt-4">GPT-4</option>
+                            <option value="openai/gpt-3.5-turbo">GPT-3.5 Turbo</option>
+                            <option value="openai/gpt-3.5-turbo-instruct">GPT-3.5 Instruct</option>
+                        </optgroup>
+                        
+                        <!-- 💎 GOOGLE GEMINI -->
+                        <optgroup label="💎 GOOGLE GEMINI">
+                            <option value="google/gemini-pro">Gemini Pro</option>
+                            <option value="google/gemini-flash-1.5">Gemini Flash 1.5 (Rapide)</option>
+                            <option value="google/palm-2-chat-bison">PaLM 2 Chat</option>
+                        </optgroup>
+                        
+                        <!-- 🦙 META LLAMA -->
+                        <optgroup label="🦙 META LLAMA">
+                            <option value="meta-llama/llama-3.1-405b-instruct">Llama 3.1 405B (Énorme)</option>
+                            <option value="meta-llama/llama-3.1-70b-instruct">Llama 3.1 70B</option>
+                            <option value="meta-llama/llama-3-70b-instruct">Llama 3 70B</option>
+                            <option value="meta-llama/llama-3-8b-instruct">Llama 3 8B</option>
+                        </optgroup>
+                        
+                        <!-- 🇨🇳 ALIBABA QWEN -->
+                        <optgroup label="🇨🇳 ALIBABA QWEN">
+                            <option value="qwen/qwen-2-72b-instruct">Qwen 2 72B</option>
+                            <option value="qwen/qwen-turbo">Qwen Turbo</option>
+                            <option value="qwen/qwen-plus">Qwen Plus</option>
+                            <option value="qwen/qwen-max">Qwen Max</option>
+                        </optgroup>
+                        
+                        <!-- 🌟 MISTRAL AI -->
+                        <optgroup label="🌟 MISTRAL AI">
+                            <option value="mistralai/mistral-large">Mistral Large</option>
+                            <option value="mistralai/mistral-medium">Mistral Medium</option>
+                            <option value="mistralai/mistral-small">Mistral Small</option>
+                            <option value="mistralai/mixtral-8x7b-instruct">Mixtral 8x7B</option>
+                        </optgroup>
+                        
+                        <!-- 🔍 PERPLEXITY -->
+                        <optgroup label="🔍 PERPLEXITY">
+                            <option value="perplexity/llama-3.1-sonar-large-128k-online">Sonar Large Online</option>
+                            <option value="perplexity/llama-3.1-sonar-small-128k-online">Sonar Small Online</option>
+                        </optgroup>
+                        
+                        <!-- 🚀 AUTRES MODÈLES -->
+                        <optgroup label="🚀 AUTRES">
+                            <option value="x-ai/grok-beta">Grok Beta (xAI)</option>
+                            <option value="cohere/command-r-plus">Command R+ (Cohere)</option>
+                            <option value="databricks/dbrx-instruct">DBRX Instruct</option>
+                            <option value="deepseek/deepseek-coder">DeepSeek Coder</option>
+                            <option value="microsoft/wizardlm-2-8x22b">WizardLM 2 8x22B</option>
+                        </optgroup>
                     </select>
                     <div style="margin-top: 8px; font-size: 12px; color: #95a5a6;">
-                        💡 Claude 3.5 Sonnet offre le meilleur équilibre performance/coût
+                        💡 Claude 3.5 Sonnet recommandé | 🆓 Modèles gratuits disponibles | 60+ modèles via OpenRouter
                     </div>
                 </div>
                 
