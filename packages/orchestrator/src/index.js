@@ -1751,7 +1751,7 @@ app.get('/dashboard', requireAuth, (req, res) => {
                 closeAgentModal();
                 const email = prompt('Entrez l\'adresse email de test:');
                 if (email) {
-                    alert(\`📧 Envoi d'un email de test à \${email}...\\n\\nCette fonctionnalité sera bientôt disponible via l'API.\`);
+                    alert(\`📧 Envoi d\'un email de test à \${email}...\\n\\nCette fonctionnalité sera bientôt disponible via l\'API.\`);
                 }
             }
             
