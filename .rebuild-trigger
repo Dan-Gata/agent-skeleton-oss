@@ -1,0 +1,49 @@
+# FORCE REBUILD TRIGGER
+# Date: 2025-10-22
+# Commit: d34cca8 → FORCE REBUILD
+# Raison: Coolify skip build - JavaScript functions manquantes
+
+## Modifications pour forcer rebuild:
+1. Dockerfile: Ajout ARG CACHEBUST
+2. package.json: Version 1.0.0 → 1.0.1-force-rebuild
+3. Ce fichier: Nouveau fichier force rebuild
+
+## Status: ⏳ EN ATTENTE DE BUILD
+
+Coolify DOIT reconstruire complètement car:
+- ✅ Dockerfile modifié (ARG CACHEBUST)
+- ✅ package.json version changée
+- ✅ Nouveau fichier ajouté (.rebuild-trigger)
+
+## Vérification:
+Après le build, les fonctions JavaScript doivent être présentes:
+- sendChatMessage()
+- handleFileUpload()
+- showAgentDetails()
+- openInstructionModal()
+- refreshAll()
+- scrollToChatSection()
+- scrollToUploadSection()
+- handleChatKeyDown()
+
+## Build attendu:
+```
+Building image...
+Step 1/15 : FROM node:20-alpine
+Step 2/15 : ARG CACHEBUST=d34cca8_force_full_rebuild_v3_20251022
+Step 3/15 : RUN echo "Build triggered at: ${CACHEBUST}"
+Build triggered at: d34cca8_force_full_rebuild_v3_20251022
+...
+Successfully built [NEW_IMAGE_ID]
+Container ... Started
+Healthcheck status: healthy
+```
+
+## Dashboard features after build:
+✅ 60+ AI models selector
+✅ Chat functionality
+✅ File upload
+✅ Agent details modals
+✅ Instructions management
+✅ All JavaScript functions loaded
+✅ 0 console errors

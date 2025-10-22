@@ -1,5 +1,9 @@
 ﻿FROM node:20-alpine
 
+# Force rebuild - Cache buster for Coolify
+ARG CACHEBUST=d34cca8_force_full_rebuild_v3_20251022
+RUN echo "Build triggered at: ${CACHEBUST}"
+
 WORKDIR /app
 
 RUN apk add --no-cache python3 make g++ wget

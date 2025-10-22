@@ -1,7 +1,7 @@
 {
   "name": "agent-skeleton-oss",
-  "version": "1.0.0",
-  "description": "Agent intelligent avec interface moderne et intégrations",
+  "version": "1.0.1-force-rebuild",
+  "description": "Agent intelligent avec interface moderne et intégrations - Full JavaScript Dashboard",
   "main": "packages/orchestrator/src/index.js",
   "scripts": {
     "start": "cd packages/orchestrator && node src/index.js",
