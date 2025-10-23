@@ -84,7 +84,7 @@ function setSecureCookie(req, res, name, value, maxAge = 24 * 60 * 60 * 1000) {
         path: '/'
     });
     
-    console.log(`🍪 Cookie ${name} défini | secure: ${isHttps} | sameSite: ${isProduction ? \'strict\' : \'lax\'}`);
+    console.log(`🍪 Cookie ${name} défini | secure: ${isHttps} | sameSite: ${isProduction ? 'strict' : 'lax'}`);
 }
 
 // Configuration EJS pour les vues
@@ -297,41 +297,41 @@ app.get('/direct-login', (req, res) => {
         </div>
         
         <script>
-            document.getElementById(\'directLogin\').addEventListener(\'submit\', async function(e) {
+            document.getElementById('directLogin').addEventListener('submit', async function(e) {
                 e.preventDefault();
                 
-                const email = document.getElementById(\'email\').value;
-                const password = document.getElementById(\'password\').value;
+                const email = document.getElementById('email').value;
+                const password = document.getElementById('password').value;
                 
                 try {
-                    console.log(\'Tentative de connexion:\', { email, password });
+                    console.log('Tentative de connexion:', { email, password });
                     
-                    const response = await fetch(\'/api/login\', {
-                        method: \'POST\',
-                        headers: { \'Content-Type\': \'application/json\' },
-                        credentials: \'same-origin\', // Important pour les cookies
+                    const response = await fetch('/api/login', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        credentials: 'same-origin', // Important pour les cookies
                         body: JSON.stringify({ email, password })
                     });
                     
                     const result = await response.json();
-                    console.log(\'Réponse serveur:\', result);
+                    console.log('Réponse serveur:', result);
                     
                     if (response.ok) {
-                        document.getElementById(\'message\').innerHTML = 
-                            \'<div class="success">✅ Connexion réussie ! Redirection...</div>\';
+                        document.getElementById('message').innerHTML = 
+                            '<div class="success">✅ Connexion réussie ! Redirection...</div>';
                         
                         // Redirection avec recharge forcée
                         setTimeout(() => {
-                            window.location.replace(\'/dashboard\');
+                            window.location.replace('/dashboard');
                         }, 500);
                     } else {
-                        document.getElementById(\'message\').innerHTML = 
-                            \'<div class="error">❌ \' + result.error + \'</div>\';
+                        document.getElementById('message').innerHTML = 
+                            '<div class="error">❌ ' + result.error + '</div>';
                     }
                 } catch (error) {
-                    console.error(\'Erreur:\', error);
-                    document.getElementById(\'message\').innerHTML = 
-                        \'<div class="error">❌ Erreur: \' + error.message + \'</div>\';
+                    console.error('Erreur:', error);
+                    document.getElementById('message').innerHTML = 
+                        '<div class="error">❌ Erreur: ' + error.message + '</div>';
                 }
             });
         </script>
@@ -356,7 +356,7 @@ app.get('/dashboard', requireAuth, (req, res) => {
         <style>
             * { margin: 0; padding: 0; box-sizing: border-box; }
             body { 
-                font-family: \'Segoe UI\', Tahoma, Geneva, Verdana, sans-serif;
+                font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
                 background: linear-gradient(135deg, #0f0f23 0%, #1a1a2e 100%);
                 color: #ffffff;
                 line-height: 1.6;
@@ -763,7 +763,7 @@ app.get('/dashboard', requireAuth, (req, res) => {
                 font-size: 14px;
                 resize: vertical;
                 min-height: 60px;
-                font-family: \'Segoe UI\', Tahoma, Geneva, Verdana, sans-serif;
+                font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             }
             .chat-input:focus {
                 outline: none;
@@ -1006,7 +1006,7 @@ app.get('/dashboard', requireAuth, (req, res) => {
                     <span class="card-icon">📁</span>
                     <h3>Upload de Fichiers</h3>
                 </div>
-                <div class="upload-area" onclick="document.getElementById(\'fileInput\').click()">
+                <div class="upload-area" onclick="document.getElementById('fileInput').click()">
                     <input type="file" id="fileInput" onchange="handleFileUpload(event)">
                     <div style="font-size: 48px; margin-bottom: 10px;">📤</div>
                     <p style="font-size: 16px; margin-bottom: 5px;"><strong>Cliquez pour choisir un fichier</strong></p>
@@ -1023,32 +1023,32 @@ app.get('/dashboard', requireAuth, (req, res) => {
                     <h3>Sous-Agents Spécialisés</h3>
                 </div>
                 <div class="agents-grid" id="agentsGrid">
-                    <div class="agent-card" data-agent="n8n" onclick="showAgentDetails(\'n8n\')">
+                    <div class="agent-card" data-agent="n8n" onclick="showAgentDetails('n8n')">
                         <div class="agent-icon">⚡</div>
                         <div class="agent-name">N8N Agent</div>
                         <div class="agent-status">Workflows & Automatisation</div>
                     </div>
-                    <div class="agent-card" data-agent="file" onclick="showAgentDetails(\'file\')">
+                    <div class="agent-card" data-agent="file" onclick="showAgentDetails('file')">
                         <div class="agent-icon">📁</div>
                         <div class="agent-name">File Agent</div>
                         <div class="agent-status">Gestion Fichiers</div>
                     </div>
-                    <div class="agent-card" data-agent="coolify" onclick="showAgentDetails(\'coolify\')">
+                    <div class="agent-card" data-agent="coolify" onclick="showAgentDetails('coolify')">
                         <div class="agent-icon">🚀</div>
                         <div class="agent-name">Coolify Agent</div>
                         <div class="agent-status">Déploiements</div>
                     </div>
-                    <div class="agent-card" data-agent="baserow" onclick="showAgentDetails(\'baserow\')">
+                    <div class="agent-card" data-agent="baserow" onclick="showAgentDetails('baserow')">
                         <div class="agent-icon">📊</div>
                         <div class="agent-name">Baserow Agent</div>
                         <div class="agent-status">Base de Données</div>
                     </div>
-                    <div class="agent-card" data-agent="email" onclick="showAgentDetails(\'email\')">
+                    <div class="agent-card" data-agent="email" onclick="showAgentDetails('email')">
                         <div class="agent-icon">📧</div>
                         <div class="agent-name">Email Agent</div>
                         <div class="agent-status">Communication</div>
                     </div>
-                    <div class="agent-card" data-agent="security" onclick="showAgentDetails(\'security\')">
+                    <div class="agent-card" data-agent="security" onclick="showAgentDetails('security')">
                         <div class="agent-icon">🔒</div>
                         <div class="agent-name">Security Agent</div>
                         <div class="agent-status">Sécurité</div>
@@ -1068,7 +1068,7 @@ app.get('/dashboard', requireAuth, (req, res) => {
                     <div class="history-list" id="historyList">
                         <div class="loading">
                             <div class="spinner"></div>
-                            Chargement de l\'historique...
+                            Chargement de l'historique...
                         </div>
                     </div>
                 </div>
@@ -1131,7 +1131,7 @@ app.get('/dashboard', requireAuth, (req, res) => {
                         <label class="form-label">Priorité (1-10)</label>
                         <input type="number" class="form-input" id="instructionPriority" min="1" max="10" value="5">
                     </div>
-                    <button type="submit" class="btn btn-success" style="width: 100%;">✅ Ajouter l\'Instruction</button>
+                    <button type="submit" class="btn btn-success" style="width: 100%;">✅ Ajouter l'Instruction</button>
                 </form>
             </div>
         </div>
@@ -1157,8 +1157,8 @@ app.get('/dashboard', requireAuth, (req, res) => {
             let refreshInterval;
 
             // Initialisation
-            document.addEventListener(\'DOMContentLoaded\', function() {
-                console.log(\'🚀 Dashboard chargé\');
+            document.addEventListener('DOMContentLoaded', function() {
+                console.log('🚀 Dashboard chargé');
                 loadAll();
                 loadFilesList();
                 
@@ -1182,35 +1182,35 @@ app.get('/dashboard', requireAuth, (req, res) => {
             // Charger les statistiques
             async function loadStats() {
                 try {
-                    const response = await fetch(\'/api/memory/stats\');
+                    const response = await fetch('/api/memory/stats');
                     const data = await response.json();
                     
                     if (data.success && data.stats) {
-                        document.getElementById(\'totalMessages\').textContent = data.stats.totalMessages || 0;
-                        document.getElementById(\'totalInstructions\').textContent = data.stats.totalInstructions || 0;
-                        document.getElementById(\'recentMessages\').textContent = data.stats.recentMessages || 0;
+                        document.getElementById('totalMessages').textContent = data.stats.totalMessages || 0;
+                        document.getElementById('totalInstructions').textContent = data.stats.totalInstructions || 0;
+                        document.getElementById('recentMessages').textContent = data.stats.recentMessages || 0;
                     }
                 } catch (error) {
-                    console.error(\'❌ Erreur stats:\', error);
+                    console.error('❌ Erreur stats:', error);
                 }
                 
                 // Charger aussi le nombre de fichiers
                 try {
-                    const response = await fetch(\'/api/files\');
+                    const response = await fetch('/api/files');
                     const data = await response.json();
-                    document.getElementById(\'totalFiles\').textContent = data.count || 0;
+                    document.getElementById('totalFiles').textContent = data.count || 0;
                 } catch (error) {
-                    document.getElementById(\'totalFiles\').textContent = \'0\';
+                    document.getElementById('totalFiles').textContent = '0';
                 }
             }
 
-            // Charger l\'historique
+            // Charger l'historique
             async function loadHistory() {
                 try {
-                    const response = await fetch(\'/api/conversation/history?limit=10\');
+                    const response = await fetch('/api/conversation/history?limit=10');
                     const data = await response.json();
                     
-                    const container = document.getElementById(\'historyList\');
+                    const container = document.getElementById('historyList');
                     
                     if (data.success && data.history && data.history.length > 0) {
                         container.innerHTML = data.history.map(item => \`
@@ -1221,23 +1221,23 @@ app.get('/dashboard', requireAuth, (req, res) => {
                                 </div>
                                 <div class="history-content">\${item.message.substring(0, 150)}\${item.message.length > 150 ? '...' : ''}</div>
                             </div>
-                        \`).join(\'\');
+                        \`).join('');
                     } else {
-                        container.innerHTML = \'<div class="loading">Aucun historique disponible</div>\';
+                        container.innerHTML = '<div class="loading">Aucun historique disponible</div>';
                     }
                 } catch (error) {
-                    console.error(\'❌ Erreur historique:\', error);
-                    document.getElementById(\'historyList\').innerHTML = \'<div class="loading">❌ Erreur de chargement</div>\';
+                    console.error('❌ Erreur historique:', error);
+                    document.getElementById('historyList').innerHTML = '<div class="loading">❌ Erreur de chargement</div>';
                 }
             }
 
             // Charger les instructions
             async function loadInstructions() {
                 try {
-                    const response = await fetch(\'/api/instructions/list\');
+                    const response = await fetch('/api/instructions/list');
                     const data = await response.json();
                     
-                    const container = document.getElementById(\'instructionsList\');
+                    const container = document.getElementById('instructionsList');
                     
                     if (data.success && data.instructions && data.instructions.length > 0) {
                         container.innerHTML = data.instructions.map(item => \`
@@ -1249,25 +1249,25 @@ app.get('/dashboard', requireAuth, (req, res) => {
                                 </div>
                                 <button class="btn btn-small btn-danger" onclick="deleteInstruction(\${item.id})">🗑️</button>
                             </div>
-                        \`).join(\'\');
+                        \`).join('');
                     } else {
-                        container.innerHTML = \'<div class="loading">Aucune instruction configurée</div>\';
+                        container.innerHTML = '<div class="loading">Aucune instruction configurée</div>';
                     }
                 } catch (error) {
-                    console.error(\'❌ Erreur instructions:\', error);
-                    document.getElementById(\'instructionsList\').innerHTML = \'<div class="loading">❌ Erreur de chargement</div>\';
+                    console.error('❌ Erreur instructions:', error);
+                    document.getElementById('instructionsList').innerHTML = '<div class="loading">❌ Erreur de chargement</div>';
                 }
             }
 
             // Charger les workflows (simulation)
             async function loadWorkflows() {
-                const container = document.getElementById(\'workflowsList\');
+                const container = document.getElementById('workflowsList');
                 
                 // Simulation de workflows (à remplacer par vraie API N8N)
                 const mockWorkflows = [
-                    { id: \'3wnBU3rbhJATJfYW\', name: \'🔴 Inactif **Demo: My first AI Agent in n8n**\', status: \'inactive\' },
-                    { id: \'abc123def456ghi7\', name: \'✅ Publication Automatique Réseaux Sociaux\', status: \'active\' },
-                    { id: \'xyz789uvw321rst4\', name: \'📧 Envoi Email Notifications\', status: \'active\' }
+                    { id: '3wnBU3rbhJATJfYW', name: '🔴 Inactif **Demo: My first AI Agent in n8n**', status: 'inactive' },
+                    { id: 'abc123def456ghi7', name: '✅ Publication Automatique Réseaux Sociaux', status: 'active' },
+                    { id: 'xyz789uvw321rst4', name: '📧 Envoi Email Notifications', status: 'active' }
                 ];
                 
                 container.innerHTML = mockWorkflows.map(wf => \`
@@ -1281,72 +1281,72 @@ app.get('/dashboard', requireAuth, (req, res) => {
                             <button class="btn btn-small btn-danger" onclick="deleteWorkflow('\${wf.id}')">🗑️ Supprimer</button>
                         </div>
                     </div>
-                \`).join(\'\');
+                \`).join('');
             }
 
             // Ajouter une instruction
             async function addInstruction(event) {
                 event.preventDefault();
                 
-                const instruction = document.getElementById(\'instructionText\').value;
-                const category = document.getElementById(\'instructionCategory\').value;
-                const priority = parseInt(document.getElementById(\'instructionPriority\').value);
+                const instruction = document.getElementById('instructionText').value;
+                const category = document.getElementById('instructionCategory').value;
+                const priority = parseInt(document.getElementById('instructionPriority').value);
                 
                 try {
-                    const response = await fetch(\'/api/instructions/add\', {
-                        method: \'POST\',
-                        headers: { \'Content-Type\': \'application/json\' },
+                    const response = await fetch('/api/instructions/add', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({ instruction, category, priority })
                     });
                     
                     const data = await response.json();
                     
                     if (data.success) {
-                        alert(\'✅ Instruction ajoutée avec succès !\');
+                        alert('✅ Instruction ajoutée avec succès !');
                         closeInstructionModal();
                         loadInstructions();
                         
                         // Reset form
-                        document.getElementById(\'instructionText\').value = \'\';
-                        document.getElementById(\'instructionPriority\').value = \'5\';
+                        document.getElementById('instructionText').value = '';
+                        document.getElementById('instructionPriority').value = '5';
                     } else {
-                        alert(\'❌ Erreur: \' + data.error);
+                        alert('❌ Erreur: ' + data.error);
                     }
                 } catch (error) {
-                    console.error(\'❌ Erreur ajout instruction:\', error);
-                    alert(\'❌ Erreur: \' + error.message);
+                    console.error('❌ Erreur ajout instruction:', error);
+                    alert('❌ Erreur: ' + error.message);
                 }
             }
 
             // Supprimer une instruction
             async function deleteInstruction(id) {
-                if (!confirm(\'Voulez-vous vraiment désactiver cette instruction ?\')) return;
+                if (!confirm('Voulez-vous vraiment désactiver cette instruction ?')) return;
                 
                 try {
                     const response = await fetch(\`/api/instructions/\${id}\`, {
-                        method: \'DELETE\'
+                        method: 'DELETE'
                     });
                     
                     const data = await response.json();
                     
                     if (data.success) {
-                        alert(\'✅ Instruction désactivée\');
+                        alert('✅ Instruction désactivée');
                         loadInstructions();
                     } else {
-                        alert(\'❌ Erreur: \' + data.error);
+                        alert('❌ Erreur: ' + data.error);
                     }
                 } catch (error) {
-                    alert(\'❌ Erreur: \' + error.message);
+                    alert('❌ Erreur: ' + error.message);
                 }
             }
 
-            // Effacer l\'historique
+            // Effacer l'historique
             async function clearHistory() {
-                if (!confirm(\'Voulez-vous vraiment effacer l\\'historique de plus de 90 jours ?\')) return;
+                if (!confirm('Voulez-vous vraiment effacer l\\'historique de plus de 90 jours ?')) return;
                 
                 try {
-                    const response = await fetch(\'/api/conversation/clear?days=90\', {
-                        method: \'DELETE\'
+                    const response = await fetch('/api/conversation/clear?days=90', {
+                        method: 'DELETE'
                     });
                     
                     const data = await response.json();
@@ -1355,10 +1355,10 @@ app.get('/dashboard', requireAuth, (req, res) => {
                         alert(\`✅ \${data.deletedCount} messages supprimés\`);
                         loadHistory();
                     } else {
-                        alert(\'❌ Erreur: \' + data.error);
+                        alert('❌ Erreur: ' + data.error);
                     }
                 } catch (error) {
-                    alert(\'❌ Erreur: \' + error.message);
+                    alert('❌ Erreur: ' + error.message);
                 }
             }
 
@@ -1375,25 +1375,25 @@ app.get('/dashboard', requireAuth, (req, res) => {
 
             // Modal
             function openInstructionModal() {
-                document.getElementById(\'instructionModal\').classList.add(\'active\');
+                document.getElementById('instructionModal').classList.add('active');
             }
 
             function closeInstructionModal() {
-                document.getElementById(\'instructionModal\').classList.remove(\'active\');
+                document.getElementById('instructionModal').classList.remove('active');
             }
 
             // Actualiser tout
             function refreshAll() {
                 loadAll();
                 loadFilesList();
-                alert(\'🔄 Données actualisées !\');
+                alert('🔄 Données actualisées !');
             }
 
             // === NOUVELLES FONCTIONS CHAT ===
             
             // Gérer les touches dans le chat (Enter pour envoyer, Shift+Enter pour nouvelle ligne)
             function handleChatKeyDown(event) {
-                if (event.key === \'Enter\' && !event.shiftKey) {
+                if (event.key === 'Enter' && !event.shiftKey) {
                     event.preventDefault();
                     sendChatMessage();
                 }
@@ -1401,26 +1401,26 @@ app.get('/dashboard', requireAuth, (req, res) => {
             
             // Envoyer un message dans le chat
             async function sendChatMessage() {
-                const input = document.getElementById(\'chatInput\');
+                const input = document.getElementById('chatInput');
                 const message = input.value.trim();
                 
                 if (!message) return;
                 
                 // Récupérer le modèle sélectionné
-                const selectedModel = document.getElementById(\'modelSelect\').value;
+                const selectedModel = document.getElementById('modelSelect').value;
                 
-                const sendBtn = document.getElementById(\'chatSendBtn\');
+                const sendBtn = document.getElementById('chatSendBtn');
                 sendBtn.disabled = true;
-                sendBtn.textContent = \'⏳ Envoi...\';
+                sendBtn.textContent = '⏳ Envoi...';
                 
                 // Afficher le message utilisateur
-                displayChatMessage(\'user\', message);
-                input.value = \'\';
+                displayChatMessage('user', message);
+                input.value = '';
                 
                 try {
-                    const response = await fetch(\'/api/chat\', {
-                        method: \'POST\',
-                        headers: { \'Content-Type\': \'application/json\' },
+                    const response = await fetch('/api/chat', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({ 
                             message, 
                             model: selectedModel
@@ -1430,54 +1430,54 @@ app.get('/dashboard', requireAuth, (req, res) => {
                     const data = await response.json();
                     
                     if (data.success || data.response) {
-                        displayChatMessage(\'assistant\', data.response);
+                        displayChatMessage('assistant', data.response);
                         
-                        // Rafraîchir l\'historique après quelques secondes
+                        // Rafraîchir l'historique après quelques secondes
                         setTimeout(() => loadHistory(), 2000);
                     } else {
-                        displayChatMessage(\'assistant\', \'❌ Erreur: \' + (data.error || \'Réponse invalide\'));
+                        displayChatMessage('assistant', '❌ Erreur: ' + (data.error || 'Réponse invalide'));
                     }
                 } catch (error) {
-                    console.error(\'❌ Erreur chat:\', error);
-                    displayChatMessage(\'assistant\', \'❌ Erreur de connexion: \' + error.message);
+                    console.error('❌ Erreur chat:', error);
+                    displayChatMessage('assistant', '❌ Erreur de connexion: ' + error.message);
                 }
                 
                 sendBtn.disabled = false;
-                sendBtn.textContent = \'📤 Envoyer\';
+                sendBtn.textContent = '📤 Envoyer';
             }
             
             // Afficher un message dans le chat
             function displayChatMessage(role, content) {
-                const container = document.getElementById(\'chatMessages\');
+                const container = document.getElementById('chatMessages');
                 
                 // Supprimer le message "Prêt à converser" si présent
-                const loadingMsg = container.querySelector(\'.loading\');
+                const loadingMsg = container.querySelector('.loading');
                 if (loadingMsg) loadingMsg.remove();
                 
-                const messageDiv = document.createElement(\'div\');
+                const messageDiv = document.createElement('div');
                 messageDiv.className = \`chat-message \${role}\`;
                 messageDiv.textContent = content;
                 
                 container.appendChild(messageDiv);
-                messageDiv.scrollIntoView({ behavior: \'smooth\', block: \'end\' });
+                messageDiv.scrollIntoView({ behavior: 'smooth', block: 'end' });
             }
             
             // Scroller vers la section chat
             function scrollToChatSection() {
-                document.getElementById(\'chatSection\').scrollIntoView({ 
-                    behavior: \'smooth\', 
-                    block: \'start\' 
+                document.getElementById('chatSection').scrollIntoView({ 
+                    behavior: 'smooth', 
+                    block: 'start' 
                 });
             }
             
             // === NOUVELLES FONCTIONS UPLOAD ===
             
-            // Gérer l\'upload de fichier
+            // Gérer l'upload de fichier
             async function handleFileUpload(event) {
                 const file = event.target.files[0];
                 if (!file) return;
                 
-                const statusDiv = document.getElementById(\'uploadStatus\');
+                const statusDiv = document.getElementById('uploadStatus');
                 statusDiv.innerHTML = \`
                     <div class="loading">
                         <div class="spinner"></div>
@@ -1486,11 +1486,11 @@ app.get('/dashboard', requireAuth, (req, res) => {
                 \`;
                 
                 const formData = new FormData();
-                formData.append(\'file\', file);
+                formData.append('file', file);
                 
                 try {
-                    const response = await fetch(\'/api/upload\', {
-                        method: \'POST\',
+                    const response = await fetch('/api/upload', {
+                        method: 'POST',
                         body: formData
                     });
                     
@@ -1506,7 +1506,7 @@ app.get('/dashboard', requireAuth, (req, res) => {
                         // Rafraîchir la liste des fichiers
                         setTimeout(() => {
                             loadFilesList();
-                            statusDiv.innerHTML = \'\';
+                            statusDiv.innerHTML = '';
                         }, 3000);
                     } else {
                         statusDiv.innerHTML = \`
@@ -1516,7 +1516,7 @@ app.get('/dashboard', requireAuth, (req, res) => {
                         \`;
                     }
                 } catch (error) {
-                    console.error(\'❌ Erreur upload:\', error);
+                    console.error('❌ Erreur upload:', error);
                     statusDiv.innerHTML = \`
                         <div style="color: #e74c3c; font-weight: 600;">
                             ❌ Erreur: \${error.message}
@@ -1525,19 +1525,19 @@ app.get('/dashboard', requireAuth, (req, res) => {
                 }
                 
                 // Reset input
-                event.target.value = \'\';
+                event.target.value = '';
             }
             
             // Charger la liste des fichiers
             async function loadFilesList() {
                 try {
-                    const response = await fetch(\'/api/files\');
+                    const response = await fetch('/api/files');
                     const data = await response.json();
                     
-                    const container = document.getElementById(\'filesList\');
+                    const container = document.getElementById('filesList');
                     
                     if (data.success && data.files && data.files.length > 0) {
-                        container.innerHTML = \'<h4 style="margin-bottom: 15px;">📁 Fichiers uploadés (\' + data.files.length + \')</h4>\' +
+                        container.innerHTML = '<h4 style="margin-bottom: 15px;">📁 Fichiers uploadés (' + data.files.length + ')</h4>' +
                             data.files.map(file => \`
                                 <div class="history-item" style="display: flex; justify-content: space-between; align-items: center;">
                                     <div style="flex: 1;">
@@ -1550,146 +1550,146 @@ app.get('/dashboard', requireAuth, (req, res) => {
                                     </div>
                                     <button class="btn btn-small btn-danger" onclick="deleteFile(\${file.id})">🗑️</button>
                                 </div>
-                            \`).join(\'\');
+                            \`).join('');
                     } else {
-                        container.innerHTML = \'<p style="color: #95a5a6; text-align: center;">Aucun fichier uploadé</p>\';
+                        container.innerHTML = '<p style="color: #95a5a6; text-align: center;">Aucun fichier uploadé</p>';
                     }
                 } catch (error) {
-                    console.error(\'❌ Erreur chargement fichiers:\', error);
+                    console.error('❌ Erreur chargement fichiers:', error);
                 }
             }
             
             // Formater la taille de fichier
             function formatFileSize(bytes) {
-                if (bytes < 1024) return bytes + \' B\';
-                if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(2) + \' KB\';
-                return (bytes / (1024 * 1024)).toFixed(2) + \' MB\';
+                if (bytes < 1024) return bytes + ' B';
+                if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(2) + ' KB';
+                return (bytes / (1024 * 1024)).toFixed(2) + ' MB';
             }
             
             // Supprimer un fichier
             async function deleteFile(fileId) {
-                if (!confirm(\'Voulez-vous vraiment supprimer ce fichier ?\')) return;
+                if (!confirm('Voulez-vous vraiment supprimer ce fichier ?')) return;
                 
                 try {
                     const response = await fetch(\`/api/files/\${fileId}\`, {
-                        method: \'DELETE\'
+                        method: 'DELETE'
                     });
                     
                     const data = await response.json();
                     
                     if (data.success) {
-                        alert(\'✅ Fichier supprimé\');
+                        alert('✅ Fichier supprimé');
                         loadFilesList();
                         loadStats(); // Rafraîchir le compteur
                     } else {
-                        alert(\'❌ Erreur: \' + data.error);
+                        alert('❌ Erreur: ' + data.error);
                     }
                 } catch (error) {
-                    alert(\'❌ Erreur: \' + error.message);
+                    alert('❌ Erreur: ' + error.message);
                 }
             }
             
             // Scroller vers la section upload
             function scrollToUploadSection() {
-                document.getElementById(\'uploadSection\').scrollIntoView({ 
-                    behavior: \'smooth\', 
-                    block: \'start\' 
+                document.getElementById('uploadSection').scrollIntoView({ 
+                    behavior: 'smooth', 
+                    block: 'start' 
                 });
             }
             
             // === NOUVELLES FONCTIONS AGENTS ===
             
-            // Afficher les détails d\'un agent
+            // Afficher les détails d'un agent
             async function showAgentDetails(agentName) {
-                const modal = document.getElementById(\'agentModal\');
-                const title = document.getElementById(\'agentModalTitle\');
-                const content = document.getElementById(\'agentModalContent\');
+                const modal = document.getElementById('agentModal');
+                const title = document.getElementById('agentModalTitle');
+                const content = document.getElementById('agentModalContent');
                 
                 // Configurations des agents
                 const agentConfigs = {
-                    \'n8n\': {
-                        icon: \'⚡\',
-                        name: \'N8N Agent\',
-                        description: \'Gère les workflows et automatisations via n8n\',
+                    'n8n': {
+                        icon: '⚡',
+                        name: 'N8N Agent',
+                        description: 'Gère les workflows et automatisations via n8n',
                         capabilities: [
-                            \'✅ Créer et exécuter des workflows\',
-                            \'✅ Déclencher des webhooks\',
-                            \'✅ Lister les workflows actifs\',
-                            \'✅ Supprimer des workflows\'
+                            '✅ Créer et exécuter des workflows',
+                            '✅ Déclencher des webhooks',
+                            '✅ Lister les workflows actifs',
+                            '✅ Supprimer des workflows'
                         ],
                         actions: [
-                            { label: \'📋 Lister les workflows\', action: \'listWorkflows()\' },
-                            { label: \'▶️ Tester un workflow\', action: \'testWorkflow()\' }
+                            { label: '📋 Lister les workflows', action: 'listWorkflows()' },
+                            { label: '▶️ Tester un workflow', action: 'testWorkflow()' }
                         ]
                     },
-                    \'file\': {
-                        icon: \'📁\',
-                        name: \'File Agent\',
-                        description: \'Gère les opérations sur les fichiers\',
+                    'file': {
+                        icon: '📁',
+                        name: 'File Agent',
+                        description: 'Gère les opérations sur les fichiers',
                         capabilities: [
-                            \'✅ Upload de fichiers\',
-                            \'✅ Stockage SQLite\',
-                            \'✅ Recherche de fichiers\',
-                            \'✅ Suppression de fichiers\'
+                            '✅ Upload de fichiers',
+                            '✅ Stockage SQLite',
+                            '✅ Recherche de fichiers',
+                            '✅ Suppression de fichiers'
                         ],
                         actions: [
-                            { label: \'📁 Voir les fichiers\', action: \'scrollToUploadSection()\' }
+                            { label: '📁 Voir les fichiers', action: 'scrollToUploadSection()' }
                         ]
                     },
-                    \'coolify\': {
-                        icon: \'🚀\',
-                        name: \'Coolify Agent\',
-                        description: \'Gère les déploiements via Coolify\',
+                    'coolify': {
+                        icon: '🚀',
+                        name: 'Coolify Agent',
+                        description: 'Gère les déploiements via Coolify',
                         capabilities: [
-                            \'✅ Déployer des services\',
-                            \'✅ Gérer les conteneurs\',
-                            \'✅ Rollback de déploiements\',
-                            \'✅ Monitoring des services\'
+                            '✅ Déployer des services',
+                            '✅ Gérer les conteneurs',
+                            '✅ Rollback de déploiements',
+                            '✅ Monitoring des services'
                         ],
                         actions: [
-                            { label: \'🚀 Déployer un service\', action: \'deployCoolifyService()\' }
+                            { label: '🚀 Déployer un service', action: 'deployCoolifyService()' }
                         ]
                     },
-                    \'baserow\': {
-                        icon: \'📊\',
-                        name: \'Baserow Agent\',
-                        description: \'Gère la base de données Baserow\',
+                    'baserow': {
+                        icon: '📊',
+                        name: 'Baserow Agent',
+                        description: 'Gère la base de données Baserow',
                         capabilities: [
-                            \'✅ Ajouter des lignes\',
-                            \'✅ Lire des données\',
-                            \'✅ Mettre à jour des lignes\',
-                            \'✅ Supprimer des lignes\'
+                            '✅ Ajouter des lignes',
+                            '✅ Lire des données',
+                            '✅ Mettre à jour des lignes',
+                            '✅ Supprimer des lignes'
                         ],
                         actions: [
-                            { label: \'📊 Consulter les données\', action: \'alert("Baserow API nécessite configuration")\' }
+                            { label: '📊 Consulter les données', action: 'alert("Baserow API nécessite configuration")' }
                         ]
                     },
-                    \'email\': {
-                        icon: \'📧\',
-                        name: \'Email Agent\',
-                        description: \'Gère l\'envoi d\'emails\',
+                    'email': {
+                        icon: '📧',
+                        name: 'Email Agent',
+                        description: 'Gère l\'envoi d\'emails',
                         capabilities: [
-                            \'✅ Envoi via SMTP\',
-                            \'✅ Relay via n8n\',
-                            \'✅ Templates d\'emails\',
-                            \'✅ Notifications automatiques\'
+                            '✅ Envoi via SMTP',
+                            '✅ Relay via n8n',
+                            '✅ Templates d\'emails',
+                            '✅ Notifications automatiques'
                         ],
                         actions: [
-                            { label: \'📧 Envoyer un test\', action: \'sendTestEmail()\' }
+                            { label: '📧 Envoyer un test', action: 'sendTestEmail()' }
                         ]
                     },
-                    \'security\': {
-                        icon: \'🔒\',
-                        name: \'Security Agent\',
-                        description: \'Gère la sécurité et les validations\',
+                    'security': {
+                        icon: '🔒',
+                        name: 'Security Agent',
+                        description: 'Gère la sécurité et les validations',
                         capabilities: [
-                            \'✅ Validation des API keys\',
-                            \'✅ Rate limiting\',
-                            \'✅ Sanitization des inputs\',
-                            \'✅ Détection d\'anomalies\'
+                            '✅ Validation des API keys',
+                            '✅ Rate limiting',
+                            '✅ Sanitization des inputs',
+                            '✅ Détection d\'anomalies'
                         ],
                         actions: [
-                            { label: \'🔒 Vérifier la sécurité\', action: \'checkSecurity()\' }
+                            { label: '🔒 Vérifier la sécurité', action: 'checkSecurity()' }
                         ]
                     }
                 };
@@ -1725,23 +1725,23 @@ app.get('/dashboard', requireAuth, (req, res) => {
                     </div>
                 \`;
                 
-                modal.classList.add(\'active\');
+                modal.classList.add('active');
             }
             
             // Fermer le modal agent
             function closeAgentModal() {
-                document.getElementById(\'agentModal\').classList.remove(\'active\');
+                document.getElementById('agentModal').classList.remove('active');
             }
             
             // Actions des agents
             function testWorkflow() {
                 closeAgentModal();
-                alert(\'⚡ Pour tester un workflow, utilisez le chat ou la section Workflows N8N ci-dessous.\');
+                alert('⚡ Pour tester un workflow, utilisez le chat ou la section Workflows N8N ci-dessous.');
             }
             
             function deployCoolifyService() {
                 closeAgentModal();
-                const serviceId = prompt(\'Entrez l\'ID du service Coolify à déployer:\');
+                const serviceId = prompt('Entrez l\'ID du service Coolify à déployer:');
                 if (serviceId) {
                     alert(\`🚀 Déploiement du service \${serviceId}...\\n\\nCette fonctionnalité sera bientôt disponible via l'API.\`);
                 }
@@ -1749,7 +1749,7 @@ app.get('/dashboard', requireAuth, (req, res) => {
             
             function sendTestEmail() {
                 closeAgentModal();
-                const email = prompt(\'Entrez l\'adresse email de test:\');
+                const email = prompt('Entrez l\'adresse email de test:');
                 if (email) {
                     alert(\`📧 Envoi d\'un email de test à \${email}...\\n\\nCette fonctionnalité sera bientôt disponible via l\'API.\`);
                 }
@@ -1757,10 +1757,10 @@ app.get('/dashboard', requireAuth, (req, res) => {
             
             function checkSecurity() {
                 closeAgentModal();
-                alert(\'🔒 Vérification de la sécurité...\\n\\n✅ Session valide\\n✅ Aucune anomalie détectée\\n✅ Rate limits: OK\');
+                alert('🔒 Vérification de la sécurité...\\n\\n✅ Session valide\\n✅ Aucune anomalie détectée\\n✅ Rate limits: OK');
             }
 
-            // Supprimer l\'ancien event listener pour les agents (déjà géré par onclick dans le HTML)
+            // Supprimer l'ancien event listener pour les agents (déjà géré par onclick dans le HTML)
         </script>
     </body>
     </html>
@@ -1787,25 +1787,25 @@ app.get('/simple', (req, res) => {
         <script>
             async function testAuth() {
                 try {
-                    const response = await fetch(\'/api/register\', {
-                        method: \'POST\',
-                        headers: { \'Content-Type\': \'application/json\' },
+                    const response = await fetch('/api/register', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({
-                            email: \'test@test.com\',
-                            password: \'123456\',
-                            name: \'Test User\'
+                            email: 'test@test.com',
+                            password: '123456',
+                            name: 'Test User'
                         })
                     });
                     
                     const data = await response.json();
-                    document.getElementById(\'result\').innerHTML = 
-                        \'<h3>Inscription:</h3>\' +
-                        \'<p>Status: \' + response.status + \'</p>\' +
-                        \'<pre>\' + JSON.stringify(data, null, 2) + \'</pre>\';
+                    document.getElementById('result').innerHTML = 
+                        '<h3>Inscription:</h3>' +
+                        '<p>Status: ' + response.status + '</p>' +
+                        '<pre>' + JSON.stringify(data, null, 2) + '</pre>';
                     
                 } catch (error) {
-                    document.getElementById(\'result\').innerHTML = 
-                        \'<p style="color: red;">Erreur: \' + error.message + \'</p>\';
+                    document.getElementById('result').innerHTML = 
+                        '<p style="color: red;">Erreur: ' + error.message + '</p>';
                 }
             }
         </script>
@@ -1854,7 +1854,7 @@ app.get('/old-home', (req, res) => {
             * { margin: 0; padding: 0; box-sizing: border-box; }
             
             body {
-                font-family: -apple-system, BlinkMacSystemFont, \'Segoe UI\', Roboto, sans-serif;
+                font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
                 background: #f8fafc;
                 color: #1a202c;
                 line-height: 1.6;
@@ -2060,7 +2060,7 @@ app.get('/old-home', (req, res) => {
                 <div class="user-avatar">U</div>
                 <span>Bonjour, <strong>Utilisateur</strong></span>
             </div>
-            <button class="logout-btn" onclick="window.location.href=\'/login\'">� Connexion</button>
+            <button class="logout-btn" onclick="window.location.href='/login'">� Connexion</button>
         </div>
         
         <div class="container">
@@ -2090,7 +2090,7 @@ app.get('/old-home', (req, res) => {
                 <div class="card">
                     <div class="card-icon">📁</div>
                     <h3>Upload de fichiers</h3>
-                    <p>Uploadez vos documents pour que l\'IA puisse les analyser et répondre</p>
+                    <p>Uploadez vos documents pour que l'IA puisse les analyser et répondre</p>
                     <ul class="feature-list">
                         <li>Drag & drop</li>
                         <li>Analyse automatique</li>
@@ -2122,12 +2122,12 @@ app.get('/old-home', (req, res) => {
         <script>
             async function logout() {
                 try {
-                    const response = await fetch(\'/api/auth/logout\', { method: \'POST\' });
+                    const response = await fetch('/api/auth/logout', { method: 'POST' });
                     if (response.ok) {
-                        window.location.href = \'/login\';
+                        window.location.href = '/login';
                     }
                 } catch (error) {
-                    console.error(\'Erreur déconnexion:\', error);
+                    console.error('Erreur déconnexion:', error);
                 }
             }
         </script>
@@ -2178,15 +2178,15 @@ app.get('/upload-test', requireAuth, (req, res) => {
 
         <script>
             async function uploadFile() {
-                const file = document.getElementById(\'fileInput\').files[0];
-                if (!file) { alert(\'Sélectionnez un fichier\'); return; }
+                const file = document.getElementById('fileInput').files[0];
+                if (!file) { alert('Sélectionnez un fichier'); return; }
                 
-                showResult(\'⏳ Upload en cours...\');
+                showResult('⏳ Upload en cours...');
                 
                 try {
-                    const response = await fetch(\'/api/upload-simple\', {
-                        method: \'POST\',
-                        headers: { \'X-Filename\': file.name },
+                    const response = await fetch('/api/upload-simple', {
+                        method: 'POST',
+                        headers: { 'X-Filename': file.name },
                         body: file
                     });
                     
@@ -2203,15 +2203,15 @@ app.get('/upload-test', requireAuth, (req, res) => {
             }
             
             async function uploadText() {
-                const text = document.getElementById(\'textInput\').value;
-                if (!text.trim()) { alert(\'Saisissez du texte\'); return; }
+                const text = document.getElementById('textInput').value;
+                if (!text.trim()) { alert('Saisissez du texte'); return; }
                 
-                showResult(\'⏳ Upload texte...\');
+                showResult('⏳ Upload texte...');
                 
                 try {
-                    const response = await fetch(\'/api/upload-simple\', {
-                        method: \'POST\',
-                        headers: { \'X-Filename\': \'texte.txt\' },
+                    const response = await fetch('/api/upload-simple', {
+                        method: 'POST',
+                        headers: { 'X-Filename': 'texte.txt' },
                         body: text
                     });
                     
@@ -2229,7 +2229,7 @@ app.get('/upload-test', requireAuth, (req, res) => {
             
             async function listFiles() {
                 try {
-                    const response = await fetch(\'/api/files-list\');
+                    const response = await fetch('/api/files-list');
                     const result = await response.json();
                     
                     let html = \`<h4>📋 Fichiers (\${result.count})</h4>\`;
@@ -2247,8 +2247,8 @@ app.get('/upload-test', requireAuth, (req, res) => {
             }
             
             function showResult(html) {
-                document.getElementById(\'resultContent\').innerHTML = html;
-                document.getElementById(\'result\').style.display = \'block\';
+                document.getElementById('resultContent').innerHTML = html;
+                document.getElementById('result').style.display = 'block';
             }
         </script>
     </body>
@@ -2332,44 +2332,44 @@ app.get('/chat', requireAuth, (req, res) => {
         </div>
 
         <script>
-            let currentModel = \'openai/gpt-3.5-turbo\';
+            let currentModel = 'openai/gpt-3.5-turbo';
             let isLoading = false;
 
             // Modèles IA disponibles
             const models = [
-                { id: \'openai/gpt-4o\', name: \'🚀 GPT-4o\', free: false },
-                { id: \'openai/gpt-3.5-turbo\', name: \'⚡ GPT-3.5 Turbo\', free: false },
-                { id: \'anthropic/claude-3.5-sonnet\', name: \'🧠 Claude 3.5 Sonnet\', free: false },
-                { id: \'google/gemini-pro\', name: \'💎 Gemini Pro\', free: false },
-                { id: \'alibaba/qwen-turbo\', name: \'🇨🇳 Alibaba Qwen Turbo\', free: false },
-                { id: \'alibaba/qwen-plus\', name: \'🇨🇳 Qwen Plus\', free: false },
-                { id: \'alibaba/qwen-max\', name: \'🇨🇳 Qwen Max\', free: false },
-                { id: \'meta-llama/llama-3.1-70b-instruct\', name: \'🦙 Llama 3.1 70B\', free: false },
-                { id: \'mistralai/mistral-large\', name: \'🌟 Mistral Large\', free: false },
-                { id: \'perplexity/llama-3.1-sonar-large-128k-online\', name: \'🔍 Perplexity\', free: false },
+                { id: 'openai/gpt-4o', name: '🚀 GPT-4o', free: false },
+                { id: 'openai/gpt-3.5-turbo', name: '⚡ GPT-3.5 Turbo', free: false },
+                { id: 'anthropic/claude-3.5-sonnet', name: '🧠 Claude 3.5 Sonnet', free: false },
+                { id: 'google/gemini-pro', name: '💎 Gemini Pro', free: false },
+                { id: 'alibaba/qwen-turbo', name: '🇨🇳 Alibaba Qwen Turbo', free: false },
+                { id: 'alibaba/qwen-plus', name: '🇨🇳 Qwen Plus', free: false },
+                { id: 'alibaba/qwen-max', name: '🇨🇳 Qwen Max', free: false },
+                { id: 'meta-llama/llama-3.1-70b-instruct', name: '🦙 Llama 3.1 70B', free: false },
+                { id: 'mistralai/mistral-large', name: '🌟 Mistral Large', free: false },
+                { id: 'perplexity/llama-3.1-sonar-large-128k-online', name: '🔍 Perplexity', free: false },
                 
                 // Modèles gratuits
-                { id: \'openai/gpt-3.5-turbo-instruct\', name: \'🆓 GPT-3.5 Instruct\', free: true },
-                { id: \'meta-llama/llama-3-8b-instruct:free\', name: \'🆓 Llama 3 8B\', free: true },
-                { id: \'microsoft/phi-3-medium-128k-instruct:free\', name: \'🆓 Phi-3 Medium\', free: true },
-                { id: \'google/gemma-7b-it:free\', name: \'🆓 Gemma 7B\', free: true },
-                { id: \'qwen/qwen-2-7b-instruct:free\', name: \'🆓 Qwen 2 7B\', free: true },
+                { id: 'openai/gpt-3.5-turbo-instruct', name: '🆓 GPT-3.5 Instruct', free: true },
+                { id: 'meta-llama/llama-3-8b-instruct:free', name: '🆓 Llama 3 8B', free: true },
+                { id: 'microsoft/phi-3-medium-128k-instruct:free', name: '🆓 Phi-3 Medium', free: true },
+                { id: 'google/gemma-7b-it:free', name: '🆓 Gemma 7B', free: true },
+                { id: 'qwen/qwen-2-7b-instruct:free', name: '🆓 Qwen 2 7B', free: true },
                 
                 // Plus de modèles premium
-                { id: \'x-ai/grok-beta\', name: \'🚀 Grok Beta\', free: false },
-                { id: \'cohere/command-r-plus\', name: \'📝 Command R+\', free: false },
-                { id: \'anthropic/claude-3-opus\', name: \'🎭 Claude 3 Opus\', free: false },
-                { id: \'openai/gpt-4-turbo\', name: \'⚡ GPT-4 Turbo\', free: false }
+                { id: 'x-ai/grok-beta', name: '🚀 Grok Beta', free: false },
+                { id: 'cohere/command-r-plus', name: '📝 Command R+', free: false },
+                { id: 'anthropic/claude-3-opus', name: '🎭 Claude 3 Opus', free: false },
+                { id: 'openai/gpt-4-turbo', name: '⚡ GPT-4 Turbo', free: false }
             ];
 
             // Initialisation
-            document.addEventListener(\'DOMContentLoaded\', function() {
+            document.addEventListener('DOMContentLoaded', function() {
                 loadModels();
                 loadFiles();
                 
-                document.getElementById(\'sendBtn\').addEventListener(\'click\', sendMessage);
-                document.getElementById(\'chatInput\').addEventListener(\'keypress\', function(e) {
-                    if (e.key === \'Enter\' && !e.shiftKey) {
+                document.getElementById('sendBtn').addEventListener('click', sendMessage);
+                document.getElementById('chatInput').addEventListener('keypress', function(e) {
+                    if (e.key === 'Enter' && !e.shiftKey) {
                         e.preventDefault();
                         sendMessage();
                     }
@@ -2377,13 +2377,13 @@ app.get('/chat', requireAuth, (req, res) => {
             });
 
             function loadModels() {
-                const grid = document.getElementById(\'modelGrid\');
-                grid.innerHTML = \'\';
+                const grid = document.getElementById('modelGrid');
+                grid.innerHTML = '';
                 
                 models.forEach((model, index) => {
-                    const btn = document.createElement(\'button\');
-                    btn.className = \'model-btn\' + (index === 1 ? \' active\' : \'\');
-                    btn.innerHTML = model.name + (model.free ? \' 🆓\' : \'\');
+                    const btn = document.createElement('button');
+                    btn.className = 'model-btn' + (index === 1 ? ' active' : '');
+                    btn.innerHTML = model.name + (model.free ? ' 🆓' : '');
                     btn.onclick = () => selectModel(model.id, btn);
                     grid.appendChild(btn);
                 });
@@ -2391,51 +2391,51 @@ app.get('/chat', requireAuth, (req, res) => {
 
             function selectModel(modelId, btnElement) {
                 currentModel = modelId;
-                document.querySelectorAll(\'.model-btn\').forEach(b => b.classList.remove(\'active\'));
-                btnElement.classList.add(\'active\');
+                document.querySelectorAll('.model-btn').forEach(b => b.classList.remove('active'));
+                btnElement.classList.add('active');
                 updateStatus(\`Modèle sélectionné: \${btnElement.textContent}\`);
             }
 
             async function loadFiles() {
                 try {
-                    const response = await fetch(\'/api/files-list\');
+                    const response = await fetch('/api/files-list');
                     const result = await response.json();
                     
-                    const filesList = document.getElementById(\'filesList\');
+                    const filesList = document.getElementById('filesList');
                     if (result.files && result.files.length > 0) {
                         filesList.innerHTML = result.files.map(f => 
                             \`<div style="margin: 5px 0; padding: 5px; background: #34495e; border-radius: 4px;">
                                 📄 \${f.name}<br>
                                 <small>\${f.size} bytes</small>
                             </div>\`
-                        ).join(\'\');
+                        ).join('');
                     } else {
-                        filesList.innerHTML = \'<small style="color: #95a5a6;">Aucun fichier uploadé</small>\';
+                        filesList.innerHTML = '<small style="color: #95a5a6;">Aucun fichier uploadé</small>';
                     }
                 } catch (error) {
-                    document.getElementById(\'filesList\').innerHTML = \'<small style="color: #e74c3c;">Erreur chargement</small>\';
+                    document.getElementById('filesList').innerHTML = '<small style="color: #e74c3c;">Erreur chargement</small>';
                 }
             }
 
             async function sendMessage() {
                 if (isLoading) return;
                 
-                const input = document.getElementById(\'chatInput\');
+                const input = document.getElementById('chatInput');
                 const message = input.value.trim();
                 
                 if (!message) return;
                 
-                input.value = \'\';
-                addMessage(\'user\', message);
+                input.value = '';
+                addMessage('user', message);
                 
                 isLoading = true;
-                updateStatus(\'⏳ Génération en cours...\');
-                document.getElementById(\'sendBtn\').disabled = true;
+                updateStatus('⏳ Génération en cours...');
+                document.getElementById('sendBtn').disabled = true;
                 
                 try {
-                    const response = await fetch(\'/api/chat\', {
-                        method: \'POST\',
-                        headers: { \'Content-Type\': \'application/json\' },
+                    const response = await fetch('/api/chat', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({
                             message: message,
                             model: currentModel
@@ -2445,27 +2445,27 @@ app.get('/chat', requireAuth, (req, res) => {
                     const result = await response.json();
                     
                     if (response.ok) {
-                        addMessage(\'ai\', result.response);
-                        updateStatus(\'✅ Réponse reçue\');
+                        addMessage('ai', result.response);
+                        updateStatus('✅ Réponse reçue');
                     } else {
-                        addMessage(\'ai\', \'❌ Erreur: \' + result.error);
-                        updateStatus(\'❌ Erreur de réponse\');
+                        addMessage('ai', '❌ Erreur: ' + result.error);
+                        updateStatus('❌ Erreur de réponse');
                     }
                 } catch (error) {
-                    addMessage(\'ai\', \'❌ Erreur de connexion: \' + error.message);
-                    updateStatus(\'❌ Erreur de connexion\');
+                    addMessage('ai', '❌ Erreur de connexion: ' + error.message);
+                    updateStatus('❌ Erreur de connexion');
                 }
                 
                 isLoading = false;
-                document.getElementById(\'sendBtn\').disabled = false;
+                document.getElementById('sendBtn').disabled = false;
             }
 
             function addMessage(type, content) {
-                const messages = document.getElementById(\'messages\');
-                const div = document.createElement(\'div\');
-                div.className = \'message \' + (type === \'user\' ? \'user-msg\' : \'ai-msg\');
+                const messages = document.getElementById('messages');
+                const div = document.createElement('div');
+                div.className = 'message ' + (type === 'user' ? 'user-msg' : 'ai-msg');
                 
-                const icon = type === \'user\' ? \'👤 Vous\' : \'🤖 \' + currentModel.split(\'/\')[1];
+                const icon = type === 'user' ? '👤 Vous' : '🤖 ' + currentModel.split('/')[1];
                 div.innerHTML = \`<strong>\${icon}</strong><br>\${content.replace(/\\n/g, '<br>')}\`;
                 
                 messages.appendChild(div);
@@ -2473,7 +2473,7 @@ app.get('/chat', requireAuth, (req, res) => {
             }
 
             function updateStatus(text) {
-                document.getElementById(\'status\').textContent = text;
+                document.getElementById('status').textContent = text;
             }
         </script>
     </body>
@@ -3003,7 +3003,7 @@ app.post('/api/chat', requireAuth, async (req, res) => {
         res.status(500).json({ 
             success: false,
             error: 'Erreur chat: ' + error.message,
-            response: `❌ Désolé, une erreur s\'est produite: ${error.message}\n\nRéessayez ou demandez "aide" pour voir mes capacités.`
+            response: `❌ Désolé, une erreur s'est produite: ${error.message}\n\nRéessayez ou demandez "aide" pour voir mes capacités.`
         });
     }
 });
@@ -3013,7 +3013,7 @@ function formatAgentSuccessResponse(agentResult, model) {
     const modelName = getModelName(model);
     let response = `🤖 ${modelName} - Tâche exécutée avec succès\n\n`;
     
-    response += `**Type d\'action** : ${agentResult.intent}\n\n`;
+    response += `**Type d'action** : ${agentResult.intent}\n\n`;
     
     if (agentResult.result.message) {
         response += `**Résultat** : ${agentResult.result.message}\n\n`;
@@ -3028,7 +3028,7 @@ function formatAgentSuccessResponse(agentResult, model) {
         response += `\n💡 **Suggestion** : ${agentResult.result.suggestion}`;
     }
     
-    response += `\n\n✅ *Exécuté par Agent Autonome à ${new Date().toLocaleTimeString(\'fr-FR\')}*`;
+    response += `\n\n✅ *Exécuté par Agent Autonome à ${new Date().toLocaleTimeString('fr-FR')}*`;
     
     return response;
 }
@@ -3038,7 +3038,7 @@ function formatAgentErrorResponse(agentResult, model) {
     const modelName = getModelName(model);
     let response = `🤖 ${modelName} - Problème rencontré\n\n`;
     
-    response += `**Type d\'action** : ${agentResult.intent}\n\n`;
+    response += `**Type d'action** : ${agentResult.intent}\n\n`;
     response += `**Erreur** : ${agentResult.error}\n\n`;
     
     if (agentResult.result && agentResult.result.suggestion) {
@@ -3050,7 +3050,7 @@ function formatAgentErrorResponse(agentResult, model) {
     response += `- Essayer une commande différente\n`;
     response += `- Consulter les logs pour plus de détails\n\n`;
     
-    response += `⚠️ *Tenté à ${new Date().toLocaleTimeString(\'fr-FR\')}*`;
+    response += `⚠️ *Tenté à ${new Date().toLocaleTimeString('fr-FR')}*`;
     
     return response;
 }
@@ -3115,7 +3115,7 @@ async function simulateAIResponse(prompt, model) {
     
     // Détection de questions spécifiques
     if (promptLower.includes('bonjour') || promptLower.includes('salut') || promptLower.includes('hello')) {
-        response = `👋 Bonjour ! Je suis ${modelName}, comment puis-je vous aider aujourd\'hui ? Je peux répondre à vos questions, analyser des documents, ou discuter de n\'importe quel sujet.`;
+        response = `👋 Bonjour ! Je suis ${modelName}, comment puis-je vous aider aujourd'hui ? Je peux répondre à vos questions, analyser des documents, ou discuter de n'importe quel sujet.`;
     } else if (promptLower.includes('comment') && promptLower.includes('?')) {
         response = `🤔 ${modelName} analyse votre question "${prompt.substring(0, 100)}..."
 
@@ -3124,7 +3124,7 @@ Pour répondre à votre question, voici quelques points clés :
 • Point 2 : Considérations pratiques
 • Point 3 : Recommandations basées sur votre cas
 
-N\'hésitez pas à demander plus de détails !`;
+N'hésitez pas à demander plus de détails !`;
     } else if (promptLower.includes('pourquoi') || promptLower.includes('pourquoi')) {
         response = `💡 ${modelName} répond :
 
@@ -3137,7 +3137,7 @@ Voici mon analyse approfondie :
 
 Souhaitez-vous que je développe un aspect particulier ?`;
     } else if (promptLower.includes('merci') || promptLower.includes('thank')) {
-        response = `� Je vous en prie ! C\'est un plaisir de vous aider. Si vous avez d\'autres questions, n\'hésitez pas !
+        response = `� Je vous en prie ! C'est un plaisir de vous aider. Si vous avez d'autres questions, n'hésitez pas !
 
 ${modelName} est toujours à votre disposition.`;
     } else if (promptLower.includes('problème') || promptLower.includes('erreur') || promptLower.includes('bug')) {
@@ -3145,7 +3145,7 @@ ${modelName} est toujours à votre disposition.`;
 
 Concernant "${prompt.substring(0, 100)}...", voici mon analyse :
 
-**Diagnostic** : J\'ai identifié plusieurs pistes possibles
+**Diagnostic** : J'ai identifié plusieurs pistes possibles
 **Solutions proposées** :
 1. Vérification des configurations
 2. Analyse des logs
@@ -3155,7 +3155,7 @@ Pouvez-vous me donner plus de détails sur les symptômes ?`;
     } else {
         // Réponse générique mais contextuelle
         const snippets = [
-            `J\'ai analysé votre message concernant "${prompt.substring(0, 80)}..." et voici ma réponse détaillée.`,
+            `J'ai analysé votre message concernant "${prompt.substring(0, 80)}..." et voici ma réponse détaillée.`,
             `Excellente question ! Concernant "${prompt.substring(0, 80)}...", permettez-moi de vous expliquer.`,
             `Intéressant ! Pour répondre à "${prompt.substring(0, 80)}...", voici ce que je peux vous dire.`,
             `Merci pour votre message. À propos de "${prompt.substring(0, 80)}...", laissez-moi vous aider.`
@@ -3168,21 +3168,21 @@ Pouvez-vous me donner plus de détails sur les symptômes ?`;
 ${randomSnippet}
 
 **Analyse contextuelle** :
-${prompt.length > 100 ? \'Votre message est détaillé, ce qui me permet de mieux comprendre votre besoin.\' : \'Votre message est concis. N\'hésitez pas à préciser si besoin.\'}
+${prompt.length > 100 ? 'Votre message est détaillé, ce qui me permet de mieux comprendre votre besoin.' : 'Votre message est concis. N\'hésitez pas à préciser si besoin.'}
 
 **Ma réponse** :
 Basé sur votre demande, voici mon analyse et mes recommandations. Chaque cas est unique, et je suis là pour vous accompagner dans votre réflexion.
 
-Voulez-vous que j\'approfondisse un aspect particulier ?`;
+Voulez-vous que j'approfondisse un aspect particulier ?`;
     }
     
     // Ajout d'informations sur les fichiers si présents
     if (prompt.includes('📁 FICHIERS DISPONIBLES:')) {
-        response += `\n\n📄 **Fichiers détectés** : J\'ai accès à vos documents uploadés et je peux les analyser pour vous fournir des réponses plus précises !`;
+        response += `\n\n📄 **Fichiers détectés** : J'ai accès à vos documents uploadés et je peux les analyser pour vous fournir des réponses plus précises !`;
     }
     
     // Ajout d'éléments dynamiques
-    response += `\n\n💡 *Réponse générée par ${modelName} à ${new Date().toLocaleTimeString(\'fr-FR\')}*`;
+    response += `\n\n💡 *Réponse générée par ${modelName} à ${new Date().toLocaleTimeString('fr-FR')}*`;
     
     return response;
 }
@@ -3220,7 +3220,7 @@ const n8nClient = axios.create({
 const coolifyClient = axios.create({
     baseURL: process.env.COOLIFY_API_URL || 'https://kaussan-air.org',
     headers: {
-        'Authorization': `Bearer ${process.env.COOLIFY_API_KEY || \'\'}`,
+        'Authorization': `Bearer ${process.env.COOLIFY_API_KEY || ''}`,
         'Content-Type': 'application/json'
     }
 });
@@ -3229,7 +3229,7 @@ const coolifyClient = axios.create({
 const baserowClient = axios.create({
     baseURL: process.env.BASEROW_URL || 'http://baserow:80',
     headers: {
-        'Authorization': `Token ${process.env.BASEROW_API_TOKEN || \'\'}`,
+        'Authorization': `Token ${process.env.BASEROW_API_TOKEN || ''}`,
         'Content-Type': 'application/json'
     }
 });

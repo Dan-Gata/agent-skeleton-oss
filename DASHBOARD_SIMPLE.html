@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>🎛️ Dashboard Simple - Test Final</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { 
+            font-family: Arial, sans-serif;
+            background: #1a1a2e;
+            color: #ffffff;
+            padding: 20px;
+        }
+        .container { max-width: 1200px; margin: 0 auto; }
+        h1 { margin-bottom: 30px; color: #3498db; }
+        .chat-box {
+            background: #16213e;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+        textarea {
+            width: 100%;
+            padding: 15px;
+            background: #0f0f23;
+            border: 2px solid #3498db;
+            border-radius: 8px;
+            color: white;
+            font-size: 16px;
+            min-height: 100px;
+            resize: vertical;
+        }
+        button {
+            background: #3498db;
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            margin-top: 10px;
+        }
+        button:hover { background: #2980b9; }
+        #response {
+            background: #0f0f23;
+            padding: 20px;
+            border-radius: 8px;
+            margin-top: 20px;
+            min-height: 100px;
+            border-left: 4px solid #2ecc71;
+        }
+        .status { 
+            padding: 10px;
+            background: #27ae60;
+            border-radius: 5px;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎛️ Dashboard Simple - Test Final</h1>
+        
+        <div class="status">
+            ✅ Dashboard chargé avec succès
+        </div>
+        
+        <div class="chat-box">
+            <h2>💬 Chat IA</h2>
+            <textarea id="message" placeholder="Tapez votre message ici..."></textarea>
+            <button onclick="sendMessage()">📤 Envoyer</button>
+            
+            <div id="response"></div>
+        </div>
+    </div>
+
+    <script>
+        console.log('✅ Dashboard JavaScript chargé');
+        
+        function sendMessage() {
+            var messageInput = document.getElementById('message');
+            var responseDiv = document.getElementById('response');
+            var message = messageInput.value;
+            
+            if (!message.trim()) {
+                alert('Veuillez entrer un message');
+                return;
+            }
+            
+            responseDiv.innerHTML = '⏳ Envoi en cours...';
+            
+            fetch('/api/chat', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    message: message,
+                    model: 'anthropic/claude-3.5-sonnet'
+                })
+            })
+            .then(function(response) {
+                return response.json();
+            })
+            .then(function(data) {
+                if (data.success) {
+                    responseDiv.innerHTML = '<strong>🤖 Réponse :</strong><br>' + data.response;
+                } else {
+                    responseDiv.innerHTML = '<strong>❌ Erreur :</strong> ' + data.error;
+                }
+            })
+            .catch(function(error) {
+                responseDiv.innerHTML = '<strong>❌ Erreur :</strong> ' + error.message;
+            });
+        }
+        
+        // Test au chargement
+        console.log('✅ Toutes les fonctions JavaScript sont définies');
+        console.log('✅ sendMessage =', typeof sendMessage);
+    </script>
+</body>
+</html>
