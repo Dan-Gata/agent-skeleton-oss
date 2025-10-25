@@ -1,6 +1,6 @@
 # POURQUOI COOLIFY BLOQUAIT LE DÉPLOIEMENT - RÉSOLU ✅
 
-## Date: 25 Octobre 2025
+## Date: 25 Octobre 2024
 
 ## 🎯 RÉSUMÉ EXÉCUTIF
 
@@ -244,7 +244,7 @@ $ head -c 10 Dockerfile | od -A x -t x1z -v
 
 ### 1. Vérifier le build dans Coolify
 
-**URL**: https://kaussan-air.org (ou votre URL Coolify)
+**URL**: Votre instance Coolify (ex: https://coolify.votre-domaine.com)
 
 **Étapes:**
 1. Aller dans votre application
@@ -284,11 +284,11 @@ curl https://votre-domaine.com/health
 **URL**: https://votre-domaine.com/
 
 **Fonctionnalités à vérifier:**
-- ✅ Page de login accessible
-- ✅ Dashboard se charge
-- ✅ Chat IA fonctionne (si clés API configurées)
-- ✅ Upload de fichiers fonctionne
-- ✅ Outils d'automation accessibles
+- ✅ Page de login accessible (devrait afficher le formulaire de connexion)
+- ✅ Dashboard se charge (devrait afficher les 4 onglets: Chat IA, Fichiers, Automation, Analytics)
+- ✅ Chat IA fonctionne (si clés API configurées - devrait permettre d'envoyer des messages)
+- ✅ Upload de fichiers fonctionne (devrait permettre de glisser-déposer des fichiers)
+- ✅ Outils d'automation accessibles (devrait afficher 6 outils: n8n, Coolify, etc.)
 
 ---
 
@@ -367,7 +367,8 @@ curl -I https://votre-domaine.com/
 ```env
 NODE_ENV=production
 PORT=3000
-INTERNAL_API_KEY=générer-une-clé-aléatoire
+# Générer une clé sécurisée: openssl rand -hex 32
+INTERNAL_API_KEY=générer-une-clé-aléatoire-sécurisée
 ```
 
 **Variables optionnelles** (pour fonctionnalités complètes):
@@ -429,6 +430,6 @@ curl -s https://raw.githubusercontent.com/Dan-Gata/agent-skeleton-oss/main/packa
 
 ---
 
-**Date de résolution**: 25 Octobre 2025  
+**Date de résolution**: 25 Octobre 2024  
 **Version des corrections**: v4  
 **Prochaine action**: Déployer dans Coolify 🚀
