@@ -1,24 +1,28 @@
 ﻿FROM node:20-alpine
 
-# Force rebuild - Cache buster for Coolify
-ARG CACHEBUST=d34cca8_force_full_rebuild_v3_20251022
-RUN echo "Build triggered at: ${CACHEBUST}"
-
 WORKDIR /app
 
-RUN apk add --no-cache python3 make g++ wget
+# Install system dependencies
+RUN apk add --no-cache python3 make g++ wget curl
 
+# Copy package files first (better caching)
+COPY package*.json ./
+COPY packages/orchestrator/package*.json ./packages/orchestrator/
+
+# Install dependencies
+RUN npm install --omit=dev && \
+    cd packages/orchestrator && \
+    npm install --omit=dev
+
+# Copy application code
 COPY . .
 
-RUN npm install --omit=dev
-
-WORKDIR /app/packages/orchestrator
-RUN npm install --omit=dev
-
-WORKDIR /app
-
+# Expose port
 EXPOSE 3000
 
-HEALTHCHECK --interval=30s --timeout=10s --start-period=10s --retries=3 CMD wget --no-verbose --tries=1 --spider http://localhost:3000/health || exit 1
+# Healthcheck
+HEALTHCHECK --interval=30s --timeout=10s --start-period=15s --retries=3 \
+    CMD wget --no-verbose --tries=1 --spider http://localhost:3000/health || exit 1
 
+# Start application
 CMD ["npm", "start"]
