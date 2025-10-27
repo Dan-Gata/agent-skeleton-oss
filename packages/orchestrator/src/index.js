@@ -1352,7 +1352,7 @@ app.get('/dashboard', requireAuth, (req, res) => {
                     const data = await response.json();
                     
                     if (data.success) {
-                        alert('✅ ' + data.deletedCount + ' messages supprimés');
+                        alert(\`✅ \${data.deletedCount} messages supprimés\`);
                         loadHistory();
                     } else {
                         alert('❌ Erreur: ' + data.error);
@@ -1364,13 +1364,13 @@ app.get('/dashboard', requireAuth, (req, res) => {
 
             // Déclencher un workflow
             function triggerWorkflow(id) {
-                alert('⚡ Déclenchement du workflow ' + id + '...\n\nCette fonctionnalité sera implémentée avec l\'API N8N.');
+                alert(\`⚡ Déclenchement du workflow \${id}...\\n\\nCette fonctionnalité sera implémentée avec l'API N8N.\`);
             }
 
             // Supprimer un workflow
             function deleteWorkflow(id) {
-                if (!confirm('Voulez-vous vraiment supprimer le workflow ' + id + ' ?')) return;
-                alert('🗑️ Suppression du workflow ' + id + '...\n\nCette fonctionnalité sera implémentée avec l\'API N8N.');
+                if (!confirm(\`Voulez-vous vraiment supprimer le workflow \${id} ?\`)) return;
+                alert(\`🗑️ Suppression du workflow \${id}...\\n\\nCette fonctionnalité sera implémentée avec l'API N8N.\`);
             }
 
             // Modal
@@ -1743,7 +1743,7 @@ app.get('/dashboard', requireAuth, (req, res) => {
                 closeAgentModal();
                 const serviceId = prompt('Entrez l\'ID du service Coolify à déployer:');
                 if (serviceId) {
-                    alert('🚀 Déploiement du service ' + serviceId + '...\n\nCette fonctionnalité sera bientôt disponible via l\'API.');
+                    alert(\`🚀 Déploiement du service \${serviceId}...\\n\\nCette fonctionnalité sera bientôt disponible via l'API.\`);
                 }
             }
             
@@ -1751,7 +1751,7 @@ app.get('/dashboard', requireAuth, (req, res) => {
                 closeAgentModal();
                 const email = prompt('Entrez l\'adresse email de test:');
                 if (email) {
-                    alert('📧 Envoi d\'un email de test à ' + email + '...\n\nCette fonctionnalité sera bientôt disponible via l\'API.');
+                    alert(\`📧 Envoi d'un email de test à \${email}...\\n\\nCette fonctionnalité sera bientôt disponible via l'API.\`);
                 }
             }
             
