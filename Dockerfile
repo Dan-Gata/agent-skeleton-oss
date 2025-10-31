@@ -1,5 +1,8 @@
 ﻿FROM node:20-alpine
 
+# Force rebuild - Cache buster
+ARG CACHEBUST=20251031-force-rebuild
+
 WORKDIR /app
 
 # Install system dependencies
